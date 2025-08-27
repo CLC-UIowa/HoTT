@@ -45,7 +45,7 @@
 
 \maketitle
 
-\section*{\S1.1}
+\section*{1.1}
 \label{sec:ChapterOne}
 
 \newcommand\Jeq{\ensuremath{\dot{=}}}
@@ -54,15 +54,15 @@
 \newcommand\Type[2]{\ensuremath{#1 \vdash #2 \; \text{type}}}
 \newcommand\TypeJ[3]{\ensuremath{#1 \vdash #2 : #3}}
 
-\begin{questions}
-  \question Give a derivation for the following \textbf{element conversion rule}:
+\begin{enumerate}[label=(\alph*)]
+  \item Give a derivation for the following \textbf{element conversion rule}:
   \[ 
     \ib{\irule
       {\Type{\Gamma}{\Eq {A} {A'}}}
       {\TypeJ \Gamma a A};
       {\TypeJ {\Gamma} {a} {A'}}}
   \]
-  \question Give a derivation for the following \textbf{congruence rule} for element conversion:
+  \item Give a derivation for the following \textbf{congruence rule} for element conversion:
   \[ 
     \ib{\irule
       {\Type \Gamma {\Eq {A} {A'}}}
@@ -70,9 +70,9 @@
       {\EqJ \Gamma {a} {b} {A'}}
     }
   \]
-\end{questions}
+\end{enumerate}
 
-\subsubsection*{Solution \#1}
+\subsubsection*{Solution (a)}
 
 \begin{gather*}
 {\small
@@ -85,7 +85,47 @@
       {\TypeJ {\Gamma} {x[a/x]} {A'[a/x]}}}} 
 \end{gather*}
 
-\subsubsection*{Solution \#2}
+\subsubsection*{Solution (b)}
+
+\begin{gather*}
+    \ib{\irule[cong-subst]
+      {\EqJ \Gamma a b A}
+      {\irule[above]{};{\TypeJ {\Gamma , x : A} x A'}}; 
+      {\EqJ \Gamma {x[a/x]} {x[b/x]} {A'[a/x]}}
+    }  
+\end{gather*}
+
+\section*{2.1}
+
+The $\eta$-rule is often seen as a judgmental extensionality principle. Use the $\eta$-rule to show that if $f$ and $g$ take equal values, then they must be equal, i.e., give a derivation of the rule:
+
+\begin{gather*}
+\ib{\irule
+  {\begin{array}{@{}c@{}}
+             {\TypeJ \Gamma f {\Pi_{x : A}B(x)}}
+             \\
+             {\TypeJ \Gamma g {\Pi_{x : A}B(x)}}
+             \\
+             {\EqJ {\Gamma , x : A} {f(x)}{g(x)} {B(x)}}
+           \end{array}};
+  {\EqJ \Gamma f g {\Pi_{x : A}B(x)}}}
+\end{gather*}
+
+\subsection*{Solution}
+Permit me some creative liberty in chaining two invocations of the transitivity rule.
+
+{\footnotesize
+\begin{gather*}
+\ib{\irule[trans]
+    {\irule[\ensuremath{\eta}]
+      {\TypeJ \Gamma f {\Pi_{x : A}B(x)}};
+      {\EqJ \Gamma {f} {\lambda x. f(x)} {\Pi_{x : A}B(x)}}}
+    {\irule[$\lambda$-eq]{\EqJ {\Gamma , x : A} {f(x)} {g(x)} {B(x)}};{\EqJ \Gamma {\lambda x. f(x)}{\lambda x. g(x)} {B(x)}}}
+    {\irule[\ensuremath{\eta}]
+      {\TypeJ \Gamma g {\Pi_{x : A}B(x)}};
+      {\EqJ \Gamma {\lambda x. g(x)} {g} {\Pi_{x : A}B(x)}}};
+  {\EqJ \Gamma f g {\Pi_{x : A}B(x)}}}
+\end{gather*}}
 
 
 \bibliographystyle{plainnat}
