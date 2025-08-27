@@ -1,0 +1,104 @@
+\documentclass[12pt]{exam}
+\usepackage[margin=1.5in]{geometry}
+
+\usepackage{
+  % AH> I don't know how much of these are used, and for what.
+  %     (needs untangling.) 
+  enumitem,
+  xspace,
+  mathtools,
+  multicol,
+  tikz-cd,
+  parskip,
+  mathrsfs,
+  stmaryrd,
+  tikz,
+  float,
+  titlecaps,
+  soul,
+  upgreek,
+  caption,
+  graphicx,
+  array,
+  subcaption,
+  ../sty/mathwidth,
+%  ./sty/sectsty,
+%  ./sty/commands,
+  ../sty/infer,
+  ../sty/commands}
+
+
+% Minted (needs Python)
+% \usepackage{minted}
+
+% tikz
+\usepackage{tikz}
+\usepackage{tikz-cd}
+
+
+\title{Select Solutions to Introduction to Homotopy Type Theory, Egbert Rijke}
+
+\author{Computational Logic Center}
+
+
+\begin{document}
+
+\maketitle
+
+\section*{\S1.1}
+\label{sec:ChapterOne}
+
+\newcommand\Jeq{\ensuremath{\dot{=}}}
+\newcommand\Eq[2]{\ensuremath{#1\, \Jeq\, #2}}
+\newcommand\EqJ[4]{\ensuremath{#1 \vdash \Eq {#2} {#3} : #4}}
+\newcommand\Type[2]{\ensuremath{#1 \vdash #2 \; \text{type}}}
+\newcommand\TypeJ[3]{\ensuremath{#1 \vdash #2 : #3}}
+
+\begin{questions}
+  \question Give a derivation for the following \textbf{element conversion rule}:
+  \[ 
+    \ib{\irule
+      {\Type{\Gamma}{\Eq {A} {A'}}}
+      {\TypeJ \Gamma a A};
+      {\TypeJ {\Gamma} {a} {A'}}}
+  \]
+  \question Give a derivation for the following \textbf{congruence rule} for element conversion:
+  \[ 
+    \ib{\irule
+      {\Type \Gamma {\Eq {A} {A'}}}
+      {\EqJ \Gamma {a} {b} {A}}; 
+      {\EqJ \Gamma {a} {b} {A'}}
+    }
+  \]
+\end{questions}
+
+\subsubsection*{Solution \#1}
+
+\begin{gather*}
+{\small
+    \ib{\irule[subst]
+      {\Gamma \vdash a : A}
+      {\irule[var-conv]
+        {\irule[sym]{\Type \Gamma {\Eq {A} {A'}}}; {\Type \Gamma {\Eq {A'} {A}}}}
+        {\irule[var]{};{\Gamma, x : A' \vdash x : A'}}; 
+        {\Gamma , x : A \vdash x : A'}};
+      {\TypeJ {\Gamma} {x[a/x]} {A'[a/x]}}}} 
+\end{gather*}
+
+\subsubsection*{Solution \#2}
+
+
+\bibliographystyle{plainnat}
+\bibliography{template.bib}
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% eval: (visual-line-mode 1)
+%%% eval: (auto-fill-mode 0)
+%%% eval: (tex-source-correlate-mode 1)
+%%% eval: (flyspell-mode 1)
+%%% TeX-command-extra-options: "--synctex=1"
+%%% TeX-master: t
+%%% End:
