@@ -1,0 +1,298 @@
+\documentclass{article}
+\usepackage{
+  ../sty/hott,
+  ../sty/mathwidth,
+  ../sty/infer}
+\usepackage{quiver}
+\usepackage{adjustbox}
+
+
+\title{Introduction to  Homotopy Type Theory\\ \large The Judgment Index}
+\author{CLC}
+\date{Fall 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Dependent Type Theory}
+
+\subsection{Judgments}
+
+\newcommand\WfCtx[1]{\vdash #1 ~ ctxt}
+\newcommand\WfType[2]{#1 \vdash #2 ~ type}
+\newcommand\WfTerm[3]{#1 \vdash #2 : #3}
+
+\newcommand\EqCtx[2]{\vdash #1 = #2 ~ ctxt}
+\newcommand\EqType[3]{#1 \vdash #2 \doteq #3 ~ type}
+\newcommand\EqTerm[4]{#1 \vdash #2 \doteq #3 : #4}
+
+\begin{definition}[Judgments.]
+  Judgements in MLTT are of the form:
+  \begin{enumerate}
+  \item $\WfType \Gamma A$
+  \item $\WfTerm \Gamma a A$
+  \item $\EqType \Gamma A B$
+  \item $\EqTerm \Gamma a b A$
+  \end{enumerate}
+\end{definition}
+\begin{itemize}
+\item $\mathcal{J}$ is the judgment thesis,
+  ${\mathcal{J} \in \{a\co A, A ~ type, M \doteq N : \sigma, A \doteq B ~ type\}}$
+\item $\Gamma \vdash \mathcal{J}$ is the judgment.
+\end{itemize}
+
+\begin{definition}[Context.]
+  A \emph{context} is a finite list of variable declarations
+  \[ x_1 : A_1, x_2 : A_2(x_1), x_3 : A_3(x_1, x_2), ..., x_n : A_n (x_1, ..., x_n) \]
+  satisfying the condition that for each $1 \leq k \leq n$
+  we can derive the judgment
+  \[ x_1 : A_1, x_2 : A_2(x_1), x_3 : A_3(x_1, x_2), ... \vdash x_n : A_n (x_1, ..., x_n) \]
+\end{definition}
+
+\subsection{Type Families}
+
+\begin{definition}[Family of Types.]
+  $B(x)$ is a family of types over $A$ in the context $\Gamma$
+  \[ \WfType {\Gamma, x \co A} {B(x)} \]
+\end{definition}
+
+\begin{definition}[Section.]
+  The element of type $B(x)$ in the context $\Gamma, x : A$ is called a \emph{section} of the family $B$ over $A$ in the context $\Gamma$
+  \[ \WfTerm {\Gamma, x \co A} {b(x)} {B(x)} \]
+  Alternatively, $b(x)$ is an element of type $B(x)$ \emph{indexed} by
+  $x\co A$ in the context $\Gamma$
+\end{definition}
+
+\subsection{Inference Rules}
+There are six sets of inference rules:
+\begin{enumerate}
+\item The formation of contexts, types and their elements~\cref{fig:formation-rules}.
+\item Postulating of judgmental equality being an equivalence relation~\cref{fig:jeq-is-equivalence}.
+\item Variable conversion
+\item Substitution
+\item Weakening
+\item The generic element
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{gather*}
+\ib{\irule[]
+  {\WfType {\Gamma, x : A} {B(x)}};
+  {\WfType \Gamma A}
+}
+\rsp
+\ib{\irule[]
+  {\EqType \Gamma A B};
+  {\WfType \Gamma A}
+}
+\rsp
+\ib{\irule[]
+  {\EqType \Gamma A B};
+  {\WfType \Gamma B}
+}
+\\
+\ib{\irule[]
+  {\WfTerm \Gamma a A};
+  {\WfType \Gamma A}
+}
+\rsp
+\ib{\irule[]
+  {\EqTerm \Gamma a b A};
+  {\WfTerm \Gamma a A}
+}
+\rsp
+\ib{\irule[]
+  {\EqTerm \Gamma a b A};
+  {\WfTerm \Gamma b A}
+}
+\end{gather*}
+\caption{Formation of Contexts, types and their elements}
+\label{fig:formation-rules}
+\end{figure}
+
+\begin{figure}[H]
+\begin{gather*}
+\ib{\irule[\trule{Ty-Eq-R}]
+  {\WfType \Gamma A};
+  {\EqType \Gamma A A}
+}
+\rsp
+\ib{\irule[\trule{Ty-Eq-S}]
+  {\EqType \Gamma A B};
+  {\EqType \Gamma B A}
+}
+\rsp
+\ib{\irule[\trule{Ty-Eq-T}]
+  {\EqType \Gamma A B}
+  {\EqType \Gamma B C};
+  {\EqType \Gamma A C}
+}
+\\
+\ib{\irule[\trule{Tm-Eq-R}]
+  {\WfTerm \Gamma M A};
+  {\EqTerm \Gamma M M A}
+}
+\rsp
+\ib{\irule[\trule{Tm-Eq-S}]
+  {\EqTerm \Gamma M N A};
+  {\EqTerm \Gamma N M A}
+}
+\rsp
+\ib{\irule[\trule{Tm-Eq-T}]
+  {\EqTerm \Gamma M N A}
+  {\EqTerm \Gamma N O A};
+  {\EqTerm \Gamma M O A}
+}
+\end{gather*}
+\caption{Judgmental Equality is an equivalence relation}
+\label{fig:jeq-is-equivalence}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{gather*}
+\ib{\irule[]
+   {\EqType \Gamma A {A'}}
+   { {\Gamma, x : A, \Delta} \vdash {\mathcal{J}}};
+   { {\Gamma, x : A', \Delta} \vdash {\mathcal{J}}}
+  }
+\end{gather*}
+\caption{Variable Conversion Rule}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{gather*}
+\ib{\irule[\trule{Weak}]
+  {\Gamma, \Delta \vdash \mathcal{J}}
+   {\WfType \Gamma \rho};
+   {\Gamma, x\co\rho, \Delta \vdash \mathcal{J}}
+ }
+ \rsp
+\ib{\irule[\trule{S}]
+   {\Gamma,x\co A, \Delta \vdash \mathcal{J}}
+   {\WfTerm \Gamma a A};
+   {\Gamma,\Subst{x}{a}\Delta \vdash \Subst{x}{a}\mathcal{J}}
+ }
+\end{gather*}
+\caption{Weakening and Substitution Rules}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{gather*}
+    \ib{\irule[\trule{$\delta$}]
+      {\WfType \Gamma A};
+      {\WfTerm {\Gamma,x\co A} x A}
+    }
+  \end{gather*}
+  \caption{The generic elements}
+  \label{fig:generic-elements}
+\end{figure}
+
+\section{Dependent Function Types}
+\begin{figure}[H]
+\centering
+\begin{gather*}
+\ib{\irule[\trule{$\Pi$-F}]
+  {\WfType \Gamma \sigma}
+  {\WfType {\Gamma,x\co\sigma} \tau};
+  {\WfType \Gamma {\PiTy {x\co\sigma} \tau}}
+}
+\rsp
+\ib{\irule[\trule{$\Pi$-Eq}]
+  {\EqType \Gamma {\sigma_1} {\sigma_2}}
+  {\EqType {\Gamma,x\co\sigma} {\tau_1} {\tau_2}}
+  {\sigma \in \{\sigma_1, \sigma_2\}};
+  {\EqType \Gamma {\Pi x\co\sigma_1.\tau_1} {\PiTy{x\co\sigma_2} {\tau_2}}}
+}
+\\
+\ib{\irule[\trule{\I\Pi}]
+  {\WfTerm {\Gamma,x\co\sigma} M \tau};
+  {\WfTerm \Gamma {\Lam {x\co\sigma} {M^\tau}} {\PiTy {x\co\sigma} \tau}}
+}
+\\
+\ib{\irule[\trule{\IEq\Pi}]
+  {\EqTerm {\Gamma,x\co\sigma_1} {M_1}{M_2} \tau_1}
+  {\EqType \Gamma {\sigma_1}{\sigma_2}}
+  {\EqType {\Gamma,x\co\sigma_1} {\tau_1} {\tau_2}};
+  {\EqTerm \Gamma {\Lam {x\co\sigma_1} {M_1^{\tau_1}}} {\Lam {x\co\sigma_2} {M_2^{\tau_2}}} {\PiTy {x\co\sigma_1} \tau_1}}
+}
+\\
+\ib{\irule[\trule{\E\Pi}]
+  {\WfTerm \Gamma M {\PiTy {x\co\sigma} \tau}}
+  {\WfTerm \Gamma N \sigma};
+  {\WfTerm {\Gamma} {\PiAppTm {\tau[x\co\sigma]} M N} {\Subst{x}{N}\tau}}
+}
+\rsp
+\ib{\irule[\trule{\C\Pi}]
+  {\WfTerm \Gamma {\Lam {x\co\sigma} {M^{\tau}}} {\PiTy {x\co\sigma} \tau}}
+  {\WfTerm \Gamma N \sigma};
+  {\EqTerm {\Gamma}{\PiAppTm {\tau[x\co\sigma]} {\Lam {x\co\sigma} {M^{\tau}}} N}{\Subst{x}{N}M}{\Subst{x}{N}\tau}}
+}
+\end{gather*}
+\caption{Dependent Function Space}
+\end{figure}
+
+\section{Dependent Sum}
+
+\begin{figure}[H]
+\centering
+\begin{gather*}
+\ib{\irule[\trule{$\Sigma$-F}]
+  {\WfType \Gamma \sigma}
+  {\WfType {\Gamma,x\co\sigma} \tau};
+  {\WfType \Gamma {\SigmaTy {x\co\sigma} \tau}}
+}
+\rsp
+\ib{\irule[\trule{$\Sigma$-Eq}]
+  {\EqType \Gamma {\sigma_1} {\sigma_2}}
+  {\EqType {\Gamma,x\co\sigma} {\tau_1} {\tau_2}}
+  {\sigma \in \{\sigma_1, \sigma_2\}};
+  {\EqType \Gamma {\Sigma x\co\sigma_1.\tau_1} {\SigmaTy{x\co\sigma_2} {\tau_2}}}
+}
+\\
+\ib{\irule[\trule{\I\Sigma}]
+  {\WfTerm {\Gamma} M \sigma}
+  {\WfTerm \Gamma N {\Subst{x}{M}\tau}};
+  {\WfTerm \Gamma {\SigmaPair {\tau[x\co\sigma]} M N} {\SigmaTy {x\co\sigma} \tau}}
+}
+\\
+\ib{\irule[\trule{\IEq\Sigma}]
+  {\EqTerm {\Gamma} {M_1}{M_2} \sigma_1}
+  {\EqTerm {\Gamma,x\co\sigma_1} {N_1}{N_2} \tau_1}
+  {\EqType \Gamma {\sigma_1}{\sigma_2}}
+  {\EqType {\Gamma,x\co\sigma_1} {\tau_1} {\tau_2}};
+  {\EqTerm \Gamma {\SigmaPair {\tau_1[x\co\sigma_1]} {M_1} {N_1}} {\SigmaPair {\tau_2[x\co\sigma_2]} {M_2} {N_2}} {\SigmaTy {x\co\sigma_1} \tau_1}}
+}
+\\
+\ib{\irule[\trule{\E\Sigma}]
+  {\WfType {\Gamma, z\co\SigmaTy {x\co\sigma} \tau} {\rho}}
+  {\WfTerm {\Gamma, x\co\sigma, y\co\tau} H {\Subst{z}{\SigmaPair {\tau[x\co\sigma]} x y}\rho}}
+  {\WfTerm \Gamma M {\SigmaTy {x\co\sigma} \tau}};
+  {\EqTerm {\Gamma}{\RecSigma {\rho[z:\SigmaTy{x\co\sigma}{\tau}]} {H[x\co\sigma,y\co\tau]} M}{\Subst{z}{M}\rho}}
+}
+\\
+\ib{\irule[\trule{\C\Sigma}]
+  {\WfTerm \Gamma %
+    {\RecSigma {\rho[z\co\SigmaTy {x\co\sigma} \tau]}%
+               {H[x\co\sigma,y\co\tau]} %
+               {\SigmaPair {\tau[x\co\sigma]}{M}{N}}} %
+    {\Subst z {\SigmaPair {\tau[x\co\sigma]} M N}\rho}};
+  {\EqTerm \Gamma %
+     {\RecSigma {\rho[z\co\SigmaTy {x\co\sigma}\tau]} {H[x\co\sigma,y\co\tau]} {\SigmaPair {\tau[x\co\sigma]} M N}}
+     {\Substs{x\mapsto M, y\mapsto N}H}
+     {\Subst z {\SigmaPair {\tau[x\co\sigma]} M N}\rho}}
+}
+\end{gather*}
+\caption{Dependent Sum}
+\end{figure}
+
+
+\end{document}
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: t
+%%% End:

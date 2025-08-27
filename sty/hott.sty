@@ -1,0 +1,319 @@
+% \usepackage{accents,amsmath,amsthm,centernot,ifthen,infer,lipsum,mathwidth,mathrsfs,mathtools,multicol,multirow,stmaryrd,tensor,xspace,thmtools}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{ifthen,mathrsfs,xspace,mathtools,float}
+\usepackage{footmisc}
+
+\usepackage[normalem]{ulem}
+
+\newif\ifcomments\commentstrue
+
+\newcommand\citeposs[1]{\citeauthor{#1}'s~\citeyear{#1}}
+\newcommand\ala{\'{a} la}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+\crefformat{section}{(\S#2#1#3)}
+\crefformat{subsection}{(\S#2#1#3)}
+\crefformat{subsubsection}{(\S#2#1#3)}
+\crefmultiformat{section}{(\S\S#2#1#3}{ and~#2#1#3}{, #2#1#3}{, and~#2#1#3)}
+\crefmultiformat{subsection}{(\S\S#2#1#3}{ and~#2#1#3}{, #2#1#3}{, and~#2#1#3)}
+\crefmultiformat{subsubsection}{(\S\S#2#1#3}{ and~#2#1#3}{, #2#1#3}{, and~#2#1#3)}
+\crefformat{rule}{rule (#2#1#3)}
+\crefrangeformat{rule}{rules (#3#1#4) to (#5#2#6)}
+\crefmultiformat{rule}{rules (#2#1#3)}{ and~(#2#1#3)}{, (#2#1#3)}{, and~(#2#1#3)}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+
+\makeatletter
+\newcommand{\leqnomode}{\tagsleft@true\let\veqno\@@leqno}
+\newcommand{\reqnomode}{\tagsleft@false\let\veqno\@@eqno}
+\makeatother
+
+\usepackage{enumitem}
+\setlist[enumerate]{nosep,label={\arabic*.}}
+\setlist[itemize]{nosep}
+
+% \AtEndPreamble{%
+%   \theoremstyle{acmplain}
+%   \newtheorem*{theorem*}{Theorem}}
+
+\newenvironment{smalle}
+  {\begingroup\small}
+  {\endgroup\ignorespacesafterend}
+
+%% Grey shading
+
+% SL: this needs to be quite dark to show up at all on a printer
+
+% \definecolor{shade}{RGB}{191,191,191}
+% \newcommand\shade[1]{\setlength{\fboxsep}{0pt}\colorbox{shade}{\ensuremath{#1}}}
+
+%% Notes
+
+\newcommand\commentbox[3]{{\ifcomments \par\noindent\small\color{#1} \framebox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\textbf{#2:} #3}} \fi}}
+\newcommand\todo[1]{\commentbox{RoyalPurple}{TODO}{#1}}
+\newcommand\todoitems[1]{\todo{\begin{itemize}#1\end{itemize}}}
+\newcommand\citeme{{\color{RoyalPurple}[\textbf{citation needed}]}}
+\newcommand\todots{{\color{RoyalPurple}\large\dots}}
+\newcommand\fixme[1]{\textcolor{red}{#1}}
+
+\newcommand\JGM[1]{\commentbox{OliveGreen}{JGM}{#1}}
+\newcommand\AH[1]{\commentbox{SteelBlue}{AH}{#1}}
+\newcommand\AI[1]{\commentbox{Lavender}{AI}{#1}}
+
+%% Syntax figures
+
+\newenvironment{syntaxarray}%
+  {\begin{array}[t]{@{}lr@{\hspace{5px}}r@{\hspace{5px}}l@{}}}%
+  {\end{array}\ignorespacesafterend}
+
+\newenvironment{syntax}%
+  {\[\begin{syntaxarray}}%
+  {\end{syntaxarray}\]\ignorespacesafterend}
+
+\newenvironment{doublesyntaxarray}%
+  {\begin{array}{l@{}lr@{\hspace{5px}}c@{\hspace{5px}}l@{\hspace{15px}}lr@{\hspace{5px}}c@{\hspace{5px}}l}}%
+  {\end{array}\ignorespacesafterend}
+
+\newenvironment{doublesyntax}%
+  {\[\begin{doublesyntaxarray}}
+  {\end{doublesyntaxarray}\]\ignorespacesafterend}
+
+\newcommand\mcl[1]{\multicolumn{2}{l}{#1}}
+\newcommand\mcr[1]{\multicolumn{2}{r}{#1}}
+
+%% Abbreviations - common notation
+
+\newcommand\ib[1]{\infbox{#1}}
+\newcommand\isp{\hspace{\infskip}}
+\newcommand\rsp{\hspace{1.5\infskip}}
+
+\newcommand\Set[1]{\ensuremath{\{#1\}}}
+\newcommand\Tuple[1]{\ensuremath{\langle #1 \rangle}}
+
+\newcommand\pto{\ensuremath{\rightharpoonup}}
+\newcommand\co{\mathbin{:}}
+\newcommand\Disjoint{\mathrel{\#}}
+
+%% Names
+
+\newcommand\F{System~$\mathrm{F}$\xspace}
+\newcommand\FC{$\mathrm{FC}$\xspace}
+\newcommand\SysFC{System~\FC}
+\newcommand\SysFCbf{System~$\mathbf{FC}$\xspace}
+\newcommand\FD{$\mathrm{F_D}$}
+\newcommand\SysCFC{System~$\mathrm{CFC}$\xspace}
+
+%% Syntax - symbol classes
+
+% Track whether we're rendering math inline or in a display
+
+\newif\ifinline\inlinetrue
+\makeatletter
+\everymath{%
+  \ifingather@%
+    \inlinefalse%
+  \else \ifinalign@%
+      \inlinefalse%
+    \else%
+      \inlinetrue%
+    \fi \fi}
+\makeatother
+\everydisplay{\inlinefalse}
+
+% Type constants and term constants are roman in displays, italic in text.
+\newcommand\TyC[1]{\ifinline #1 \else \mathrm{#1} \fi}
+\newcommand\TmC[1]{\ifinline #1 \else \mathrm{#1} \fi}
+
+%% Syntax - judgments
+
+\newcommand\trule[1]{\textsc{(#1)}}
+\newcommand\rrule[1]{[\textsc{#1}]}
+
+\newcommand\I[1]{\ensuremath{\mathord{#1}}\!\!~-I}
+\newcommand\IEq[1]{\ensuremath{\mathord{#1}}\!\!~-I-Eq}
+\newcommand\C[1]{\ensuremath{\mathord{#1}}\!\!~-C}
+
+\newcommand\E[1]{\ensuremath{\mathord{#1}}\!\!~-E}
+
+\newcommand\Red{\longrightarrow}
+\newcommand\Reds{\longrightarrow^\star}
+
+\newcommand\Empty{\varepsilon}
+
+\newcommand\OpenSig[2]{\mathsf{open} \, {#1} : {#2}}
+\newcommand\DataSig[2]{\mathsf{data}\, {#1} : {#2}}
+\newcommand\InstanceDef[2]{\mathsf{instance} \, {#1} = {#2}}
+\newcommand\LetDef[2]{\mathsf{let} \, {#1} = {#2}}
+
+%% Syntax - types & kinds
+
+\newcommand\then{\Rightarrow}
+
+\newcommand\Type{\mathord\star}
+\newcommand\Pred{\mathsf{o}}
+
+\newcommand\Forall[2]{\forall #1. #2}
+\newcommand\ForallS[3]{\forall #1 {:} #2. #3}
+
+\newcommand\PiTy[2]{\Pi {#1}.~ {#2}}
+\newcommand\SigmaTy[2]{\Sigma {#1}.~ {#2}}
+
+\newcommand\Bool{\TyC{Bool}}
+\newcommand\Int{\TyC{Int}}
+\newcommand\Double{\TyC{Double}}
+\newcommand\List{\TyC{List}}
+\newcommand\IdTy[3]{\texttt{Id}_{#1} (#2, #3)}
+\newcommand\NatTy{\mathbb{N}}
+
+%% Syntax - terms
+
+\newcommand\Refl[2]{\texttt{Refl}_{#1} (#2)}
+\newcommand\RecSigma[3]{\texttt{R}^\Sigma_{#1}(#2, #3)}
+\newcommand\RecId[5]{\texttt{R}^{\texttt{Id}}_{#1} (#2, #3, #4, #5)}
+\newcommand\RecNat[4]{\texttt{R}^{\mathbb N}_{#1} (#1, #2, #3)}
+\newcommand\Suc[1]{\texttt{Suc}(#1)}
+% \newcommand\Let[3]{\mathsf{let}\;#1 = #2\;\mathsf{in}\;#3}
+
+\newcommand\Lam[2]{\lambda #1. \, #2}
+\newcommand\LamS[3]{\lambda #1 {:} #2 . #3}
+\newcommand\TLam[3]{\Lambda {#1} {:} {#2}. {#3}}
+\newcommand\PLam[3]{\LamS {#1} {#2} {#3}}
+
+\newcommand\Ap{\,}
+\newcommand\PiAppTm[3]{\texttt{App}_{#1} (#2, #3)}
+\newcommand\SigmaPair[3]{\texttt{Pair}_{#1} (#2, #3)}
+
+\newcommand\DefEq{\mathrel{\substack{{\tiny def}\\=}}}
+\newcommand\TAp[1]{\Ap [#1]}
+\newcommand\PAp[1]{\Ap {#1}}
+
+% \newcommand\Case[4]{\mathsf{case}\,{#1}\,\mathsf{of} \, {#2} \CaseTo {#3} \,\mathsf{else}\, {#4}}
+\newcommand\Case[4]{\mathsf{if}\, {#1} \,\mathsf{is}\, {#2} \,\mathsf{then}\,{#3}\,\mathsf{else}\,{#4}}
+\newcommand\CaseTo{\rightarrow}
+\newcommand\Guard[3]{\mathsf{guard}\;{#1} \;\mathsf{is}\; {#2} \;\mathsf{then}\,{#3}}
+\newcommand{\Zero}{\mathtt{0}}
+\newcommand{\Choice}[2]{#1 \oplus #2}
+
+\newcommand\Cast[2]{#1 \triangleright #2}
+\newcommand\Subst[2]{\{#1 \mapsto #2\}}
+\newcommand\Substs[1]{\{#1\}}
+%% Syntax - coercions
+
+\newcommand\Coe[1]{\langle #1 \rangle}
+% \newcommand\Refl[1]{\mathsf{refl}_{#1}}
+\newcommand\Sym[1]{\mathsf{sym} \Ap #1}
+\newcommand\Trans[2]{#1 \fatsemi #2}
+\newcommand\CAp[2]{#1 \mathbin @ #2}
+\newcommand\Fst[1]{#1\mathsf{.1}}
+\newcommand\Snd[1]{#1\mathsf{.2}}
+\newcommand\Univ[3]{\forall^{\mathsf{C}} {#1} {:} {#2} . {#3}}
+\newcommand\CInst[2]{#1 \mathbin @ [#2]}
+\newcommand\ArrC[2]{#1 \to #2}
+\newcommand\SimC[2]{#1 \sim #2}
+
+%% Syntax - declarations
+
+\newcommand\DataDecl[2]{\mathsf{data}\,{#1}\,{::}\,{#2}}
+\newcommand\OpenDecl[2]{\mathsf{open}\,{#1}\,{::}\,{#2}}
+\newcommand\ClassDecl[2]{\mathsf{class}\,{#1}\,{::}\,{#2}}
+\newcommand\ClassInstanceDecl[1]{\mathsf{instance}\,{#1}}
+\newcommand\CtorDecl[2]{\mathsf{ctor}\,{#1}\,{::}\;{#2}}
+\newcommand\OpenCtorDecl[2]{\mathsf{instance}\,{#1}\,{::}\,{#2}}
+\newcommand\MethodDecl[2]{\mathsf{open}\,{#1}\,{::}\,{#2}}
+\newcommand\ClassMethodDecl[2]{\mathsf{method}\,{#1}\,{::}\,{#2}}
+\newcommand\ClassMethodInstanceDecl[1]{\mathsf{instance}\,{#1}}
+\newcommand\InstanceDecl[2]{\mathsf{instance}\,{#1}={#2}}
+\newcommand\LetDecl[3]{\mathsf{let}\,{#1}\,{::}\,{#2}={#3}}
+\newcommand\FunDep[2]{\mathsf{fundep}\,{#1}\to{#2}}
+
+%% Syntax - surface language
+% \newcommand\Hole[1]{\mathsf{hole}\,{::}\,{#1}}
+\newcommand\Hole[1]{\_\,{::}\,{#1}}
+% \newcommand\Annotate[2]{\mathsf{annotate}\,{#1}\,{::}\,{#2}}
+\newcommand\Annotate[2]{{#1}\,{::}\,{#2}}
+
+%% Haskell (extended) listings
+
+\newcommand\bs{\char`\\}
+\newcommand\Append{\mathbin{+\hspace{-.5em}+}}
+\usepackage{listings}
+\lstdefinestyle{Haskell}{
+  language=Haskell,
+  xleftmargin=\parindent,
+  basicstyle=\ttfamily\small,
+  keepspaces=true,
+  keywordstyle=\bfseries,
+  numberstyle=\tiny,
+  commentstyle=\rmfamily\itshape,
+  flexiblecolumns=false,
+  basewidth={0.5em,0.45em},
+  keywords={instance, class, where, data, then, else, type, case, of, require, linear, primitive, do, let, in, open, family, guard, is, if},
+  morecomment=[l]{--},
+  mathescape=true
+  showstringspaces=false,
+  literate={+}{{$+$}}1 {/}{{$/$}}1 {*}{{$\star$}}1 {=}{{$=$}}1
+    {/=}{{$\not=$}}2
+    {>}{{$>$}}1 {<}{{$<$}}1 {\\}{{$\lambda$}}1
+    {\\\\}{{\bs\bs}}1 {\\"}{{\char`\\"}}2
+    {->}{{$\to$}}2 {>=}{{$\geq$}}2 {<-}{{$\leftarrow$}}2 {~>}{{$\rightsquigarrow$}}2
+    {:+:}{{$\oplus$}}1 {:*:}{{$\otimes$}}1 {->.}{{$\lto$}}2 {-><}{{$\SeTo$}}2 {->>}{{$\ShTo$}}2
+    {-<>}{{$\multimap$}}2
+    {!-><}{{$\labseto{!}$}}2 {!->>}{{$\labshto{!}$}}2
+    {-f>}{{$\labto{\mathtt{f}}$}}2{-g>}{{$\labto{\mathtt{g}}$}}2{-h>}{{$\labto{\mathtt{h}}$}}2{-j>}{{$\labto{\mathtt{j}}$}}2{-k>}{{$\labto{\mathtt{k}}$}}2
+    {-f><}{{$\labseto{\mathtt{f}}$}}2{-g><}{{$\labseto{\mathtt{g}}$}}2{-h><}{{$\labseto{\mathtt{h}}$}}2{-j><}{{$\labseto{\mathtt{j}}$}}2{-k><}{{$\labseto{\mathtt{k}}$}}2
+    {-f>>}{{$\labshto{\mathtt{f}}$}}2{-g>>}{{$\labshto{\mathtt{g}}$}}2{-h>>}{{$\labshto{\mathtt{h}}$}}2{-j>>}{{$\labshto{\mathtt{j}}$}}2{-k>>}{{$\labshto{\mathtt{k}}$}}2
+    {<=}{{$\leq$}}2 {=>}{{$\Rightarrow$}}2
+    {\ .\ }{{$\circ$}}3
+    {>>}{{>\!>}}2 {>>=}{{>\!>\!=}}3
+    {|}{{$\mid$}}1
+    {~~}{{$\equiv$}}1
+    {/\\}{{$\Lambda$}}1
+    {++}{{$\Append$}}1
+    {+:}{{$\Append$}}1
+    {<:}{{$\Contains$}}1
+    {z1}{{z$_1$}}2
+    {z2}{{z$_2$}}2
+    {z3}{{z$_3$}}2
+    {Pi}{{$\Pi$}}1
+    {Sg}{{$\Sigma$}}1
+    {?}{{$\triangledown$}}1
+    {:=}{{$\mathbin{:=}$}}1
+    {_1}{{$_1$}}1
+    {_2}{{$_2$}}1
+    {_B}{{$_{\,\mathsf{B}}$}}1
+    {Eps}{{$\epsilon$}}1
+    {Type}{{$\Type$}}1 {Pred}{{$\Pred$}}1
+    {~}{{$\sim$}}1
+    {/~}{{$\not\sim$}}1
+    {|>}{{$\triangleright$}} 1
+    {//}{{$\sslash$}}2
+    {;;}{{$\fatsemi$}}1
+    {::}{{$\co\co$}}1
+    {~>}{{$\leadsto$}}1
+    {forall}{{$\forall$}}1
+    {...}{{$\dots$}}3
+    {==}{{$\equiv$}}1
+    {tau}{{$\tau$}}1
+}
+\lstnewenvironment{code}{\lstset{style=Haskell}}{}
+\lstnewenvironment{codef}{\lstset{style=Haskell,basicstyle=\ttfamily\footnotesize,xleftmargin=.75em}}{}
+\lstnewenvironment{codel}{\lstset{style=Haskell,basicstyle=\ttfamily\footnotesize,xleftmargin=1.75em,numbers=left}}{}
+\newcommand\codesep{\vspace{-7pt}}
+\makeatletter
+\AtBeginEnvironment{code}{\let\@vspace\@vspace@orig
+  \let\@vspacer\@vspacer@orig}
+\AtBeginEnvironment{codef}{\let\@vspace\@vspace@orig
+  \let\@vspacer\@vspacer@orig}
+\AtBeginEnvironment{codel}{\let\@vspace\@vspace@orig
+  \let\@vspacer\@vspacer@orig}
+\makeatother
+
+
+
+\lstset{style=Haskell}
+\newcommand\InlineOn{\lstMakeShortInline{!}}
+\newcommand\InlineOff{\lstDeleteShortInline{!}}
