@@ -1,0 +1,22 @@
+# LaTeX auxiliary files
+*.aux
+*.log
+*.toc
+*.out
+*.bbl
+*.blg
+# Intermediate documents
+*.dvi
+*.pdf
+*.ps
+*.eps
+# Editor and build tool files
+*.bak
+*.swp
+*.fdb_latexmk
+# Custom directories
+/auto/
+latex.out/
+auto/
+auto/*
+*.synctex.gz
