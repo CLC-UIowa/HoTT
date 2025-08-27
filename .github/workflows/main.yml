@@ -15,4 +15,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: RulesPDF
+          working_directory : Rules
           path: main.pdf
