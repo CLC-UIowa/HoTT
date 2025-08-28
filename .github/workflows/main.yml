@@ -10,9 +10,19 @@ jobs:
         uses: xu-cheng/latex-action@v4
         with:
           working_directory : Rules
-          root_file: main.tex          
-      - name: Upload PDF file
+          root_file: main.tex
+      - name: Compile Solutions LaTeX document
+        uses: xu-cheng/latex-action@v4
+        with:
+          working_directory : Solutions
+          root_file: Solutions.tex                    
+      - name: Upload Rules PDF files
         uses: actions/upload-artifact@v4
         with:
           name: RulesPDF
           path: Rules/main.pdf
+      - name: Upload Solutions PDF files
+        uses: actions/upload-artifact@v4
+        with:
+          name: SolnsPdf
+          path: Solutions/Solutions.pdf
