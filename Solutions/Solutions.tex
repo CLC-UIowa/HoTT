@@ -3,7 +3,7 @@
 
 \usepackage{
   % AH> I don't know how much of these are used, and for what.
-  %     (needs untangling.) 
+  %     (needs untangling.)
   enumitem,
   xspace,
   mathtools,
@@ -22,10 +22,8 @@
   array,
   subcaption,
   ../sty/mathwidth,
-%  ./sty/sectsty,
-%  ./sty/commands,
   ../sty/infer,
-  ../sty/commands}
+  ../sty/hott}
 
 
 % Minted (needs Python)
@@ -36,10 +34,10 @@
 \usepackage{tikz-cd}
 
 
-\title{Select Solutions to Introduction to Homotopy Type Theory, Egbert Rijke}
+\title{Introduction to Homotopy Type Theory, Egbert Rijke\\ \large Solutions to Selected Problems}
 
 \author{Computational Logic Center}
-
+\date{Fall 2025}
 
 \begin{document}
 
@@ -48,51 +46,48 @@
 \section*{1.1}
 \label{sec:ChapterOne}
 
-\newcommand\Jeq{\ensuremath{\dot{=}}}
-\newcommand\Eq[2]{\ensuremath{#1\, \Jeq\, #2}}
-\newcommand\EqJ[4]{\ensuremath{#1 \vdash \Eq {#2} {#3} : #4}}
-\newcommand\Type[2]{\ensuremath{#1 \vdash #2 \; \text{type}}}
-\newcommand\TypeJ[3]{\ensuremath{#1 \vdash #2 : #3}}
+% \newcommand\Type[2]{\ensuremath{#1 \vdash #2 \; \text{type}}}
+% \newcommand\TypeJ[3]{\ensuremath{#1 \vdash #2 : #3}}
 
 \begin{enumerate}[label=(\alph*)]
   \item Give a derivation for the following \textbf{element conversion rule}:
-  \[ 
+  \[
     \ib{\irule
-      {\Type{\Gamma}{\Eq {A} {A'}}}
-      {\TypeJ \Gamma a A};
-      {\TypeJ {\Gamma} {a} {A'}}}
+      {\EqType{\Gamma} {A} {A'}}
+      {\WfTerm \Gamma a A};
+      {\WfTerm {\Gamma} {a} {A'}}}
   \]
   \item Give a derivation for the following \textbf{congruence rule} for element conversion:
-  \[ 
+  \[
     \ib{\irule
-      {\Type \Gamma {\Eq {A} {A'}}}
-      {\EqJ \Gamma {a} {b} {A}}; 
-      {\EqJ \Gamma {a} {b} {A'}}
+      {\EqType \Gamma {A} {A'}}
+      {\EqTerm \Gamma {a} {b} {A}};
+      {\EqTerm \Gamma {a} {b} {A'}}
     }
   \]
 \end{enumerate}
 
 \subsubsection*{Solution (a)}
-
-\begin{gather*}
+%\newcommand\Subst[2]{[#2/#1]}
+\begin{gather*}\hspace{-10em}
 {\small
-    \ib{\irule[subst]
-      {\Gamma \vdash a : A}
-      {\irule[var-conv]
-        {\irule[sym]{\Type \Gamma {\Eq {A} {A'}}}; {\Type \Gamma {\Eq {A'} {A}}}}
-        {\irule[var]{};{\Gamma, x : A' \vdash x : A'}}; 
-        {\Gamma , x : A \vdash x : A'}};
-      {\TypeJ {\Gamma} {x[a/x]} {A'[a/x]}}}} 
+    \ib{\irule[\trule{S}]
+      {\WfTerm \Gamma a A \qquad
+        \irule[\trule{var-conv}]
+        {\irule[\trule{sym}]{\EqType \Gamma {A} {A'}}; {\EqType \Gamma {A'} {A}}}
+        {\irule[\trule{var}]{};{\Gamma, x : A' \vdash x : A'}};
+        {\WfTerm {\Gamma , x : A} x {A'}}};
+      {\WfTerm {\Gamma} {\Subst x a x} {\Subst x a A'}}}}
 \end{gather*}
 
 \subsubsection*{Solution (b)}
 
 \begin{gather*}
-    \ib{\irule[cong-subst]
-      {\EqJ \Gamma a b A}
-      {\irule[above]{};{\TypeJ {\Gamma , x : A} x A'}}; 
-      {\EqJ \Gamma {x[a/x]} {x[b/x]} {A'[a/x]}}
-    }  
+    \ib{\irule[\trule{cong-subst}]
+      {\EqTerm \Gamma a b A}
+      {\irule[above]{\vdots};{\WfTerm {\Gamma , x : A} x A'}};
+      {\EqTerm \Gamma {\Subst x a x} {\Subst x b x} {\Subst x a A'}}
+    }
 \end{gather*}
 
 \section*{2.1}
@@ -101,31 +96,29 @@ The $\eta$-rule is often seen as a judgmental extensionality principle. Use the 
 
 \begin{gather*}
 \ib{\irule
-  {\begin{array}{@{}c@{}}
-             {\TypeJ \Gamma f {\Pi_{x : A}B(x)}}
-             \\
-             {\TypeJ \Gamma g {\Pi_{x : A}B(x)}}
-             \\
-             {\EqJ {\Gamma , x : A} {f(x)}{g(x)} {B(x)}}
-           \end{array}};
-  {\EqJ \Gamma f g {\Pi_{x : A}B(x)}}}
+    {\WfTerm \Gamma f {\PiTy {x\co A} {B(x)}}}
+    {\WfTerm \Gamma g {\PiTy {x\co A} {B(x)}}}
+    {\EqTerm {\Gamma, x \co A} {f(x)} {g(x)} {B(x)}};
+    {\EqTerm \Gamma f g {\PiTy {x : A} {B(x)}}}}
 \end{gather*}
 
 \subsection*{Solution}
 Permit me some creative liberty in chaining two invocations of the transitivity rule.
 
-{\footnotesize
 \begin{gather*}
-\ib{\irule[trans]
-    {\irule[\ensuremath{\eta}]
-      {\TypeJ \Gamma f {\Pi_{x : A}B(x)}};
-      {\EqJ \Gamma {f} {\lambda x. f(x)} {\Pi_{x : A}B(x)}}}
-    {\irule[$\lambda$-eq]{\EqJ {\Gamma , x : A} {f(x)} {g(x)} {B(x)}};{\EqJ \Gamma {\lambda x. f(x)}{\lambda x. g(x)} {B(x)}}}
-    {\irule[\ensuremath{\eta}]
-      {\TypeJ \Gamma g {\Pi_{x : A}B(x)}};
-      {\EqJ \Gamma {\lambda x. g(x)} {g} {\Pi_{x : A}B(x)}}};
-  {\EqJ \Gamma f g {\Pi_{x : A}B(x)}}}
-\end{gather*}}
+\tiny
+\ib{\irule[\trule{trans}]
+    {\irule[\trule{\EqR\eta}]
+      {\WfTerm \Gamma f {\Pi_{x : A}B(x)}};
+      {\EqTerm \Gamma {f} {\lambda x. f(x)} {\Pi_{x : A}B(x)}}
+    \quad\irule[\trule{\EqR{\lambda}}]
+      {\EqTerm {\Gamma , x : A} {f(x)} {g(x)} {B(x)}};
+      {\EqTerm \Gamma {\lambda x. f(x)}{\lambda x. g(x)} {B(x)}}
+    \quad\irule[\trule{\EqR{\eta}}]
+      {\WfTerm \Gamma g {\Pi_{x : A}B(x)}};
+      {\EqTerm \Gamma {\lambda x. g(x)} {g} {\Pi_{x : A}B(x)}}};
+  {\EqTerm \Gamma f g {\Pi_{x : A}B(x)}}}
+\end{gather*}
 
 
 \bibliographystyle{plainnat}

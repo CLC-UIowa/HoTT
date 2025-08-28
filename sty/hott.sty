@@ -87,9 +87,11 @@
 
 %% Abbreviations - common notation
 
+\newcommand\Tt[1]{\texttt{#1}}
 \newcommand\ib[1]{\infbox{#1}}
 \newcommand\isp{\hspace{\infskip}}
 \newcommand\rsp{\hspace{1.5\infskip}}
+
 
 \newcommand\Set[1]{\ensuremath{\{#1\}}}
 \newcommand\Tuple[1]{\ensuremath{\langle #1 \rangle}}
@@ -100,12 +102,7 @@
 
 %% Names
 
-\newcommand\F{System~$\mathrm{F}$\xspace}
-\newcommand\FC{$\mathrm{FC}$\xspace}
-\newcommand\SysFC{System~\FC}
-\newcommand\SysFCbf{System~$\mathbf{FC}$\xspace}
-\newcommand\FD{$\mathrm{F_D}$}
-\newcommand\SysCFC{System~$\mathrm{CFC}$\xspace}
+\newcommand\MLTT{Martin-L\"of Type Theory\xspace}
 
 %% Syntax - symbol classes
 
@@ -130,11 +127,17 @@
 
 %% Syntax - judgments
 
+\newcommand\WfType[2]{#1 \vdash #2 ~ type}
+\newcommand\WfTerm[3]{#1 \vdash #2 : #3}
+
+\newcommand\EqType[3]{#1 \vdash #2 \doteq #3 ~ type}
+\newcommand\EqTerm[4]{#1 \vdash #2 \doteq #3 : #4}
+
 \newcommand\trule[1]{\textsc{(#1)}}
 \newcommand\rrule[1]{[\textsc{#1}]}
 
 \newcommand\I[1]{\ensuremath{\mathord{#1}}\!\!~-I}
-\newcommand\IEq[1]{\ensuremath{\mathord{#1}}\!\!~-I-Eq}
+\newcommand\EqR[1]{\ensuremath{\mathord{#1}}\!\!~-Eq}
 \newcommand\C[1]{\ensuremath{\mathord{#1}}\!\!~-C}
 
 \newcommand\E[1]{\ensuremath{\mathord{#1}}\!\!~-E}
@@ -144,14 +147,9 @@
 
 \newcommand\Empty{\varepsilon}
 
-\newcommand\OpenSig[2]{\mathsf{open} \, {#1} : {#2}}
-\newcommand\DataSig[2]{\mathsf{data}\, {#1} : {#2}}
-\newcommand\InstanceDef[2]{\mathsf{instance} \, {#1} = {#2}}
 \newcommand\LetDef[2]{\mathsf{let} \, {#1} = {#2}}
 
 %% Syntax - types & kinds
-
-\newcommand\then{\Rightarrow}
 
 \newcommand\Type{\mathord\star}
 \newcommand\Pred{\mathsf{o}}
@@ -159,8 +157,8 @@
 \newcommand\Forall[2]{\forall #1. #2}
 \newcommand\ForallS[3]{\forall #1 {:} #2. #3}
 
-\newcommand\PiTy[2]{\Pi {#1}.~ {#2}}
-\newcommand\SigmaTy[2]{\Sigma {#1}.~ {#2}}
+\newcommand\PiTy[2]{\Pi_{#1}~ {#2}}
+\newcommand\SigmaTy[2]{\Sigma_{#1}~ {#2}}
 
 \newcommand\Bool{\TyC{Bool}}
 \newcommand\Int{\TyC{Int}}
