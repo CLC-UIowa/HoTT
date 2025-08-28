@@ -19,6 +19,7 @@
 
 \subsection{Judgments}
 
+
 \begin{definition}[Judgments.]
   Judgements in MLTT are of the form:
   \begin{enumerate}
@@ -188,38 +189,38 @@ There are six sets of inference rules:
 \begin{figure}[H]
 \centering
 \begin{gather*}
-\ib{\irule[\trule{$\Pi$-F}]
-  {\WfType \Gamma \sigma}
-  {\WfType {\Gamma,x\co\sigma} \tau};
-  {\WfType \Gamma {\PiTy {x\co\sigma} \tau}}
+\ib{\irule[\trule{\IR\Pi}]
+  {\WfType \Gamma A}
+  {\WfType {\Gamma,x\co A} {B(x)}};
+  {\WfType \Gamma {\PiTy {x\co A} {B(x)}}}
 }
 \rsp
-\ib{\irule[\trule{$\Pi$-Eq}]
+\ib{\irule[\trule{\EqR{\eta\Pi}}]
   {\EqType \Gamma {\sigma_1} {\sigma_2}}
   {\EqType {\Gamma,x\co\sigma} {\tau_1} {\tau_2}}
   {\sigma \in \{\sigma_1, \sigma_2\}};
-  {\EqType \Gamma {\Pi x\co\sigma_1.\tau_1} {\PiTy{x\co\sigma_2} {\tau_2}}}
+  {\EqType \Gamma {\PiTy {x\co\sigma_1} {\tau_1}} {\PiTy {x\co\sigma_2} {\tau_2}}}
 }
 \\
-\ib{\irule[\trule{\I\Pi}]
+\ib{\irule[\trule{\IR\Pi}]
   {\WfTerm {\Gamma,x\co\sigma} M \tau};
   {\WfTerm \Gamma {\Lam {x\co\sigma} {M^\tau}} {\PiTy {x\co\sigma} \tau}}
 }
 \\
-\ib{\irule[\trule{\IEq\Pi}]
+\ib{\irule[\trule{\EqR\Pi}]
   {\EqTerm {\Gamma,x\co\sigma_1} {M_1}{M_2} \tau_1}
   {\EqType \Gamma {\sigma_1}{\sigma_2}}
   {\EqType {\Gamma,x\co\sigma_1} {\tau_1} {\tau_2}};
   {\EqTerm \Gamma {\Lam {x\co\sigma_1} {M_1^{\tau_1}}} {\Lam {x\co\sigma_2} {M_2^{\tau_2}}} {\PiTy {x\co\sigma_1} \tau_1}}
 }
 \\
-\ib{\irule[\trule{\E\Pi}]
+\ib{\irule[\trule{\ER\Pi}]
   {\WfTerm \Gamma M {\PiTy {x\co\sigma} \tau}}
   {\WfTerm \Gamma N \sigma};
   {\WfTerm {\Gamma} {\PiAppTm {\tau[x\co\sigma]} M N} {\Subst{x}{N}\tau}}
 }
 \rsp
-\ib{\irule[\trule{\C\Pi}]
+\ib{\irule[\trule{\CR\Pi}]
   {\WfTerm \Gamma {\Lam {x\co\sigma} {M^{\tau}}} {\PiTy {x\co\sigma} \tau}}
   {\WfTerm \Gamma N \sigma};
   {\EqTerm {\Gamma}{\PiAppTm {\tau[x\co\sigma]} {\Lam {x\co\sigma} {M^{\tau}}} N}{\Subst{x}{N}M}{\Subst{x}{N}\tau}}
@@ -233,26 +234,26 @@ There are six sets of inference rules:
 \begin{figure}[H]
 \centering
 \begin{gather*}
-\ib{\irule[\trule{$\Sigma$-F}]
+\ib{\irule[\trule{\FR\Sigma}]
   {\WfType \Gamma \sigma}
   {\WfType {\Gamma,x\co\sigma} \tau};
   {\WfType \Gamma {\SigmaTy {x\co\sigma} \tau}}
 }
 \rsp
-\ib{\irule[\trule{$\Sigma$-Eq}]
+\ib{\irule[\trule{\EqR\Sigma}]
   {\EqType \Gamma {\sigma_1} {\sigma_2}}
   {\EqType {\Gamma,x\co\sigma} {\tau_1} {\tau_2}}
   {\sigma \in \{\sigma_1, \sigma_2\}};
   {\EqType \Gamma {\Sigma x\co\sigma_1.\tau_1} {\SigmaTy{x\co\sigma_2} {\tau_2}}}
 }
 \\
-\ib{\irule[\trule{\I\Sigma}]
+\ib{\irule[\trule{\IR\Sigma}]
   {\WfTerm {\Gamma} M \sigma}
   {\WfTerm \Gamma N {\Subst{x}{M}\tau}};
   {\WfTerm \Gamma {\SigmaPair {\tau[x\co\sigma]} M N} {\SigmaTy {x\co\sigma} \tau}}
 }
 \\
-\ib{\irule[\trule{\IEq\Sigma}]
+\ib{\irule[\trule{\EqR{\eta\Sigma}}]
   {\EqTerm {\Gamma} {M_1}{M_2} \sigma_1}
   {\EqTerm {\Gamma,x\co\sigma_1} {N_1}{N_2} \tau_1}
   {\EqType \Gamma {\sigma_1}{\sigma_2}}
@@ -260,14 +261,14 @@ There are six sets of inference rules:
   {\EqTerm \Gamma {\SigmaPair {\tau_1[x\co\sigma_1]} {M_1} {N_1}} {\SigmaPair {\tau_2[x\co\sigma_2]} {M_2} {N_2}} {\SigmaTy {x\co\sigma_1} \tau_1}}
 }
 \\
-\ib{\irule[\trule{\E\Sigma}]
+\ib{\irule[\trule{\ER\Sigma}]
   {\WfType {\Gamma, z\co\SigmaTy {x\co\sigma} \tau} {\rho}}
   {\WfTerm {\Gamma, x\co\sigma, y\co\tau} H {\Subst{z}{\SigmaPair {\tau[x\co\sigma]} x y}\rho}}
   {\WfTerm \Gamma M {\SigmaTy {x\co\sigma} \tau}};
   {\EqTerm {\Gamma}{\RecSigma {\rho[z:\SigmaTy{x\co\sigma}{\tau}]} {H[x\co\sigma,y\co\tau]} M}{\Subst{z}{M}\rho}}
 }
 \\
-\ib{\irule[\trule{\C\Sigma}]
+\ib{\irule[\trule{\CR\Sigma}]
   {\WfTerm \Gamma %
     {\RecSigma {\rho[z\co\SigmaTy {x\co\sigma} \tau]}%
                {H[x\co\sigma,y\co\tau]} %
