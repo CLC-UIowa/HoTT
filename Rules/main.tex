@@ -189,45 +189,62 @@ There are six sets of inference rules:
 \begin{figure}[H]
 \centering
 \begin{gather*}
-\ib{\irule[\trule{\IR\Pi}]
+\ib{\irule[\trule{$\Pi$}]
   {\WfType \Gamma A}
   {\WfType {\Gamma,x\co A} {B(x)}};
   {\WfType \Gamma {\PiTy {x\co A} {B(x)}}}
 }
 \rsp
-\ib{\irule[\trule{\EqR{\eta\Pi}}]
-  {\EqType \Gamma {\sigma_1} {\sigma_2}}
-  {\EqType {\Gamma,x\co\sigma} {\tau_1} {\tau_2}}
-  {\sigma \in \{\sigma_1, \sigma_2\}};
-  {\EqType \Gamma {\PiTy {x\co\sigma_1} {\tau_1}} {\PiTy {x\co\sigma_2} {\tau_2}}}
+\ib{\irule[\trule{\EqR{\Pi}}]
+  {\EqType \Gamma {A} {A'}}
+  {\EqType {\Gamma,x\co\sigma} {B(x)} {B'(x)}};
+  % {\sigma \in \{A, A'\}};
+  {\EqType \Gamma {\PiTy {x\co A} {B(x)}} {\PiTy {x\co A'} {B'(x)}}}
 }
 \\
-\ib{\irule[\trule{\IR\Pi}]
-  {\WfTerm {\Gamma,x\co\sigma} M \tau};
-  {\WfTerm \Gamma {\Lam {x\co\sigma} {M^\tau}} {\PiTy {x\co\sigma} \tau}}
+\ib{\irule[\trule{\IR{\lambda\Pi}}]
+  {\WfTerm {\Gamma,x\co A} {b(x)} \tau};
+  {\WfTerm \Gamma {\Lam {x\co A} {b(x)}} {\PiTy {x\co A} \tau}}
 }
 \\
-\ib{\irule[\trule{\EqR\Pi}]
-  {\EqTerm {\Gamma,x\co\sigma_1} {M_1}{M_2} \tau_1}
-  {\EqType \Gamma {\sigma_1}{\sigma_2}}
-  {\EqType {\Gamma,x\co\sigma_1} {\tau_1} {\tau_2}};
-  {\EqTerm \Gamma {\Lam {x\co\sigma_1} {M_1^{\tau_1}}} {\Lam {x\co\sigma_2} {M_2^{\tau_2}}} {\PiTy {x\co\sigma_1} \tau_1}}
+\ib{\irule[\trule{\EqR{\lambda\Pi}}]
+  {\EqTerm {\Gamma,x\co A} {b(x)}{b'(x)} \tau_1}
+  {\EqType \Gamma { A}{ A'}}
+  {\EqType {\Gamma,x\co A} {\tau_1} {\tau_2}};
+  {\EqTerm \Gamma {\Lam {x\co A} {b(x)}} {\Lam {x\co A'} {b'(x)}} {\PiTy {x\co A} \tau_1}}
 }
 \\
-\ib{\irule[\trule{\ER\Pi}]
-  {\WfTerm \Gamma M {\PiTy {x\co\sigma} \tau}}
-  {\WfTerm \Gamma N \sigma};
-  {\WfTerm {\Gamma} {\PiAppTm {\tau[x\co\sigma]} M N} {\Subst{x}{N}\tau}}
+\ib{\irule[\trule{$ev$}]
+  {\WfTerm \Gamma f {\PiTy {x\co A}  B(x)}};
+  {\WfTerm {\Gamma, x \co A} {f (x)} {B(x)}}
 }
 \rsp
-\ib{\irule[\trule{\CR\Pi}]
-  {\WfTerm \Gamma {\Lam {x\co\sigma} {M^{\tau}}} {\PiTy {x\co\sigma} \tau}}
-  {\WfTerm \Gamma N \sigma};
-  {\EqTerm {\Gamma}{\PiAppTm {\tau[x\co\sigma]} {\Lam {x\co\sigma} {M^{\tau}}} N}{\Subst{x}{N}M}{\Subst{x}{N}\tau}}
+\ib{\irule[\trule{\EqR{ev}}]
+  {\EqTerm \Gamma {f} {f'}{\PiTy {x\co\sigma}  {B(x)}}};
+  {\EqTerm {\Gamma, x \co A} {f(x)} {f'(x)} {B(x)}}
+}
+\\
+\ib{\irule[\trule{$\beta\Pi$}]
+  {\WfTerm {\Gamma, x \co A} {b(x)} {B(x)}};
+  {\EqTerm {\Gamma, x \co A} {(\Lam {y} {b(y)}) x} {b(x)} {B(x)}}
+}
+\rsp
+\ib{\irule[\trule{$\eta\Pi$}]
+  {\WfTerm \Gamma {f} {\PiTy {x\co\sigma}  {B(x)}}};
+  {\EqTerm {\Gamma} {\Lam x {f(x)}} {f} {\PiTy {x\co\sigma}  {B(x)}}}
 }
 \end{gather*}
 \caption{Dependent Function Space}
 \end{figure}
+
+\subsection{Ordinary Function types}
+They are special cases of dependent function types where the binder
+does not appear free in the term.
+\[ A \to B :=  \PiTy {x\co A} B \]
+
+\begin{definition}[Identity Function]
+ \[\texttt{id}_A : A \to A \]
+\end{definition}
 
 \section{Dependent Sum}
 
