@@ -208,10 +208,9 @@ There are six sets of inference rules:
 }
 \\
 \ib{\irule[\trule{\EqR{\lambda\Pi}}]
-  {\EqTerm {\Gamma,x\co A} {b(x)}{b'(x)} \tau_1}
-  {\EqType \Gamma { A}{ A'}}
-  {\EqType {\Gamma,x\co A} {\tau_1} {\tau_2}};
-  {\EqTerm \Gamma {\Lam {x\co A} {b(x)}} {\Lam {x\co A'} {b'(x)}} {\PiTy {x\co A} \tau_1}}
+  {\EqTerm {\Gamma,x\co A} {b(x)}{b'(x)} {B(x)}}
+  {\EqType \Gamma { A}{ A'}};
+  {\EqTerm \Gamma {\Lam {x\co A} {b(x)}} {\Lam {x\co A'} {b'(x)}} {\PiTy {x\co A} {B(x)}}}
 }
 \\
 \ib{\irule[\trule{$ev$}]
