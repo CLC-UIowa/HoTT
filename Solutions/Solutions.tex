@@ -116,6 +116,61 @@ Then invoke trans$_{3}$ on the follow three equalities:
   {\EqTerm \Gamma f g {\Pi_{x : A}B(x)}}}
 \end{gather*}
 
+\section*{2.3a}
+\newcommand\Const[1]{\ensuremath{\mathsf{const}_{#1}}}
+Construct the \textbf{constant map}
+
+\[ 
+\ib{
+  \irule
+    {\WfType \Gamma A};
+    {\WfTerm {\Gamma , y : B} {\Const{y}} {A \to B}}
+}
+\]
+
+\subsection*{Solution}
+
+\[
+\ib{
+  \irule
+    {\irule[\trule{\IR\Pi}]
+      {\irule[\trule{$\delta$}]
+        {{\WfTerm {\Gamma , y : B} y B}};
+        {\WfType {\Gamma , y : B} B}}
+      {\irule[K]{\WfTerm {\Gamma , y : B} y B};{\WfTerm {\Gamma , y : B , x : A} y B}};
+      {{\WfTerm {\Gamma , y : B} {\lambda x : A. y} {A \to B}}}};
+    {\Gamma , y : B \vdash \Const{y} := \lambda x : A. y : A \to B }
+}
+\]
+
+Technically we have an obligation to show that $\WfType \Gamma B$. I'm not sure how to show this. -AH
+
+\section*{2.3b}
+
+Show that 
+\[
+\ib{
+  \irule
+    {\WfTerm \Gamma f {A \to B}};
+    {\EqTerm {\Gamma , z : C} {\Const{z} \circ f} {\Const{z}} {A \to C}}
+}
+\]
+
+\section*{2.3c}
+
+Show that 
+\[ 
+\ib{
+  \irule
+    {\WfType \Gamma A}{\WfTerm \Gamma g {B \to C}};
+    {\EqTerm {\Gamma , y : B} {g \circ \Const{y}} {\Const{g(y)}} {A \to C}}
+}
+\]
+
+\section*{2.4}
+\section*{3.1a}
+\section*{3.3}
+\section{3.5}
 
 \bibliographystyle{plainnat}
 \bibliography{template.bib}
