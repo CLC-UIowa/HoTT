@@ -81,20 +81,38 @@ The $\eta$-rule is often seen as a judgmental extensionality principle. Use the 
 \end{gather*}
 
 \subsection*{Solution}
-Permit me some creative liberty in chaining two invocations of the transitivity rule.
+First let's derive a 3-ary transitivity rule. Call it trans$_{3}$:
 
 \begin{gather*}
 \small
 \ib{\irule[\trule{trans}]
-    {\irule[\trule{\EqR\eta}]
-      {\WfTerm \Gamma f {\Pi_{x : A}B(x)}};
-      {\EqTerm \Gamma {f} {\lambda x. f(x)} {\Pi_{x : A}B(x)}}
-    \quad\irule[\trule{\EqR{\lambda}}]
-      {\EqTerm {\Gamma , x : A} {f(x)} {g(x)} {B(x)}};
-      {\EqTerm \Gamma {\lambda x. f(x)}{\lambda x. g(x)} {B(x)}}
-    \quad\irule[\trule{\EqR{\eta}}]
-      {\WfTerm \Gamma g {\Pi_{x : A}B(x)}};
-      {\EqTerm \Gamma {\lambda x. g(x)} {g} {\Pi_{x : A}B(x)}}};
+  {\irule[\trule{trans}]
+    {\EqTerm \Gamma a b T} {\EqTerm \Gamma b c T};
+    {\EqTerm \Gamma a c T}}
+  {\EqTerm \Gamma c d T};
+  {\EqTerm \Gamma a d T}}
+\end{gather*}
+
+Then invoke trans$_{3}$ on the follow three equalities:
+
+\begin{gather*}
+\footnotesize
+\ib{\irule[\trule{trans$_{3}$}]
+    {
+      {\irule[\trule{\EqR\eta}]
+        {\irule[\trule{sym}]
+          {\WfTerm \Gamma f {\Pi_{x : A}B(x)}};
+          {\EqTerm \Gamma {\lambda x. f(x)} f {\Pi_{x : A}B(x)}}};
+        {\EqTerm \Gamma f {\lambda x. f(x)} {\Pi_{x : A}B(x)}}}
+    \quad
+      {\irule[\trule{\EqR{\lambda}}]
+        {\EqTerm {\Gamma , x : A} {f(x)} {g(x)} {B(x)}};
+        {\EqTerm \Gamma {\lambda x. f(x)}{\lambda x. g(x)} {\Pi_{x : A}B(x)}}}
+    \quad
+      {\irule[\trule{\EqR{\eta}}]
+        {\WfTerm \Gamma g {\Pi_{x : A}B(x)}};
+        {\EqTerm \Gamma {\lambda x. g(x)} {g} {\Pi_{x : A}B(x)}}}
+    };
   {\EqTerm \Gamma f g {\Pi_{x : A}B(x)}}}
 \end{gather*}
 
