@@ -14,7 +14,7 @@
 \begin{document}
 
 \maketitle
-
+\part{The \MLTT}
 \section{Dependent Type Theory}
 
 \subsection{Judgments}
@@ -186,6 +186,7 @@ There are six sets of inference rules:
 \end{figure}
 
 \section{Dependent Function Types}
+\subsection{The rules for dependent function types}
 \begin{figure}[H]
 \centering
 \begin{gather*}
@@ -237,15 +238,106 @@ There are six sets of inference rules:
 \end{figure}
 
 \subsection{Ordinary Function types}
-They are special cases of dependent function types where the binder
-does not appear free in the term.
-\[ A \to B :=  \PiTy {x\co A} B \]
+\begin{remark}[Type Theory Extension]
+  For a derivation $\trule{D}$
+  \[ \irule[\trule{D}]
+    {\mathcal{D}};
+    {\WfTerm \Gamma a A}
+  \]
+  where $\mathcal{D}$ uses premises $\mathcal{H}_1$, $\mathcal{H}_2$,
+  $\mathcal{H}_3$,  ... ,$\mathcal{H}_n$.
+  the notation
+  \[
+    \irule[]
+    {\irule[]{\mathcal{D}}; {\WfTerm \Gamma a A}};
+    {\WfTerm \Gamma {c := a} A}
+  \]
+  is a short hand for extending the type theory with the constant $c$
+  for which the following inference rules are valid:
+  \begin{gather*}
+    \ib{\irule[]{\mathcal{H}_1 \quad \mathcal{H}_2 ~\dots~ \mathcal{H}_n}; {\WfTerm \Gamma c A}}
+    \rsp
+    \ib{\irule[]{\mathcal{H}_1\quad \mathcal{H}_2~\dots~\mathcal{H}_n}; {\EqTerm \Gamma c a A}}
+  \end{gather*}
+\end{remark}
+
+\begin{remark}
+  A special case of dependent function types where the binder does not
+  appear free in the term.
+  \[ A \to B := \PiTy {x\co A} B \]
+\end{remark}
+
+\begin{gather*}
+  \ib{\irule[\trule{$\to$}]
+    {\WfType \Gamma A}{\WfType \Gamma B};
+    {\WfType \Gamma {A \to B}}
+  }
+  \rsp
+  \ib{\irule[\trule{\EqR\to}]
+    {\WfType \Gamma A}{\WfType \Gamma B};
+    {\EqType \Gamma {A \to B}{\PiTy {x\co A} B}}
+  }
+  \\
+  \ib{\irule[\trule{$\lambda$}]
+    {\WfType \Gamma B}{\WfTerm {\Gamma,x \co A } {b(x)} {B}};
+    {\WfTerm \Gamma {\Lam x b(x)}{A \to B}}
+  }
+  \rsp
+  \ib{\irule[\trule{ev}]
+    {\WfTerm \Gamma f {A \to B}};
+    {\WfTerm {\Gamma, x \co A} {f(x)} B}
+  }
+  \\
+  \ib{\irule[\trule{$\beta\lambda$}]
+    {\WfType \Gamma B}{\WfTerm {\Gamma,x \co A } {b(x)} {B}};
+    {\EqTerm \Gamma {(\Lam y b(y)) x} {b (x)} {B}}
+  }
+  \rsp
+  \ib{\irule[\trule{$\eta\lambda$}]
+     {\WfTerm \Gamma f {A \to B}};
+     {\EqTerm \Gamma {\Lam x {f(x)}} {f} {A \to B}}
+  }
+\end{gather*}
 
 \begin{definition}[Identity Function]
  \[\texttt{id}_A : A \to A \]
 \end{definition}
 
-\section{Dependent Sum}
+\begin{remark}
+  Difference between $f(x,y)$, $(f\Ap x)\Ap y$ and $f\Ap (x\Ap y)$
+\end{remark}
+
+\begin{definition}[Composition function]
+  \[\texttt{comp} : (B \to C) \to (A \to B) \to (A \to C)\]
+  \[\texttt{comp} := \Lam g {\Lam f {\Lam x (g\Ap (f\Ap x))}}\]
+  \[g \circ f \doteq comp\Ap (g, f)\]
+\end{definition}
+
+\begin{lemma}[Composition of Functions Associative]
+  The following judgment is derivable in the system
+\[
+  \irule[]
+  {\WfTerm \Gamma f {A \to B}}
+  {\WfTerm \Gamma g {B \to C}}
+  {\WfTerm \Gamma h {C \to D}};
+  {\EqTerm \Gamma {(h \circ g) \circ f} {h \circ (g \circ f)} {A \to D}}
+\]
+\end{lemma}
+\begin{lemma}[Composition satisfies left and right unit laws]
+\end{lemma}
+
+\section{The Natural Numbers}
+\subsection{The Formal Specification}
+\subsection{Addition of Natural Numbers}
+\subsection{Pattern Matching}
+
+
+
+\section{More Inductive Types}
+\subsection{The general idea}
+\subsection{The Unit Type}
+\subsection{The Empty Type}
+\subsection{Coproducts}
 
 \begin{figure}[H]
 \centering
@@ -299,6 +391,19 @@ does not appear free in the term.
 \caption{Dependent Sum}
 \end{figure}
 
+\subsection{The Type of Integers}
+\subsection{Dependent Pair Types}
+
+\section{Identity Types}
+
+\section{Universes}
+
+\section{Modular Arithmetic via The Curry Howard Interpretation}
+\section{Decidability in the Elementary Number Theory}
+
+\part{The Univalent Foundation of Mathematics}
+
+\part{The Circle}
 
 \end{document}
 %%% Local Variables:
