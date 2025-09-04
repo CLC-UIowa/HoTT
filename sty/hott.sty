@@ -4,6 +4,7 @@
 \usepackage{ifthen,mathrsfs,xspace,mathtools,float}
 \usepackage{enumitem,multicol,tikz-cd,parskip,stmaryrd,tikz,float,titlecaps,caption,graphicx,array,subcaption}
 \usepackage{footmisc}
+\usepackage{amsfonts}
 
 \usepackage[normalem]{ulem}
 
@@ -176,8 +177,9 @@
 \newcommand\RecSigma[3]{\texttt{R}^\Sigma_{#1}(#2, #3)}
 \newcommand\RecId[5]{\texttt{R}^{\texttt{Id}}_{#1} (#2, #3, #4, #5)}
 \newcommand\RecNat[4]{\texttt{R}^{\mathbb N}_{#1} (#1, #2, #3)}
-\newcommand\Suc[1]{\texttt{Suc}(#1)}
+\newcommand\Suc{\ensuremath{\texttt{Succ}_\NatTy}}
 % \newcommand\Let[3]{\mathsf{let}\;#1 = #2\;\mathsf{in}\;#3}
+\newcommand\Ind[2]{\ensuremath{\texttt{ind}_{#1}(#2)}}
 
 \newcommand\Lam[2]{\lambda #1. \, #2}
 \newcommand\LamS[3]{\lambda #1 {:} #2 . #3}

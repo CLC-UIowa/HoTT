@@ -327,8 +327,62 @@ There are six sets of inference rules:
 \end{lemma}
 
 \section{The Natural Numbers}
-\subsection{The Formal Specification}
+
+\subsection{The Formal Specification of the Type of Natural Numbers}
+
+\begin{gather*}
+  \ib{\irule[\trule{\FR\NatTy}]{};{\WfType {} \NatTy}}
+  \rsp
+  \ib{\irule[\trule{\IR {0_{\NatTy}}}]
+    {};
+    {\WfTerm {} {0_\NatTy} {\NatTy}}
+  }
+  \rsp
+  \ib{\irule[\trule{\IR {\Suc}}]
+    {};
+    {\WfTerm {} {\Suc} {\NatTy \to \NatTy}}
+  }
+  \\
+  \ib{\irule[\trule{$\NatTy$-ind}]
+    {\WfType {\Gamma,n\co\NatTy} {P(n)}}
+    {\WfTerm \Gamma {p_0} {P(0_\NatTy)}}
+    {\WfTerm \Gamma {p_S} {\PiTy {n\co\NatTy} {P(n)} \to P(\Suc (n))}};
+    {\WfTerm \Gamma {\Ind\NatTy{p_o, p_S}} {\PiTy {n\co\NatTy}P(n)}}
+  }
+  \\
+  \ib{\irule[\trule{$0_\NatTy$-ind}]
+    {\WfType {\Gamma,n\co\NatTy} {P(n)}}
+    {\WfTerm \Gamma {p_0} {P(0_\NatTy)}}
+    {\WfTerm \Gamma {p_S} {\PiTy {n\co\NatTy} {P(n)} \to P(\Suc (n))}};
+    {\EqTerm \Gamma {\Ind\NatTy{p_o, p_S, 0_\NatTy}} {p_0} {P(0_\NatTy)}}
+  }
+  \\
+  \ib{\irule[\trule{$\Suc$-ind}]
+    {\WfType {\Gamma,n\co\NatTy} {P(n)}}
+    {\WfTerm \Gamma {p_0} {P(0_\NatTy)}}
+    {\WfTerm \Gamma {p_S} {\PiTy {n\co\NatTy} {P(n)} \to P(\Suc (n))}};
+    {\EqTerm {\Gamma, n\co\NatTy} {\Ind\NatTy{p_o, p_S, \Suc(n)}} {p_S(n, \Ind\NatTy{p_o,p_S,n})} {P(\Suc(n))}}
+  }
+\end{gather*}
+
+\begin{remark}[Uniqueness of Types]
+Absence of \emph{uniqueness} of types for all elements in a type
+theory amounts to rapidly descending into madness.
+\end{remark}
+
+\begin{remark}[Alternative Induction Principle]
+  \[\irule[]
+    {\WfType {\Gamma,n\co\NatTy} {P(n)}};
+    {\WfTerm \Gamma {\Ind\NatTy} {P(0_\NatTy) \to
+        \Big( \big(\PiTy {n\co\NatTy} {P(n)} \to P(\Suc(n)) \big)
+              \to \PiTy  {n\co\NatTy} {P(n)} \Big)}}
+  \]
+\end{remark}
+The above rule is interderivable with \trule{$\NatTy$-ind}
 \subsection{Addition of Natural Numbers}
+
+
+
 \subsection{Pattern Matching}
 
 
