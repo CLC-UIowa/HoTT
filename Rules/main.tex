@@ -191,7 +191,7 @@ There are six sets of inference rules:
 \centering
 \begin{gather*}
 \ib{\irule[\trule{$\Pi$}]
-  {\WfType \Gamma A}
+  %{\WfType \Gamma A}
   {\WfType {\Gamma,x\co A} {B(x)}};
   {\WfType \Gamma {\PiTy {x\co A} {B(x)}}}
 }
@@ -203,15 +203,15 @@ There are six sets of inference rules:
   {\EqType \Gamma {\PiTy {x\co A} {B(x)}} {\PiTy {x\co A'} {B'(x)}}}
 }
 \\
-\ib{\irule[\trule{\IR{\lambda\Pi}}]
-  {\WfTerm {\Gamma,x\co A} {b(x)} \tau};
-  {\WfTerm \Gamma {\Lam {x\co A} {b(x)}} {\PiTy {x\co A} \tau}}
+\ib{\irule[\trule{$\lambda$}]%[\trule{\IR{\lambda\Pi}}]
+  {\WfTerm {\Gamma,x\co A} {b(x)} {B(x)}};
+  {\WfTerm \Gamma {\Lam {x\co A} {b(x)}} {\PiTy {x\co A} {B(x)}}}
 }
-\\
+\rsp
 \ib{\irule[\trule{\EqR{\lambda\Pi}}]
-  {\EqTerm {\Gamma,x\co A} {b(x)}{b'(x)} {B(x)}}
-  {\EqType \Gamma { A}{ A'}};
-  {\EqTerm \Gamma {\Lam {x\co A} {b(x)}} {\Lam {x\co A'} {b'(x)}} {\PiTy {x\co A} {B(x)}}}
+  {\EqTerm {\Gamma,x\co A} {b(x)}{b'(x)} {B(x)}};
+  %{\EqType \Gamma { A}{ A'}};
+  {\EqTerm \Gamma {\Lam {x\co A} {b(x)}} {\Lam {x\co A} {b'(x)}} {\PiTy {x\co A} {B(x)}}}
 }
 \\
 \ib{\irule[\trule{$ev$}]
