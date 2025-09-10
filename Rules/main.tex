@@ -373,7 +373,7 @@ theory amounts to rapidly descending into madness.
 \begin{remark}[Alternative Induction Principle]
   \[\irule[]
     {\WfType {\Gamma,n\co\NatTy} {P(n)}};
-    {\WfTerm \Gamma {\Ind\NatTy} {P(0_\NatTy) \to
+    {\WfTerm \Gamma {\ensuremath{\texttt{ind}_\NatTy}} {P(0_\NatTy) \to
         \Big( \big(\PiTy {n\co\NatTy} {P(n)} \to P(\Suc(n)) \big)
               \to \PiTy  {n\co\NatTy} {P(n)} \Big)}}
   \]
