@@ -19,7 +19,6 @@
 
 \subsection{Judgments}
 
-
 \begin{definition}[Judgments.]
   Judgements in MLTT are of the form:
   \begin{enumerate}
@@ -300,18 +299,19 @@ There are six sets of inference rules:
 \end{gather*}
 
 \begin{definition}[Identity Function]
- \[\texttt{id}_A : A \to A \]
+  \[\texttt{id}_A : A \to A \]
+  \[\texttt{id}_A := \Lam x x\]
 \end{definition}
 
 \begin{remark}
-  Difference between $f(x,y)$, $(f\Ap x)\Ap y$ and $f\Ap (x\Ap y)$
+  Difference between $f(x,y)$, $f\Ap (x)\Ap (y)$ and $f\Ap (x\Ap (y))$
 \end{remark}
 
 \begin{definition}[Composition function]
-  \[\texttt{comp} : (B \to C) \to (A \to B) \to (A \to C)\]
-  \[\texttt{comp} := \Lam g {\Lam f {\Lam x (g\Ap (f\Ap x))}}\]
-  \[g \circ f \doteq comp\Ap (g, f)\]
+  \[\comp : (B \to C) \to (A \to B) \to (A \to C)\]
+  \[\comp := \Lam g {\Lam f {\Lam x (g\Ap (f\Ap x))}}\]
 \end{definition}
+Notation  $g \circ f$ means $ \comp\Ap (g, f)$
 
 \begin{lemma}[Composition of Functions Associative]
   The following judgment is derivable in the system
@@ -381,6 +381,14 @@ theory amounts to rapidly descending into madness.
 The above rule is interderivable with \trule{$\NatTy$-ind}
 \subsection{Addition of Natural Numbers}
 
+\begin{definition}[$\AddNat(m,n)$]
+  \[ \AddNat : \NatTy \to \NatTy \to \NatTy \]
+  With the following specification:
+  \[ \AddNat (m, 0_\NatTy) \doteq m \]
+  \[ \AddNat (m, \Suc n) \doteq \Suc (\AddNat (m, n)) \]
+
+  Notation $m + n$ means $\AddNat (m, n)$
+\end{definition}
 
 
 \subsection{Pattern Matching}
