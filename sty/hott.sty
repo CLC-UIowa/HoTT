@@ -30,6 +30,7 @@
 \newtheorem{definition}{Definition}[subsection]
 \newtheorem{lemma}[definition]{Lemma}
 \newtheorem{remark}[definition]{Remark}
+\newtheorem{proposition}[definition]{Proposition}
 
 \makeatletter
 \newcommand{\leqnomode}{\tagsleft@true\let\veqno\@@leqno}
@@ -154,7 +155,7 @@
 \newcommand\LetDef[2]{\mathsf{let} \, {#1} = {#2}}
 
 %% Syntax - types & kinds
-
+\newcommand{\then} {\Rightarrow}
 \newcommand\Type{\mathord\star}
 \newcommand\Pred{\mathsf{o}}
 
@@ -170,7 +171,8 @@
 \newcommand\List{\TyC{List}}
 \newcommand\IdTy[3]{\texttt{Id}_{#1} (#2, #3)}
 \newcommand\NatTy{\mathbb{N}}
-
+\newcommand\UnitTy{\textbf{1}}
+\newcommand\EmptyTy{\emptyset}
 %% Syntax - terms
 
 \newcommand\Refl[2]{\texttt{Refl}_{#1} (#2)}

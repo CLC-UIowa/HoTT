@@ -120,7 +120,7 @@ Then invoke trans$_{3}$ on the follow three equalities:
 \newcommand\Const[1]{\ensuremath{\mathsf{const}_{#1}}}
 Construct the \textbf{constant map}
 
-\[ 
+\[
 \ib{
   \irule
     {\WfType \Gamma A};
@@ -147,7 +147,7 @@ Technically we have an obligation to show that $\WfType \Gamma B$. I'm not sure 
 
 \section*{2.3b}
 
-Show that 
+Show that
 \[
 \ib{
   \irule
@@ -158,8 +158,8 @@ Show that
 
 \section*{2.3c}
 
-Show that 
-\[ 
+Show that
+\[
 \ib{
   \irule
     {\WfType \Gamma A}{\WfTerm \Gamma g {B \to C}};
@@ -169,9 +169,27 @@ Show that
 
 \section*{2.4}
 \section*{3.1a}
-\section*{3.3}
-\section{3.5}
+Define the multiplication operation
+\[ \texttt{mul}_\NatTy : \NatTy \to \NatTy \to \NatTy \]
 
+\section*{3.3}
+
+\subsection*{a}
+Define the triangular numbers
+\[ \texttt{TrN}(n) := 1 + \dots + n \]
+\subsection*{b}
+Define factorial operation
+\[ n \mapsto n! \]
+
+\section*{3.5}
+Use the induction principle of $\NatTy$ to define the Fibonacci sequence as a function
+$F : \NatTy \to \NatTy$ that satisfies the equations
+
+\begin{flalign*}
+  F(0_\NatTy) &\doteq 0_\NatTy\\
+  F(1_\NatTy) &\doteq 1_\NatTy\\
+  F(\Suc(\Suc n)) &\doteq F(\Suc(n)) + F (n)
+\end{flalign*}
 \bibliographystyle{plainnat}
 \bibliography{template.bib}
 \end{document}

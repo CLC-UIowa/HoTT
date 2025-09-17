@@ -392,13 +392,68 @@ The above rule is interderivable with \trule{$\NatTy$-ind}
 
 
 \subsection{Pattern Matching}
+The equalitional specification gives us definition using induction.
+A function can be defined by \emph{pattern matching} in this way.
 
 
 
 \section{More Inductive Types}
 \subsection{The general idea}
+Three ingredients specify inductive types
+\begin{itemize}
+\item Constructors
+\item induction principle
+\item computation rules
+\end{itemize}
+
 \subsection{The Unit Type}
+\begin{definition}[Unit type]
+  Constructors
+    \[ \Type : \UnitTy \]
+  Induction Principle
+    \[\texttt{ind}_{\UnitTy} : P(\Type) \to \PiTy {x : 1} P(x) \]
+    Computation rule
+    \[ \Ind{1} {p, \Type} \doteq p \]
+    \[ \texttt{ind}_\UnitTy  : A \to (1 \to A) \]
+  \end{definition}
+
+ A section witness for all types $A$
+\[ x : A \vdash pt_x := \Ind\UnitTy x : \UnitTy \to A \]
+
 \subsection{The Empty Type}
+\begin{definition}[Empty type ($\EmptyTy$)]
+  Constructors (none)\\
+
+  Induction Principle
+  \[\texttt{ind}_\EmptyTy : \PiTy {x : \EmptyTy} P (x) \]
+\end{definition}
+
+Special case of induction principle
+\[ \texttt{ex-falso} := \texttt{ind}_\EmptyTy : \EmptyTy \to A \]
+
+\begin{definition}[Negation]
+  \[ \neg A := A \to \EmptyTy \]
+
+  $A$ is empty if it comes equipped with an element of type $\neg A$.
+
+  \[ \texttt{is-empty}(A) := A \to \Empty \]
+\end{definition}
+
+\begin{remark}
+  \begin{enumerate}
+  \item Proof of negation: Assume $A$ to prove $\neg A$ and hence
+    derive a contradiction
+  \item Proof by contradiction: A proof technique which uses double negation elimination
+  \item Double Negation Elimination: $\neg\neg P \then P$
+  \end{enumerate}
+\end{remark}
+
+\begin{proposition}[Contrapositive]
+  For any two types $P$ and $Q$, there is a function
+\[ (P \to Q) \to (\neg Q \to \neg P)\]
+\end{proposition}
+\[ \Lam {f : P \to Q} {\Lam {\tilde q : Q \to \EmptyTy} {\Lam {p : P} {f (p)}}} : (P \to Q) \to  \neg Q \to \neg P\]
+
 \subsection{Coproducts}
 
 \begin{figure}[H]
@@ -457,6 +512,8 @@ The above rule is interderivable with \trule{$\NatTy$-ind}
 \subsection{Dependent Pair Types}
 
 \section{Identity Types}
+What is equality in a type theory from the perspective of types as
+proof-relevant propositions?
 
 \section{Universes}
 
