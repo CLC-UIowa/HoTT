@@ -1,4 +1,6 @@
 % \usepackage{accents,amsmath,amsthm,centernot,ifthen,infer,lipsum,mathwidth,mathrsfs,mathtools,multicol,multirow,stmaryrd,tensor,xspace,thmtools}
+\usepackage[dvipsnames]{xcolor}
+
 \usepackage{geometry}
 \geometry{margin=1in}
 \usepackage{ifthen,mathrsfs,xspace,mathtools,float}
@@ -127,16 +129,16 @@
 \everydisplay{\inlinefalse}
 
 % Type constants and term constants are roman in displays, italic in text.
-\newcommand\TyC[1]{\ifinline #1 \else \mathrm{#1} \fi}
-\newcommand\TmC[1]{\ifinline #1 \else \mathrm{#1} \fi}
+\newcommand\TyC[1]{\ifinline{#1} \else \mathrm{#1} \fi}
+\newcommand\TmC[1]{\ifinline{#1} \else \mathrm{#1} \fi}
 
 %% Syntax - judgments
 
-\newcommand\WfType[2]{#1 \vdash #2 ~ \mathrm{type}}
-\newcommand\WfTerm[3]{#1 \vdash #2 : #3}
+\newcommand\WfType[2]{#1 \vdash{#2}~\mathrm{type}}
+\newcommand\WfTerm[3]{#1 \vdash{#2}: #3}
 
-\newcommand\EqType[3]{#1 \vdash #2 \doteq #3 ~ \mathrm{type}}
-\newcommand\EqTerm[4]{#1 \vdash #2 \doteq #3 : #4}
+\newcommand\EqType[3]{#1 \vdash{#2}\doteq{#3}~\mathrm{type}}
+\newcommand\EqTerm[4]{#1 \vdash{#2}\doteq{#3}:#4}
 
 \newcommand\trule[1]{\textsc{(#1)}}
 \newcommand\rrule[1]{[\textsc{#1}]}
@@ -169,13 +171,13 @@
 \newcommand\Int{\TyC{Int}}
 \newcommand\Double{\TyC{Double}}
 \newcommand\List{\TyC{List}}
-\newcommand\IdTy[3]{\texttt{Id}_{#1} (#2, #3)}
+\newcommand\IdTy[2]{\texttt{Id}_{#1}}
 \newcommand\NatTy{\mathbb{N}}
 \newcommand\UnitTy{\textbf{1}}
 \newcommand\EmptyTy{\emptyset}
 %% Syntax - terms
 
-\newcommand\Refl[2]{\texttt{Refl}_{#1} (#2)}
+\newcommand\Refl[1]{\texttt{refl}_{#1}}
 \newcommand\RecSigma[3]{\texttt{R}^\Sigma_{#1}(#2, #3)}
 \newcommand\RecId[5]{\texttt{R}^{\texttt{Id}}_{#1} (#2, #3, #4, #5)}
 \newcommand\RecNat[4]{\texttt{R}^{\mathbb N}_{#1} (#1, #2, #3)}

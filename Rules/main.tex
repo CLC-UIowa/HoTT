@@ -515,6 +515,138 @@ Special case of induction principle
 What is equality in a type theory from the perspective of types as
 proof-relevant propositions?
 
+If $p : x = y$ then $p$ is a \emph{witness} that the elements x and y
+are equal or that $p$ is an \emph{identification} of $x$ and $y$.
+In a proof-relevant world, $p$ is not unique.
+
+Identity type is an \emph{inductive} type with just one type of
+identification via \emph{reflexivity}.
+
+``The inductive construction of the identity type is elegant,
+beautifully simple but far from trivial!''
+
+\AI{Citation needed for elegant and beautifully simple}
+
+
+\subsection{The inductive definition of identity types}
+
+\begin{definition}[Identity Type]
+  An inductive family of types $a =_A x$ index by $x : A$ of which the
+  constructor is \[ \Refl a : {a =_A a} \]
+\end{definition}
+The induction principle of identity types postulates that for any
+family of types $P(x, p)$, indexed by $x : A$ and $p : a =_A x $ there
+is a function:
+\[
+\texttt{ind-eq}_{a} : P \big( a , \Refl{a} \big) \to \PiTy {x : A} {\PiTy {p : a =_A x} {P(x, p)}}
+\]
+
+satisfying the equation
+
+\[ \texttt{ind-eq}_a \big (u, a, \Refl{a} \big) \doteq u \]
+where $ u : P \big(a, \Refl{a} \big)$
+
+Terminology:
+\begin{itemize}
+\item An element of type $a =_A x$ is called an \emph{identification} of
+  $a$ with $x$, or a \emph{path} from $a$ to $x$ The
+\item The induction principle is called the \emph{identification
+    elimination} or the \emph{path induction}.
+\item Identity type on $A$ is is written $\IdTy{A}{}$
+\end{itemize}
+\begin{remark}
+  Identity type is not just an inductive type, like
+  the inductive types $\NatTy$, $\EmptyTy$ and $\UnitTy$; for example,
+  but it is an inductive family of types.
+
+  The constructor only provides an element $\Refl{a} : {a =_A a}$.
+
+  The induction principle says that in order to prove something about
+  all identifications of $a$ with some $x : A$, it suffices to prove
+  it only for the base case $\Refl{a}$.
+\end{remark}
+
+\begin{remark}
+\begin{gather*}
+\ib{\irule[\trule{idty-F}]{\WfTerm \Gamma a A};
+  {\WfType {\Gamma, x : A} {a =_A x}}}
+\rsp
+\ib{\irule[\trule{id-I}]
+  {\WfTerm \Gamma a A};
+  {\WfTerm \Gamma {\Refl a} {a =_A a}}}
+\\
+\ib{\irule[\trule{id-E}]
+  {\WfTerm \Gamma a A}
+  {\WfType {\Gamma, x : A, p : a =_A x} {P (x, p)} };
+  {\WfTerm \Gamma {\texttt{ind-eq}_a}  {P (a, \Refl a) \to \PiTy {x : A}{\PiTy {p : a =_A x}{P(x, p)}}}}
+}
+\\
+\ib{\irule[\trule{id-C}]
+  {\WfTerm \Gamma a A}
+  {\WfType {\Gamma, x: A, p : a =_A x} {P (x, p)}};
+  {\EqTerm {\Gamma, u : P(a, \Refl a)} {\texttt{ind-eq}_a(u, a, \Refl a)} {u : P(a, \Refl a)}}
+}
+\end{gather*}
+\end{remark}
+
+\begin{remark}
+
+\end{remark}
+
+\subsection{The groupoidal structure of types}
+\begin{definition}[Concatenation]
+  Let A be a type.
+  \[ \texttt{concat} : \PiTy{x,y,z : A} (x = y) \to (y = z) \to (x = z) \]
+  Notation: $p \cdot q$ is $\texttt{concat}(p, q)$.
+
+  \[\texttt{concat} := ?? \]
+\end{definition}
+\begin{definition}[Inverse Operation]
+  Let A be a type.
+  \[ \texttt{inv} : \PiTy {x, y : A} (x = y) \to (y = x) \]
+  Notation: $p^{-1}$ is $\texttt{inv}(p)$
+  \[ \texttt{inv}(\Refl x) := \Refl x \]
+\end{definition}
+
+\begin{definition}[Associator]
+  Let A be a type, and $p$, $q$, $r$ be identifications in A.
+  \[ assoc(p, q, r) : (p \cdot q) \cdot r = p \cdot (q \cdot r) \]
+  \[ assoc (\Refl x, q, r):= \Refl {q \cdot r}\]
+\end{definition}
+
+\begin{definition}[Unit law operations]
+  Let $p : x = y$,
+  \[ \texttt{left-unit}(p) : \Refl {x} \cdot p = p \]
+
+  \[ \texttt{right-unit}(p) : p \cdot \Refl {x} = p \]
+
+  Construction:
+
+\end{definition}
+
+\begin{definition}[Inverse law operations]
+
+\end{definition}
+
+\subsection{The action on identifications of functions}
+\begin{definition}[Action on paths]
+  Let $f : A \to B$ be a map. The action on paths of $f$ is an operation
+  \[ \texttt{ap}_f : \PiTy{x,y : A} {(x = y) \to (f(x) \to f(y))} \]
+  \[ \texttt{ap-id}_A : \PiTy{x,y : A}{\PiTy{p : x = y} {p = ap_{id_A}(p)}} \]
+  \[ \texttt{ap-comp}_A (f, g): \PiTy{x,y : A}{\PiTy{p : x = y} {ap_{g}(ap_{f}p) = ap_{g\circ f}(p)}} \]
+\end{definition}
+\begin{definition}
+  \[\texttt{ap-refl}(f, x) : ap_f (\Refl x) = \Refl {f(x)}\]
+  \[\texttt{ap-inv}(f, p) : ap_f(p^{-1}) = ap_f (p)^{-1}\]
+  \[\texttt{ap-concat}(f, p, q) : ap_f (p \cdot q) = ap_f (p) \cdot ap_f (q) \]
+\end{definition}
+
+\subsection{Transport}
+
+\subsection{The uniqueness of \texttt{refl}}
+
+\subsection{The laws of addition on $\NatTy$}
+
 \section{Universes}
 
 \section{Modular Arithmetic via The Curry Howard Interpretation}
