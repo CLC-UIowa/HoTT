@@ -599,7 +599,11 @@ Terminology:
   \[ \texttt{concat} : \PiTy{x,y,z : A} (x = y) \to (y = z) \to (x = z) \]
   Notation: $p \cdot q$ is $\texttt{concat}(p, q)$.
 
-  \[\texttt{concat} := ?? \]
+\begin{flalign*}
+  f(x) &: \PiTy{y:A}{(x = y)} \to \PiTy {z:A} {(y = z) \to (x = z)}\\
+  f(x) &:= \texttt{ind-eq}_x(\Lam {z} {id_{x = z}})\\
+  \texttt{concat}_{x, y, z}(p, q) &:= f (x, y, p, z, q)
+\end{flalign*}
 \end{definition}
 \begin{definition}[Inverse Operation]
   Let A be a type.
@@ -610,8 +614,10 @@ Terminology:
 
 \begin{definition}[Associator]
   Let A be a type, and $p$, $q$, $r$ be identifications in A.
-  \[ assoc(p, q, r) : (p \cdot q) \cdot r = p \cdot (q \cdot r) \]
-  \[ assoc (\Refl x, q, r):= \Refl {q \cdot r}\]
+\begin{flalign*}
+  assoc(p, q, r) &: (p \cdot q) \cdot r = p \cdot (q \cdot r)\\
+  assoc (\Refl x, q, r) &:= \Refl {q \cdot r}
+\end{flalign*}
 \end{definition}
 
 \begin{definition}[Unit law operations]
@@ -659,5 +665,6 @@ Terminology:
 \end{document}
 %%% Local Variables:
 %%% mode: LaTeX
+%%% TeX-master: t
 %%% TeX-master: t
 %%% End:
