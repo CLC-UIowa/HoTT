@@ -455,58 +455,40 @@ Special case of induction principle
 \[ \Lam {f : P \to Q} {\Lam {\tilde q : Q \to \EmptyTy} {\Lam {p : P} {f (p)}}} : (P \to Q) \to  \neg Q \to \neg P\]
 
 \subsection{Coproducts}
+\begin{definition}[Coproduct $A + B$]
+Constructors:
+\begin{flalign*}
+\texttt{inl} &: A \to A + B\\
+\texttt{inr} &: B \to A + B
+\end{flalign*}
+Induction Principle:
+\[\texttt{ind}_+ : \big(\PiTy {x:A} {P(inl(x))}\big) \to
+  \big(\big(\PiTy {y:B} {P (inr(y))}\big) \to \PiTy {z : A + B}
+  {P(z)}\big) \]
+Computational Rules:
+\[\texttt{ind}_+ (f, g, inl(x)) \doteq f(x) \]
+\[\texttt{ind}_+ (f, g, inr(x)) \doteq g(x) \]
+\end{definition}
 
-\begin{figure}[H]
-\centering
-\begin{gather*}
-\ib{\irule[\trule{\FR\Sigma}]
-  {\WfType \Gamma \sigma}
-  {\WfType {\Gamma,x\co\sigma} \tau};
-  {\WfType \Gamma {\SigmaTy {x\co\sigma} \tau}}
-}
-\rsp
-\ib{\irule[\trule{\EqR\Sigma}]
-  {\EqType \Gamma {\sigma_1} {\sigma_2}}
-  {\EqType {\Gamma,x\co\sigma} {\tau_1} {\tau_2}}
-  {\sigma \in \{\sigma_1, \sigma_2\}};
-  {\EqType \Gamma {\Sigma x\co\sigma_1.\tau_1} {\SigmaTy{x\co\sigma_2} {\tau_2}}}
-}
-\\
-\ib{\irule[\trule{\IR\Sigma}]
-  {\WfTerm {\Gamma} M \sigma}
-  {\WfTerm \Gamma N {\Subst{x}{M}\tau}};
-  {\WfTerm \Gamma {\SigmaPair {\tau[x\co\sigma]} M N} {\SigmaTy {x\co\sigma} \tau}}
-}
-\\
-\ib{\irule[\trule{\EqR{\eta\Sigma}}]
-  {\EqTerm {\Gamma} {M_1}{M_2} \sigma_1}
-  {\EqTerm {\Gamma,x\co\sigma_1} {N_1}{N_2} \tau_1}
-  {\EqType \Gamma {\sigma_1}{\sigma_2}}
-  {\EqType {\Gamma,x\co\sigma_1} {\tau_1} {\tau_2}};
-  {\EqTerm \Gamma {\SigmaPair {\tau_1[x\co\sigma_1]} {M_1} {N_1}} {\SigmaPair {\tau_2[x\co\sigma_2]} {M_2} {N_2}} {\SigmaTy {x\co\sigma_1} \tau_1}}
-}
-\\
-\ib{\irule[\trule{\ER\Sigma}]
-  {\WfType {\Gamma, z\co\SigmaTy {x\co\sigma} \tau} {\rho}}
-  {\WfTerm {\Gamma, x\co\sigma, y\co\tau} H {\Subst{z}{\SigmaPair {\tau[x\co\sigma]} x y}\rho}}
-  {\WfTerm \Gamma M {\SigmaTy {x\co\sigma} \tau}};
-  {\EqTerm {\Gamma}{\RecSigma {\rho[z:\SigmaTy{x\co\sigma}{\tau}]} {H[x\co\sigma,y\co\tau]} M}{\Subst{z}{M}\rho}}
-}
-\\
-\ib{\irule[\trule{\CR\Sigma}]
-  {\WfTerm \Gamma %
-    {\RecSigma {\rho[z\co\SigmaTy {x\co\sigma} \tau]}%
-               {H[x\co\sigma,y\co\tau]} %
-               {\SigmaPair {\tau[x\co\sigma]}{M}{N}}} %
-    {\Subst z {\SigmaPair {\tau[x\co\sigma]} M N}\rho}};
-  {\EqTerm \Gamma %
-     {\RecSigma {\rho[z\co\SigmaTy {x\co\sigma}\tau]} {H[x\co\sigma,y\co\tau]} {\SigmaPair {\tau[x\co\sigma]} M N}}
-     {\Substs{x\mapsto M, y\mapsto N}H}
-     {\Subst z {\SigmaPair {\tau[x\co\sigma]} M N}\rho}}
-}
-\end{gather*}
-\caption{Dependent Sum}
-\end{figure}
+
+Pattern matching view
+
+\[h : \PiTy{x : A + B} P (x) \]
+
+with the specification
+
+\[h (inl(x)) \doteq f(x) \]
+\[h (inr(x)) \doteq g(x) \]
+
+Terminology: \emph{Disjoint sum} of $A$ and $B$ is $A + B$.
+
+\begin{remark}
+  Coproducts for maps.
+  \[ f + g : A + B \to A' + B' \]
+  for every $f : A \to B$ and $g : A' \to B'$.
+  \[(f + g) (inl(x)) := inl(f(x)) \]
+  \[(f + g) (inr(x)) := inr(g(x)) \]
+\end{remark}
 
 \subsection{The Type of Integers}
 \subsection{Dependent Pair Types}
