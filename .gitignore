@@ -25,3 +25,5 @@ auto/*
 sty/auto
 sty/auto/*
 *.synctex.gz
+
+*.agdai
