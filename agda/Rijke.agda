@@ -24,6 +24,10 @@ indℕ : (P : ℕ → Set ι) → P 0 → ((n : ℕ) → P n → P (suc n)) → 
 indℕ _ pz ps 0 = pz
 indℕ P pz ps (suc m) = ps m (indℕ P pz ps m)
 
+add′ : ℕ → ℕ → ℕ
+add′ zero n = n
+add′ (suc m′) n = suc (add′ m′ n)
+
 add : ℕ → ℕ → ℕ
 add = λ m n → indℕ (λ _ → ℕ)
                    n
@@ -126,11 +130,8 @@ pr₂ {A} {B} = indΣ (λ z → B (pr₁ z)) (λ x y → y)
 ind≡ : (a : A) → (P : (x : A) → a ≡ x → Set ι) → P a refl → (x : A) → (p : a ≡ x) → P x p
 ind≡ _ _ p _ refl = p
 
-concat-lemma : {A : Set} → (x : A) → ((y : A) → x ≡ y → ((z : A) → y ≡ z → x ≡ z))
-concat-lemma {A} = λ x y p → ind≡ x (λ y x≡y → (z : A) → y ≡ z → x ≡ z) (λ z → id) y p
-
 concat : (x y z : A) → x ≡ y → y ≡ z → x ≡ z
-concat = λ x y z p q → concat-lemma x y p z q
+concat = λ x y z p → ind≡ x (λ y x≡y → y ≡ z → x ≡ z) id y p
 
 _□_ : {x y z : A} → x ≡ y → y ≡ z → x ≡ z
 p □ q = concat _ _ _ p q
@@ -209,7 +210,7 @@ fromEqℕ = λ m → indℕ (λ m → (n : ℕ) → Eqℕ m n → m ≡ n)
 import Data.Nat.Properties as ℕ
 
 _∣_ : ℕ → ℕ → Set
-d ∣ n = Σ[ k ∈ ℕ ] (d * k ≡ n)
+d ∣ n = Σ ℕ (λ k → d * k ≡ n)
 
 -- Proposition 7.1.5
 
@@ -218,16 +219,15 @@ prop715 = λ d x y d∣x d∣y →
   indΣ (λ _ → d ∣ (x + y))
        (λ k₁ q₁ → indΣ (λ _ → d ∣ (x + y))
                        (λ k₂ q₂ → pair (k₁ + k₂)
-                                         (ℕ.*-distribˡ-+ d k₁ k₂ □
-                                          (ap (λ z → z + d * k₂) (d * k₁) x q₁ □
-                                           ap (λ z → x + z) (d * k₂) y q₂)))
+                                       (ℕ.*-distribˡ-+ d k₁ k₂ □ (ap (λ z → z + d * k₂) (d * k₁) x q₁ □ ap (λ z → x + z) (d * k₂) y q₂)))
                        d∣y)
        d∣x
 
 distℕ : ℕ → ℕ → ℕ
 distℕ = λ m → indℕ (λ m → ℕ → ℕ)
                    (λ n → indℕ (λ n → ℕ) 0 (λ _ _ → n) n)
-                   (λ _ ih n → indℕ (λ n → ℕ) m (λ n′ _ → ih n′) n) m
+                   (λ m′ ih n → indℕ (λ n → ℕ) (suc m′) (λ n′ _ → ih n′) n)
+                   m
 
 _ : distℕ 0 4 ≡ 4
 _ = refl
@@ -238,15 +238,21 @@ _ = refl
 --------------------------------------------------------------------------------
 -- dist-lemmas 
 
+
 dist-lemma₁ : (n : ℕ) → distℕ n 0 ≡ n
 dist-lemma₁ = indℕ (λ n → distℕ n 0 ≡ n) refl (λ _ _ → refl)
 
-postulate
-  dist-lemma₂ : (m n : ℕ) → distℕ (suc m) (suc n) ≡ distℕ m n
+dist-lemma₁′ : (n : ℕ) → distℕ 0 n ≡ n
+dist-lemma₁′ = λ n → indℕ (λ n → distℕ 0 n ≡ n) refl (λ n z → refl) n
 
--- dist-lemma₂ = indℕ (λ m → (n : ℕ) → distℕ (suc m) (suc n) ≡ distℕ m n)
---                    (λ n → refl)
---                    (λ m′ outer n → {!!})
+
+dist-lemma₂ : (m n : ℕ) → distℕ (suc m) (suc n) ≡ distℕ m n
+dist-lemma₂ = indℕ (λ m → (n : ℕ) → distℕ (suc m) (suc n) ≡ distℕ m n)
+                   (λ n → refl)
+                   (λ m′ outer n → indℕ (λ n → distℕ (suc (suc m′)) (suc n) ≡ distℕ (suc m′) n)
+                                        refl
+                                        (λ n′ inner → outer n′)
+                                        n)
 
 dist-lemma₃ : (n : ℕ) → distℕ n n ≡ 0
 dist-lemma₃ = indℕ (λ n → distℕ n n ≡ 0) refl (λ n ih → dist-lemma₂ n n □ ih)
@@ -259,7 +265,21 @@ _≅_mod_ : ℕ → ℕ → ℕ → Set
 x ≅ y mod k = k ∣ distℕ x y
 
 example723 : (n : ℕ) → n ≅ 0 mod n
-example723 = λ n → pair 1 (ℕ.*-identityʳ n □ sym (dist-lemma₁ n))
+example723 = λ n → pair 1 ((ℕ.*-identityʳ n □ sym (dist-lemma₁ n)))
 
 prop724a : (k n : ℕ) → n ≅ n mod k
 prop724a = λ k n → pair 0 (ℕ.*-zeroʳ k □ sym (dist-lemma₃ n))
+
+lemma724b : (m n : ℕ) → distℕ m n ≡ distℕ n m
+lemma724b = λ m → indℕ (λ m → (n : ℕ) → distℕ m n ≡ distℕ n m)
+                       (λ n → dist-lemma₁′ n □ sym (dist-lemma₁ n))
+                       (λ m′ outer n → indℕ (λ n → distℕ (suc m′) n ≡ distℕ n (suc m′))
+                                            refl
+                                            (λ n′ inner → dist-lemma₂ m′ n′ □ (outer n′ □ sym (dist-lemma₂ n′ m′)))
+                                            n)
+                       m
+
+prop724b : (k m n : ℕ) → m ≅ n mod k → n ≅ m mod k
+prop724b = λ k m n m≅n → indΣ (λ _ → n ≅ m mod k)
+                              (λ x q → pair x (q □ lemma724b m n))
+                              m≅n
