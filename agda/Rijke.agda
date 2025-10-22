@@ -235,6 +235,8 @@ _ = refl
 _ : distℕ 2 2 ≡ 0
 _ = refl
 
+--------------------------------------------------------------------------------
+-- dist-lemmas 
 
 dist-lemma₁ : (n : ℕ) → distℕ n 0 ≡ n
 dist-lemma₁ = indℕ (λ n → distℕ n 0 ≡ n) refl (λ _ _ → refl)
@@ -248,6 +250,10 @@ postulate
 
 dist-lemma₃ : (n : ℕ) → distℕ n n ≡ 0
 dist-lemma₃ = indℕ (λ n → distℕ n n ≡ 0) refl (λ n ih → dist-lemma₂ n n □ ih)
+
+
+--------------------------------------------------------------------------------
+-- §7 modular arithmetic
 
 _≅_mod_ : ℕ → ℕ → ℕ → Set
 x ≅ y mod k = k ∣ distℕ x y
