@@ -1,4 +1,5 @@
 open import Rijke
+open import Data.Nat.Properties
 
 _≲_ : ℕ → ℕ → Set
 _≲_ = λ m → indℕ (λ _ → ℕ → Set)
@@ -34,3 +35,21 @@ axiom₂ = {!!}
 -- no thanks
 axiom₃ : ∀ (m n k : ℕ) → distℕ m n ≲ (distℕ m k + distℕ n k)
 axiom₃ = λ m n k → indℕ (λ x → distℕ m n ≲ (distℕ m x + distℕ n x)) {!!} {!!} k
+
+--------------------------------------------------------------------------------
+-- #7.2
+-- Show that the divisibility relation satisfies the axioms of a poset:
+-- reflexive, antisymmetric, and transitive.
+
+∣-reflexive : ∀ m → m ∣ m 
+∣-reflexive = λ m → pair 1 (*-identityʳ m)
+
+lem : ∀ m k₁ k₂ → (suc m) * (k₁ * k₂) ≡ (suc m) * 1 → (k₁ ≡ 1) 
+lem = λ m k₁ k₂ eq → m*n≡1⇒m≡1 k₁ k₂ (*-cancelˡ-≡ (k₁ * k₂) 1 (suc m) eq)  
+
+∣-symmetric : ∀ m n → m ∣ n → n ∣ m → m ≡ n
+∣-symmetric = λ m n m∣n n∣m → 
+  indΣ (λ v → m ≡ n) 
+  -- (tr {B = λ x → x * k′ ≡ m} _ _ (inv _ _ p) q)
+  -- *-cancelˡ-≡ : (m₁ n₁ o : ℕ) .⦃ _ : NonZero o ⦄ → o * m₁ ≡ o * n₁ → m₁ ≡ n₁
+  (λ k p → (indΣ (λ v → m ≡ n) (λ k′ q → {!(tr {B = λ x → x * k′ ≡ m} _ _ (inv _ _ p) q)  !}) n∣m)) m∣n

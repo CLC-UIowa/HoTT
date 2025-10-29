@@ -279,7 +279,14 @@ lemma724b = λ m → indℕ (λ m → (n : ℕ) → distℕ m n ≡ distℕ n m)
                                             n)
                        m
 
+
 prop724b : (k m n : ℕ) → m ≅ n mod k → n ≅ m mod k
 prop724b = λ k m n m≅n → indΣ (λ _ → n ≅ m mod k)
                               (λ x q → pair x (q □ lemma724b m n))
                               m≅n
+
+-- prop724c' : (m n o k : ℕ) → m ≅ n mod k → n ≅ o mod k → m ≅ o mod k
+-- prop724c' m n o k (q₁ , eq₁) (q₂ , eq₂) = {!!} , {!!}
+
+-- prop724c : (m n o k : ℕ) → m ≅ n mod k → n ≅ o mod k → m ≅ o mod k
+-- prop724c = λ m n o k m≅n n≅o → {!!} 
