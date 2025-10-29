@@ -636,6 +636,27 @@ Terminology:
 \subsection{The laws of addition on $\NatTy$}
 
 \section{Universes}
+Universes can be thought of as types that consist of types.
+\subsection{Specification of Type Theoritic Universes}
+
+\subsection{Assuming Enough Universes}
+Some functions are closed under a universe. (\u+)
+Do not let the people talk about who cuts the barbers hair.
+
+\subsection{Obervational Equality over the natural numbers}
+\begin{definition}[Obervational Equality of $\NatTy$]
+  A binary relation satisfying the folowing computational laws
+  \[ Eq_\NatTy : \NatTy \to \NatTy \to \Univ_0 \]
+  \begin{gather*}
+    \ib{$Eq_\NatTy(0_\NatTy, 0_\NatTy) \doteq 1$}\rsp
+    \ib{$Eq_\NatTy(0_\NatTy, \Suc (n)) \doteq \EmptyTy$}\\
+    \ib{$Eq_\NatTy(\Suc (m), 0_\NatTy) \doteq \EmptyTy$}\rsp
+    \ib{$Eq_\NatTy(\Suc(n), \Suc (m)) \doteq Eq_\NatTy(n, m)$}
+  \end{gather*}
+
+\end{definition}
+
+\subsection{Peano's seventh and eigth universe}
 
 \section{Modular Arithmetic via The Curry Howard Interpretation}
 \section{Decidability in the Elementary Number Theory}

@@ -9,18 +9,19 @@ import Data.Sum
 open Data.Sum using (_⊎_) public
 import Data.Unit
 open import Function public
+open import Relation.Binary
 open import Relation.Binary.PropositionalEquality public
 
 open import Level using (Level)
 
 variable
-  ι : Level
+  ℓ : Level
   A B : Set
 
 -------------------------------------------------------------------------------
 -- Section 1.3: Natural numbers
 
-indℕ : (P : ℕ → Set ι) → P 0 → ((n : ℕ) → P n → P (suc n)) → (n : ℕ) → P n
+indℕ : (P : ℕ → Set ℓ) → P 0 → ((n : ℕ) → P n → P (suc n)) → (n : ℕ) → P n
 indℕ _ pz ps 0 = pz
 indℕ P pz ps (suc m) = ps m (indℕ P pz ps m)
 
@@ -57,7 +58,7 @@ _ = refl
 ⋆ = Data.Unit.tt
 
 
-ind𝟙 : (P : 𝟙 → Set ι) → P ⋆ → (u : 𝟙) → P u
+ind𝟙 : (P : 𝟙 → Set ℓ) → P ⋆ → (u : 𝟙) → P u
 ind𝟙 P p⋆ ⋆ = p⋆
 
 -------------------------------------------------------------------------------
@@ -66,7 +67,7 @@ ind𝟙 P p⋆ ⋆ = p⋆
 ∅ : Set
 ∅ = Data.Empty.⊥
 
-ind∅ : (P : ∅ → Set ι) → (x : ∅) → P x
+ind∅ : (P : ∅ → Set ℓ) → (x : ∅) → P x
 ind∅ _ ()
 
 ex-falso : ∅ → A
@@ -91,7 +92,7 @@ inl = Data.Sum.inj₁
 inr : B → A ⊎ B
 inr = Data.Sum.inj₂
 
-ind⊎ : (P : A ⊎ B → Set ι) → ((x : A) → P (inl x)) → ((y : B) → P (inr y)) → (z : A ⊎ B) → P z
+ind⊎ : (P : A ⊎ B → Set ℓ) → ((x : A) → P (inl x)) → ((y : B) → P (inr y)) → (z : A ⊎ B) → P z
 ind⊎ _ onl _ (Data.Sum.inj₁ x) = onl x
 ind⊎ _ _ onr (Data.Sum.inj₂ y) = onr y
 
@@ -111,7 +112,7 @@ ind⊎ _ _ onr (Data.Sum.inj₂ y) = onr y
 pair : ∀ {A : Set} {B : A → Set} → (x : A) → B x → Σ A B
 pair = λ x y → x , y
 
-indΣ : ∀ {A : Set} {B : A → Set} → (P : Σ A B → Set ι) → ((x : A) → (y : B x) → P (pair x y)) → (z : Σ A B) → P z
+indΣ : ∀ {A : Set} {B : A → Set} → (P : Σ A B → Set ℓ) → ((x : A) → (y : B x) → P (pair x y)) → (z : Σ A B) → P z
 indΣ P f (x , y) = f x y
 
 -- Definition 4.6.2
@@ -127,7 +128,7 @@ pr₂ {A} {B} = indΣ (λ z → B (pr₁ z)) (λ x y → y)
 
 -- We use `refl` unchanged
 
-ind≡ : (a : A) → (P : (x : A) → a ≡ x → Set ι) → P a refl → (x : A) → (p : a ≡ x) → P x p
+ind≡ : (a : A) → (P : (x : A) → a ≡ x → Set ℓ) → P a refl → (x : A) → (p : a ≡ x) → P x p
 ind≡ _ _ p _ refl = p
 
 concat : (x y z : A) → x ≡ y → y ≡ z → x ≡ z
@@ -236,7 +237,7 @@ _ : distℕ 2 2 ≡ 0
 _ = refl
 
 --------------------------------------------------------------------------------
--- dist-lemmas 
+-- dist-lemmas
 
 
 dist-lemma₁ : (n : ℕ) → distℕ n 0 ≡ n
@@ -290,3 +291,35 @@ prop724b = λ k m n m≅n → indΣ (λ _ → n ≅ m mod k)
 
 -- prop724c : (m n o k : ℕ) → m ≅ n mod k → n ≅ o mod k → m ≅ o mod k
 -- prop724c = λ m n o k m≅n n≅o → {!!} 
+
+--------------------------------------------------------------------------------
+-- §7 finite types
+--
+-- Potential name clash here...
+
+classical-Fin : ℕ → Set
+classical-Fin = λ k → Σ[ x ∈ ℕ ] x < k
+
+
+Fin : ℕ → Set
+Fin = indℕ (λ _ → Set) ∅ (λ _ ih → ih ⊎ 𝟙)
+
+-- Constructors...?
+
+ind-Fin : (P : (k : ℕ) (x : Fin k) → Set) →
+          ((k : ℕ) → P (suc k) (inr ⋆)) →
+          ((k : ℕ) (x : Fin k) → P k x → P (suc k) (inl x)) →
+          (k : ℕ) → (x : Fin k) → P k x
+ind-Fin = λ P gₖ pₖ → indℕ (λ k → (x : Fin k) → P k x)
+                          (λ x → ex-falso x)
+                          (λ n′ ih → ind⊎ (P (suc n′)) (λ x → pₖ n′ x (ih x)) (λ y → gₖ n′))
+
+ι : (k : ℕ) → Fin k → ℕ
+ι = ind-Fin (λ k x → ℕ) id (λ _ _ → id)
+
+-- Lemma 7.3.5
+
+lemma735 : (k : ℕ) (x : Fin k) → ι k x < k
+lemma735 = ind-Fin (λ k x → ι k x < k)
+                   {!   !}
+                   {!   !}
