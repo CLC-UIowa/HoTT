@@ -1,7 +1,6 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Data.Nat.Properties
-
 open import Rijke
 open import Data.Nat.Properties
 
@@ -61,21 +60,6 @@ axiom₃ = λ m n k →
              m)
        {!!}
        k
--------------------------------------------------------------------------------
--- Exercise 7.2
-
--- Show that the divisibility relation satisfies the laws of a poset
-
-∣-refl : (n : ℕ) → n ∣ n
-∣-refl = λ n → pair 1 (*-identityʳ n)
-
-lem : ∀ m k k′ → suc m * (k * k′) ≡ suc m * 1 → k ≡ 1
-lem m k k′ p = {!   !}
-
-∣-antisym : (m n : ℕ) → m ∣ n → n ∣ m → m ≡ n
-∣-antisym zero n (k , refl) (k′ , p′) = refl
-∣-antisym (suc m) n (k , refl) (k′ , p′) = {!   !}
-
 
 --------------------------------------------------------------------------------
 -- #7.2
@@ -88,9 +72,20 @@ lem m k k′ p = {!   !}
 lem : ∀ m k₁ k₂ → (suc m) * (k₁ * k₂) ≡ (suc m) * 1 → (k₁ ≡ 1)
 lem = λ m k₁ k₂ eq → m*n≡1⇒m≡1 k₁ k₂ (*-cancelˡ-≡ (k₁ * k₂) 1 (suc m) eq)
 
+∣-symmetric′ : ∀ m n → m ∣ n → n ∣ m → m ≡ n
+∣-symmetric′ zero n (k , refl) (k′ , q′) = refl
+∣-symmetric′ (suc m) n (k , refl) (k′ , q′)
+  rewrite m*n≡1⇒m≡1 k k′
+            (*-cancelˡ-≡ (k * k′) 1 (suc m)
+              ((sym (*-assoc (suc m) k k′) □ q′) □ sym (*-identityʳ (suc m))))
+  = sym (*-identityʳ (suc m))
+
 ∣-symmetric : ∀ m n → m ∣ n → n ∣ m → m ≡ n
 ∣-symmetric = λ m n m∣n n∣m →
   indΣ (λ v → m ≡ n)
   -- (tr {B = λ x → x * k′ ≡ m} _ _ (inv _ _ p) q)
   -- *-cancelˡ-≡ : (m₁ n₁ o : ℕ) .⦃ _ : NonZero o ⦄ → o * m₁ ≡ o * n₁ → m₁ ≡ n₁
   (λ k p → (indΣ (λ v → m ≡ n) (λ k′ q → {!(tr {B = λ x → x * k′ ≡ m} _ _ (inv _ _ p) q)  !}) n∣m)) m∣n
+
+∣-transitive′ : ∀ m n p → m ∣ n → n ∣ p → m ∣ p
+∣-transitive′ m n p (k , refl) (k′ , refl) = (k * k′) , sym (*-assoc m k k′)

@@ -290,7 +290,7 @@ prop724b = λ k m n m≅n → indΣ (λ _ → n ≅ m mod k)
 -- prop724c' m n o k (q₁ , eq₁) (q₂ , eq₂) = {!!} , {!!}
 
 -- prop724c : (m n o k : ℕ) → m ≅ n mod k → n ≅ o mod k → m ≅ o mod k
--- prop724c = λ m n o k m≅n n≅o → {!!} 
+-- prop724c = λ m n o k m≅n n≅o → {!!}
 
 --------------------------------------------------------------------------------
 -- §7 finite types
@@ -319,7 +319,7 @@ ind-Fin = λ P gₖ pₖ → indℕ (λ k → (x : Fin k) → P k x)
 
 -- Lemma 7.3.5
 
-lemma735 : (k : ℕ) (x : Fin k) → ι k x < k
-lemma735 = ind-Fin (λ k x → ι k x < k)
-                   {!   !}
-                   {!   !}
+-- lemma735 : (k : ℕ) (x : Fin k) → ι k x < k
+-- lemma735 = ind-Fin (λ k x → ι k x < k)
+--                    {!   !}
+--                    {!   !}
