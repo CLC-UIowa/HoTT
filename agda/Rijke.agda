@@ -324,11 +324,32 @@ ind-Fin = λ P gₖ pₖ → indℕ (λ k → (x : Fin k) → P k x)
 
 -- Lemma 7.3.5
 
+test1 : ι 3 (inl (inl (inr ⋆))) ≡ 0
+test1 = refl
+
+test2 : ι 3 (inl (inr ⋆)) ≡ 1
+test2 = refl
+
+test3 : ι 3 (inr ⋆) ≡ 2
+test3 = refl
+
+k<k+1 : (k : ℕ) -> k < suc k
+k<k+1 = {!   !}
+
+<-trans : (a b c : ℕ) -> a < b -> b < c -> a < c
+<-trans = {!   !}
+
 lemma735′ : (k : ℕ) (x : Fin k) → ι k x < k
-lemma735′ (suc k) (_⊎_.inj₁ x) = {!   !}
-lemma735′ (suc k) (_⊎_.inj₂ y) = {!   !}
+lemma735′ (suc k) (_⊎_.inj₁ x) = <-trans (ι k x) k (suc k) (lemma735′ k x) (k<k+1 k)
+lemma735′ (suc k) (_⊎_.inj₂ y) = k<k+1 k
 
 lemma735 : (k : ℕ) (x : Fin k) → ι k x < k
 lemma735 = ind-Fin (λ k x → ι k x < k)
                    (λ k → {!   !})
                    (λ k x ih → {!   !})
+
+-- indℕ (λ _ → ℕ → Set) (λ n → 𝟙)
+--       (λ m′ outer → indℕ (λ _ → Set) ∅ (λ n′ _ → outer n′))
+--       (indℕ (λ k₁ → (x₁ : Fin k₁) → ℕ) (λ x₁ → ex-falso x₁)
+--        (λ n′ ih → ind⊎ (λ x₁ → ℕ) (λ x₁ → id (ih x₁)) (λ y → id n′)) k x)
+--       (suc k)
