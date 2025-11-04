@@ -72,16 +72,16 @@ axiom₃ = λ m n k →
 lem : ∀ m k₁ k₂ → (suc m) * (k₁ * k₂) ≡ (suc m) * 1 → (k₁ ≡ 1)
 lem = λ m k₁ k₂ eq → m*n≡1⇒m≡1 k₁ k₂ (*-cancelˡ-≡ (k₁ * k₂) 1 (suc m) eq)
 
-∣-symmetric′ : ∀ m n → m ∣ n → n ∣ m → m ≡ n
-∣-symmetric′ zero n (k , refl) (k′ , q′) = refl
-∣-symmetric′ (suc m) n (k , refl) (k′ , q′)
+∣-antisym′ : ∀ m n → m ∣ n → n ∣ m → m ≡ n
+∣-antisym′ zero n (k , refl) (k′ , q′) = refl
+∣-antisym′ (suc m) n (k , refl) (k′ , q′)
   rewrite m*n≡1⇒m≡1 k k′
             (*-cancelˡ-≡ (k * k′) 1 (suc m)
               ((sym (*-assoc (suc m) k k′) □ q′) □ sym (*-identityʳ (suc m))))
   = sym (*-identityʳ (suc m))
 
-∣-symmetric : ∀ m n → m ∣ n → n ∣ m → m ≡ n
-∣-symmetric = λ m n m∣n n∣m →
+∣-antisym : ∀ m n → m ∣ n → n ∣ m → m ≡ n
+∣-antisym = λ m n m∣n n∣m →
   indΣ (λ v → m ≡ n)
   -- (tr {B = λ x → x * k′ ≡ m} _ _ (inv _ _ p) q)
   -- *-cancelˡ-≡ : (m₁ n₁ o : ℕ) .⦃ _ : NonZero o ⦄ → o * m₁ ≡ o * n₁ → m₁ ≡ n₁
