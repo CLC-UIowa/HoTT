@@ -1,9 +1,10 @@
 {-# OPTIONS --cubical-compatible #-}
+{-# OPTIONS --allow-unsolved-metas #-}
 
 module Rijke where
 
 import Data.Empty
-open import Data.Nat public
+open import Data.Nat hiding (_!; _<_) public
 open import Data.Product public
 import Data.Sum
 open Data.Sum using (_⊎_) public
@@ -297,9 +298,13 @@ prop724b = λ k m n m≅n → indΣ (λ _ → n ≅ m mod k)
 --
 -- Potential name clash here...
 
+-- Erm, am I supposed to be using this definition?
+
+_<_ : ℕ → ℕ → Set
+_<_ = indℕ (λ _ → ℕ → Set) (λ n → 𝟙) λ m′ outer → indℕ (λ _ → Set) ∅ λ n′ _ → outer n′
+
 classical-Fin : ℕ → Set
 classical-Fin = λ k → Σ[ x ∈ ℕ ] x < k
-
 
 Fin : ℕ → Set
 Fin = indℕ (λ _ → Set) ∅ (λ _ ih → ih ⊎ 𝟙)
@@ -319,7 +324,11 @@ ind-Fin = λ P gₖ pₖ → indℕ (λ k → (x : Fin k) → P k x)
 
 -- Lemma 7.3.5
 
--- lemma735 : (k : ℕ) (x : Fin k) → ι k x < k
--- lemma735 = ind-Fin (λ k x → ι k x < k)
---                    {!   !}
---                    {!   !}
+lemma735′ : (k : ℕ) (x : Fin k) → ι k x < k
+lemma735′ (suc k) (_⊎_.inj₁ x) = {!   !}
+lemma735′ (suc k) (_⊎_.inj₂ y) = {!   !}
+
+lemma735 : (k : ℕ) (x : Fin k) → ι k x < k
+lemma735 = ind-Fin (λ k x → ι k x < k)
+                   (λ k → {!   !})
+                   (λ k x ih → {!   !})
