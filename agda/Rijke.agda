@@ -333,11 +333,17 @@ test2 = refl
 test3 : ι 3 (inr ⋆) ≡ 2
 test3 = refl
 
-k<k+1 : (k : ℕ) -> k < suc k
-k<k+1 = {!   !}
+k<k+1 : (k : ℕ) → k < suc k
+k<k+1 = indℕ (λ k → k < suc k) ⋆ (λ k′ ih → ih)
 
-<-trans : (a b c : ℕ) -> a < b -> b < c -> a < c
-<-trans = {!   !}
+<-trans : (a b c : ℕ) → a < b → b < c → a < c
+<-trans = indℕ (λ a → (b c : ℕ) → a < b → b < c → a < c)
+               (λ _ _ _ _ → ⋆)
+               λ a′ ih → indℕ (λ b → (c : ℕ) → suc a′ < b → b < c → suc a′ < c)
+                              (λ _ → ex-falso)
+                              (λ b′ _ → indℕ (λ c → suc a′ < suc b′ → suc b′ < c → suc a′ < c)
+                                             (λ _ → ex-falso)
+                                             (λ c′ _ q₁ q₂ → ih b′ c′ q₁ q₂))
 
 lemma735′ : (k : ℕ) (x : Fin k) → ι k x < k
 lemma735′ (suc k) (_⊎_.inj₁ x) = <-trans (ι k x) k (suc k) (lemma735′ k x) (k<k+1 k)
@@ -345,11 +351,16 @@ lemma735′ (suc k) (_⊎_.inj₂ y) = k<k+1 k
 
 lemma735 : (k : ℕ) (x : Fin k) → ι k x < k
 lemma735 = ind-Fin (λ k x → ι k x < k)
-                   (λ k → {!   !})
-                   (λ k x ih → {!   !})
+                   (λ k → k<k+1 k)
+                   (λ k x ih → <-trans (ι k x) k (suc k) ih (k<k+1 k))
 
 -- indℕ (λ _ → ℕ → Set) (λ n → 𝟙)
 --       (λ m′ outer → indℕ (λ _ → Set) ∅ (λ n′ _ → outer n′))
 --       (indℕ (λ k₁ → (x₁ : Fin k₁) → ℕ) (λ x₁ → ex-falso x₁)
 --        (λ n′ ih → ind⊎ (λ x₁ → ℕ) (λ x₁ → id (ih x₁)) (λ y → id n′)) k x)
 --       (suc k)
+
+ι-injective : (k : ℕ) → (x y : Fin k) → ι k x ≡ ι k y → x ≡ y
+ι-injective = ind-Fin (λ k x → (y : Fin k) → ι k x ≡ ι k y → x ≡ y)
+                      {!   !}
+                      {!   !}
