@@ -81,11 +81,22 @@ lem = λ m k₁ k₂ eq → m*n≡1⇒m≡1 k₁ k₂ (*-cancelˡ-≡ (k₁ * k�
   = sym (*-identityʳ (suc m))
 
 ∣-antisym : ∀ m n → m ∣ n → n ∣ m → m ≡ n
-∣-antisym = λ m n m∣n n∣m →
+∣-antisym m n m∣n n∣m =
+  -- Try using this as starting point:
+  -- indℕ ? ? ? m ...
   indΣ (λ v → m ≡ n)
   -- (tr {B = λ x → x * k′ ≡ m} _ _ (inv _ _ p) q)
   -- *-cancelˡ-≡ : (m₁ n₁ o : ℕ) .⦃ _ : NonZero o ⦄ → o * m₁ ≡ o * n₁ → m₁ ≡ n₁
   (λ k p → (indΣ (λ v → m ≡ n) (λ k′ q → {!(tr {B = λ x → x * k′ ≡ m} _ _ (inv _ _ p) q)  !}) n∣m)) m∣n
 
 ∣-transitive′ : ∀ m n p → m ∣ n → n ∣ p → m ∣ p
-∣-transitive′ m n p (k , refl) (k′ , refl) = (k * k′) , sym (*-assoc m k k′)
+∣-transitive′ m n p (x , refl) (y , refl) = (x * y) , sym (*-assoc m x y)
+
+-- indΣ : ∀ {A : Set} {B : A → Set} → (P : Σ A B → Set ℓ) → ((x : A) → (y : B x) → P (pair x y)) → (z : Σ A B) → P z
+∣-transitive : ∀ m n p → m ∣ n → n ∣ p → m ∣ p
+∣-transitive m n p m|n = indΣ (λ _ → n ∣ p → m ∣ p)
+                 (λ x e → ind≡ (m * x)
+                   (λ n' _ → n' ∣ p → m ∣ p)
+                   (λ n'|p → indΣ (λ _ → m ∣ p) (λ y e' →
+                      ind≡ (m * x * y) (λ p' _ → m ∣ p') (x * y , sym (*-assoc m x y)) p e') n'|p) n e)
+                 m|n
