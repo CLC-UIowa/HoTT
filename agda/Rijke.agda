@@ -85,6 +85,8 @@ data _⊎_ (A : Set) (B : Set) : Set where
   inl : A → A ⊎ B
   inr : B → A ⊎ B
 
+infixr 1 _⊎_
+
 ind⊎ : (P : A ⊎ B → Set ℓ) → ((x : A) → P (inl x)) → ((y : B) → P (inr y)) → (z : A ⊎ B) → P z
 ind⊎ _ onl _ (inl x) = onl x
 ind⊎ _ _ onr (inr y) = onr y
