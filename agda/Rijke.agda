@@ -301,7 +301,9 @@ prop724b = λ k m n m≅n → indΣ (λ _ → n ≅ m mod k)
 -- Erm, am I supposed to be using this definition?
 
 _<_ : ℕ → ℕ → Set
-_<_ = indℕ (λ _ → ℕ → Set) (λ n → 𝟙) λ m′ outer → indℕ (λ _ → Set) ∅ λ n′ _ → outer n′
+_<_ = indℕ (λ _ → ℕ → Set)
+           (λ n → indℕ (λ _ → Set) ∅ (λ _ _ → 𝟙) n)
+           (λ m′ outer → indℕ (λ _ → Set) ∅ λ n′ _ → outer n′)
 
 classical-Fin : ℕ → Set
 classical-Fin = λ k → Σ[ x ∈ ℕ ] x < k
@@ -322,6 +324,16 @@ ind-Fin = λ P gₖ pₖ → indℕ (λ k → (x : Fin k) → P k x)
 ι : (k : ℕ) → Fin k → ℕ
 ι = ind-Fin (λ k x → ℕ) id (λ _ _ → id)
 
+ι′ : (k : ℕ) → Fin k → ℕ
+ι′ = ind-Fin (λ _ _ → ℕ) (λ _ → 0) (λ _ _ → suc)
+
+_ : ι′ 3 (inr ⋆) ≡ 0
+_ = refl
+
+_ : ι′ 3 (inl (inr ⋆)) ≡ 1
+_ = refl
+
+
 -- Lemma 7.3.5
 
 test1 : ι 3 (inl (inl (inr ⋆))) ≡ 0
@@ -338,7 +350,13 @@ k<k+1 = indℕ (λ k → k < suc k) ⋆ (λ k′ ih → ih)
 
 <-trans : (a b c : ℕ) → a < b → b < c → a < c
 <-trans = indℕ (λ a → (b c : ℕ) → a < b → b < c → a < c)
-               (λ _ _ _ _ → ⋆)
+               (indℕ (λ b → (c : ℕ) → 0 < b → b < c → 0 < c)
+                     (indℕ (λ c → 0 < 0 → 0 < c → 0 < c)
+                           (λ a<b b<c → a<b)
+                           (λ _ _ _ → id))
+                     λ b′ ih → indℕ (λ c → 0 < suc b′ → suc b′ < c → 0 < c)
+                                    (λ _ → id)
+                                    λ _ _ _ _ → ⋆)
                λ a′ ih → indℕ (λ b → (c : ℕ) → suc a′ < b → b < c → suc a′ < c)
                               (λ _ → ex-falso)
                               (λ b′ _ → indℕ (λ c → suc a′ < suc b′ → suc b′ < c → suc a′ < c)
@@ -354,13 +372,30 @@ lemma735 = ind-Fin (λ k x → ι k x < k)
                    (λ k → k<k+1 k)
                    (λ k x ih → <-trans (ι k x) k (suc k) ih (k<k+1 k))
 
--- indℕ (λ _ → ℕ → Set) (λ n → 𝟙)
---       (λ m′ outer → indℕ (λ _ → Set) ∅ (λ n′ _ → outer n′))
---       (indℕ (λ k₁ → (x₁ : Fin k₁) → ℕ) (λ x₁ → ex-falso x₁)
---        (λ n′ ih → ind⊎ (λ x₁ → ℕ) (λ x₁ → id (ih x₁)) (λ y → id n′)) k x)
---       (suc k)
+lem : (k : ℕ) → (z : Fin k) → ι (suc k) (inl z) < k
+lem (suc k) (_⊎_.inj₁ x) =
+  let ih = lem k x in
+  {!   !}
+lem (suc k) (_⊎_.inj₂ Data.Unit.tt) = {!   !}
+
+lemF : ∀ k x → ι (suc k) (inl x) ≡ ι (suc k) (inr ⋆) → ∅
+lemF = {!   !}
+
+lemG : ∀ k x → ι (suc k) (inr ⋆) ≡ ι (suc k) (inl x) → ∅
+lemG = {!   !}
+
+ι-injective′ : (k : ℕ) → (x y : Fin k) → ι k x ≡ ι k y → x ≡ y
+ι-injective′ (suc k) (_⊎_.inj₁ x) (_⊎_.inj₁ y) q =
+  let q′ = ι-injective′ k x y
+  in ap inl x y (q′ q)
+ι-injective′ (suc k) (_⊎_.inj₁ x) (_⊎_.inj₂ Data.Unit.tt) q = ex-falso (lemF _ _ q)
+ι-injective′ (suc k) (_⊎_.inj₂ Data.Unit.tt) (_⊎_.inj₁ x) q = ex-falso (lemG _ _ q)
+ι-injective′ (suc k) (_⊎_.inj₂ Data.Unit.tt) (_⊎_.inj₂ Data.Unit.tt) q = refl
 
 ι-injective : (k : ℕ) → (x y : Fin k) → ι k x ≡ ι k y → x ≡ y
 ι-injective = ind-Fin (λ k x → (y : Fin k) → ι k x ≡ ι k y → x ≡ y)
-                      {!   !}
+                      (λ k y → ind-Fin (λ k′ y′ → {!   !})
+                                       {!   !}
+                                       {!   !}
+                                       (suc k) y)
                       {!   !}
