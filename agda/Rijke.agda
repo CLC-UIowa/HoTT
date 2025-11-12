@@ -302,8 +302,15 @@ prop724b = λ k m n m≅n → indΣ (λ _ → n ≅ m mod k)
 
 _<_ : ℕ → ℕ → Set
 _<_ = indℕ (λ _ → ℕ → Set)
-           (λ n → indℕ (λ _ → Set) ∅ (λ _ _ → 𝟙) n)
-           (λ m′ outer → indℕ (λ _ → Set) ∅ λ n′ _ → outer n′)
+        (λ n → indℕ (λ _ → Set) ∅ (λ _ _ → 𝟙) n)
+        λ m′ outer → indℕ (λ _ → Set) ∅ λ n′ _ → outer n′
+
+blah-zero : zero < zero ≡ ∅
+blah-zero = refl
+
+blah : ∀ b → (zero < (suc b) ≡ 𝟙)
+blah = λ b → refl
+
 
 classical-Fin : ℕ → Set
 classical-Fin = λ k → Σ[ x ∈ ℕ ] x < k
@@ -372,11 +379,11 @@ lemma735 = ind-Fin (λ k x → ι k x < k)
                    (λ k → k<k+1 k)
                    (λ k x ih → <-trans (ι k x) k (suc k) ih (k<k+1 k))
 
-lem : (k : ℕ) → (z : Fin k) → ι (suc k) (inl z) < k
-lem (suc k) (_⊎_.inj₁ x) =
-  let ih = lem k x in
-  {!   !}
-lem (suc k) (_⊎_.inj₂ Data.Unit.tt) = {!   !}
+-- lem : (k : ℕ) → (z : Fin k) → ι (suc k) (inl z) < k
+-- lem (suc k) (_⊎_.inj₁ x) =
+--   let ih = lem k x in
+--   {!   !}
+-- lem (suc k) (_⊎_.inj₂ Data.Unit.tt) = {!   !}
 
 lemF : ∀ k x → ι (suc k) (inl x) ≡ ι (suc k) (inr ⋆) → ∅
 lemF = {!   !}

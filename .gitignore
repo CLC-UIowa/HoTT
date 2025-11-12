@@ -27,3 +27,5 @@ sty/auto/*
 *.synctex.gz
 
 *.agdai
+
+*.DS_Store

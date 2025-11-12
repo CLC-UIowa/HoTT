@@ -100,3 +100,41 @@ lem = λ m k₁ k₂ eq → m*n≡1⇒m≡1 k₁ k₂ (*-cancelˡ-≡ (k₁ * k�
                    (λ n'|p → indΣ (λ _ → m ∣ p) (λ y e' →
                       ind≡ (m * x * y) (λ p' _ → m ∣ p') (x * y , sym (*-assoc m x y)) p e') n'|p) n e)
                  m|n
+
+
+-- Exercise 7.7
+
+-- classical-Fin : ℕ → Set
+-- classical-Fin = λ k → Σ[ x ∈ ℕ ] x < k
+<-irr-cheat : (a b : ℕ) → (p q : a < b) -> p ≡ q
+<-irr-cheat zero (suc b) p q = refl
+<-irr-cheat (suc n) (suc m) p q = <-irr-cheat n m p q
+
+<-irr : (a b : ℕ) → (p q : a < b) -> p ≡ q
+<-irr a = indℕ (λ a → (b : ℕ) → (p q : a < b) → p ≡ q)
+      {- pa ₀ -} (λ b → indℕ (λ b → (p q : 0 < b) → p ≡ q)
+               {-pb 0 -} (λ p → ex-falso p)
+               {-pb s -} (λ n ih p →
+                           ind𝟙 (λ (p : 0 < suc n) → (q : 0 < suc n) → p ≡ q)
+                                (ind𝟙 (λ q → ⋆ ≡ q) refl)
+                                p)
+                        b)
+      {- pa ₛ -} (λ n iha b → indℕ ((λ b → (p q : suc n < b) → p ≡ q))
+                    {-pb 0-}(λ p → ex-falso p)
+                    {-pb 1-}(λ m ihb → iha m)
+                    b)
+               a
+
+-- Part (a)
+ex77alr : (k : ℕ) → (x y : classical-Fin k)
+        → (x ≡ y) → pr₁ x ≡ pr₁ y
+ex77alr k x y p = ap pr₁ x y p
+
+ex77arl-cheat : (k : ℕ) → (x y : classical-Fin k)
+        → pr₁ x ≡ pr₁ y → (x ≡ y)
+ex77arl-cheat k (fst , snd) (fst₁ , snd₁) refl = {!!}
+
+
+ex77arl : (k : ℕ) → (x y : classical-Fin k)
+        → pr₁ x ≡ pr₁ y → (x ≡ y)
+ex77arl k x y p = {!!}
