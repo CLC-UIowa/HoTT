@@ -6,8 +6,6 @@ module Rijke where
 import Data.Empty
 open import Data.Nat hiding (_!; _<_) public
 open import Data.Product public
-import Data.Sum
-open Data.Sum using (_⊎_) public
 import Data.Unit
 open import Function public
 open import Relation.Binary
@@ -52,12 +50,8 @@ _ = refl
 
 -- To align with Rijke's notation:
 
-𝟙 : Set
-𝟙 = Data.Unit.⊤
-
-⋆ : 𝟙
-⋆ = Data.Unit.tt
-
+data 𝟙 : Set where
+  ⋆ : 𝟙
 
 ind𝟙 : (P : 𝟙 → Set ℓ) → P ⋆ → (u : 𝟙) → P u
 ind𝟙 P p⋆ ⋆ = p⋆
@@ -87,15 +81,13 @@ contrapositive = λ A→B B→∅ A → B→∅ (A→B A)
 
 -- To avoid overloading `+`, we stick with Agda's `⊎` for coproducts...
 
-inl : A → A ⊎ B
-inl = Data.Sum.inj₁
-
-inr : B → A ⊎ B
-inr = Data.Sum.inj₂
+data _⊎_ (A : Set) (B : Set) : Set where
+  inl : A → A ⊎ B
+  inr : B → A ⊎ B
 
 ind⊎ : (P : A ⊎ B → Set ℓ) → ((x : A) → P (inl x)) → ((y : B) → P (inr y)) → (z : A ⊎ B) → P z
-ind⊎ _ onl _ (Data.Sum.inj₁ x) = onl x
-ind⊎ _ _ onr (Data.Sum.inj₂ y) = onr y
+ind⊎ _ onl _ (inl x) = onl x
+ind⊎ _ _ onr (inr y) = onr y
 
 -- Proposition 4.4.3
 
@@ -326,7 +318,7 @@ ind-Fin : (P : (k : ℕ) (x : Fin k) → Set) →
           (k : ℕ) → (x : Fin k) → P k x
 ind-Fin = λ P gₖ pₖ → indℕ (λ k → (x : Fin k) → P k x)
                           (λ x → ex-falso x)
-                          (λ n′ ih → ind⊎ (P (suc n′)) (λ x → pₖ n′ x (ih x)) (λ y → gₖ n′))
+                          (λ n′ ih → ind⊎ (P (suc n′)) (λ x → pₖ n′ x (ih x)) (λ y → ind𝟙 (λ y → P (suc n′) (inr y)) (gₖ n′) y))
 
 ι : (k : ℕ) → Fin k → ℕ
 ι = ind-Fin (λ k x → ℕ) id (λ _ _ → id)
@@ -339,7 +331,6 @@ _ = refl
 
 _ : ι′ 3 (inl (inr ⋆)) ≡ 1
 _ = refl
-
 
 -- Lemma 7.3.5
 
@@ -371,19 +362,19 @@ k<k+1 = indℕ (λ k → k < suc k) ⋆ (λ k′ ih → ih)
                                              (λ c′ _ q₁ q₂ → ih b′ c′ q₁ q₂))
 
 lemma735′ : (k : ℕ) (x : Fin k) → ι k x < k
-lemma735′ (suc k) (_⊎_.inj₁ x) = <-trans (ι k x) k (suc k) (lemma735′ k x) (k<k+1 k)
-lemma735′ (suc k) (_⊎_.inj₂ y) = k<k+1 k
+lemma735′ (suc k) (inl x) = <-trans (ι k x) k (suc k) (lemma735′ k x) (k<k+1 k)
+lemma735′ (suc k) (inr ⋆) = k<k+1 k
 
 lemma735 : (k : ℕ) (x : Fin k) → ι k x < k
 lemma735 = ind-Fin (λ k x → ι k x < k)
                    (λ k → k<k+1 k)
                    (λ k x ih → <-trans (ι k x) k (suc k) ih (k<k+1 k))
 
--- lem : (k : ℕ) → (z : Fin k) → ι (suc k) (inl z) < k
--- lem (suc k) (_⊎_.inj₁ x) =
---   let ih = lem k x in
---   {!   !}
--- lem (suc k) (_⊎_.inj₂ Data.Unit.tt) = {!   !}
+lem : (k : ℕ) → (z : Fin k) → ι (suc k) (inl z) < k
+lem (suc k) (inl x) =
+  let ih = lem k x in
+  {!   !}
+lem (suc k) (inr ⋆) = {!   !}
 
 lemF : ∀ k x → ι (suc k) (inl x) ≡ ι (suc k) (inr ⋆) → ∅
 lemF = {!   !}
@@ -392,12 +383,12 @@ lemG : ∀ k x → ι (suc k) (inr ⋆) ≡ ι (suc k) (inl x) → ∅
 lemG = {!   !}
 
 ι-injective′ : (k : ℕ) → (x y : Fin k) → ι k x ≡ ι k y → x ≡ y
-ι-injective′ (suc k) (_⊎_.inj₁ x) (_⊎_.inj₁ y) q =
+ι-injective′ (suc k) (inl x) (inl y) q =
   let q′ = ι-injective′ k x y
   in ap inl x y (q′ q)
-ι-injective′ (suc k) (_⊎_.inj₁ x) (_⊎_.inj₂ Data.Unit.tt) q = ex-falso (lemF _ _ q)
-ι-injective′ (suc k) (_⊎_.inj₂ Data.Unit.tt) (_⊎_.inj₁ x) q = ex-falso (lemG _ _ q)
-ι-injective′ (suc k) (_⊎_.inj₂ Data.Unit.tt) (_⊎_.inj₂ Data.Unit.tt) q = refl
+ι-injective′ (suc k) (inl x) (inr ⋆) q = ex-falso (lemF _ _ q)
+ι-injective′ (suc k) (inr ⋆) (inl x) q = ex-falso (lemG _ _ q)
+ι-injective′ (suc k) (inr ⋆) (inr ⋆) q = refl
 
 ι-injective : (k : ℕ) → (x y : Fin k) → ι k x ≡ ι k y → x ≡ y
 ι-injective = ind-Fin (λ k x → (y : Fin k) → ι k x ≡ ι k y → x ≡ y)
