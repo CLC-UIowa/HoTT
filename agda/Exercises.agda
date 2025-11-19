@@ -1,14 +1,14 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Data.Nat.Properties
-open import Rijke
+open import Rijke renaming (𝟙 to ⊤ ; ind𝟙 to ind⊤)
 open import Data.Nat.Properties
 
 _≲_ : ℕ → ℕ → Set
 _≲_ = λ m → indℕ (λ _ → ℕ → Set)
                  (λ n → indℕ (λ _ → Set)
-                             𝟙
-                             (λ n′ inner → 𝟙)
+                             ⊤
+                             (λ n′ inner → ⊤)
                              n)
                  (λ m′ outer n → indℕ (λ _ → Set)
                                       ∅
@@ -69,8 +69,8 @@ axiom₃ = λ m n k →
 ∣-reflexive : ∀ m → m ∣ m
 ∣-reflexive = λ m → pair 1 (*-identityʳ m)
 
-lem : ∀ m k₁ k₂ → (suc m) * (k₁ * k₂) ≡ (suc m) * 1 → (k₁ ≡ 1)
-lem = λ m k₁ k₂ eq → m*n≡1⇒m≡1 k₁ k₂ (*-cancelˡ-≡ (k₁ * k₂) 1 (suc m) eq)
+lem-suc* : ∀ m k₁ k₂ → (suc m) * (k₁ * k₂) ≡ (suc m) * 1 → (k₁ ≡ 1)
+lem-suc* = λ m k₁ k₂ eq → m*n≡1⇒m≡1 k₁ k₂ (*-cancelˡ-≡ (k₁ * k₂) 1 (suc m) eq)
 
 ∣-antisym′ : ∀ m n → m ∣ n → n ∣ m → m ≡ n
 ∣-antisym′ zero n (k , refl) (k′ , q′) = refl
@@ -104,19 +104,23 @@ lem = λ m k₁ k₂ eq → m*n≡1⇒m≡1 k₁ k₂ (*-cancelˡ-≡ (k₁ * k�
 
 -- Exercise 7.7
 
+import Data.Unit as Unit
+⊤-η-law : ∀ (p : Unit.⊤) → p ≡ Unit.tt
+⊤-η-law p = refl
+
 -- classical-Fin : ℕ → Set
 -- classical-Fin = λ k → Σ[ x ∈ ℕ ] x < k
 <-irr-cheat : (a b : ℕ) → (p q : a < b) -> p ≡ q
-<-irr-cheat zero (suc b) p q = refl
+<-irr-cheat zero (suc b) ⋆ ⋆ = refl
 <-irr-cheat (suc n) (suc m) p q = <-irr-cheat n m p q
 
-<-irr : (a b : ℕ) → (p q : a < b) -> p ≡ q
+<-irr : (a b : ℕ) → (p q : a < b) → p ≡ q
 <-irr a = indℕ (λ a → (b : ℕ) → (p q : a < b) → p ≡ q)
       {- pa ₀ -} (λ b → indℕ (λ b → (p q : 0 < b) → p ≡ q)
                {-pb 0 -} (λ p → ex-falso p)
                {-pb s -} (λ n ih p →
-                           ind𝟙 (λ (p : 0 < suc n) → (q : 0 < suc n) → p ≡ q)
-                                (ind𝟙 (λ q → ⋆ ≡ q) refl)
+                           ind⊤ (λ (p : 0 < suc n) → (q : 0 < suc n) → p ≡ q)
+                                (ind⊤ (λ q → ⋆ ≡ q) refl)
                                 p)
                         b)
       {- pa ₛ -} (λ n iha b → indℕ ((λ b → (p q : suc n < b) → p ≡ q))
@@ -124,7 +128,6 @@ lem = λ m k₁ k₂ eq → m*n≡1⇒m≡1 k₁ k₂ (*-cancelˡ-≡ (k₁ * k�
                     {-pb 1-}(λ m ihb → iha m)
                     b)
                a
-
 -- Part (a)
 ex77alr : (k : ℕ) → (x y : classical-Fin k)
         → (x ≡ y) → pr₁ x ≡ pr₁ y
@@ -132,9 +135,23 @@ ex77alr k x y p = ap pr₁ x y p
 
 ex77arl-cheat : (k : ℕ) → (x y : classical-Fin k)
         → pr₁ x ≡ pr₁ y → (x ≡ y)
-ex77arl-cheat k (fst , snd) (fst₁ , snd₁) refl = {!!}
+ex77arl-cheat k (n , n<k) (m , n<k') refl = ap (_,_ n) n<k n<k' (<-irr n k n<k n<k')
 
 
 ex77arl : (k : ℕ) → (x y : classical-Fin k)
         → pr₁ x ≡ pr₁ y → (x ≡ y)
-ex77arl k x y p = {!!}
+ex77arl k  = λ x y → 
+  indΣ 
+    (λ x → pr₁ x ≡ pr₁ y → x ≡ y) 
+    (λ a a<k → indΣ 
+       (λ y → a ≡ pr₁ y → pair a a<k ≡ y) 
+       (λ b b<k → 
+          λ eq → ind≡ 
+            a 
+            -- Using Andrew's Cedille generalization trick to bring e : b ≡ n
+            -- into scope is crucial here.
+            (λ n a≡n → (e : b ≡ n) → pair a a<k ≡ pair n (tr _ _ e b<k)) 
+            (λ e → ap (pair a) a<k (tr _ _ e b<k) (<-irr a k a<k (tr b a e b<k))) 
+            b eq  refl) 
+       y)
+    x
