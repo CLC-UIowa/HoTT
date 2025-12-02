@@ -4,18 +4,18 @@
 module Rijke where
 
 import Data.Empty
-open import Data.Nat hiding (_!; _<_) public
+open import Data.Nat hiding (_!; _<_ ; _⊔_) public
 open import Data.Product public
 import Data.Unit
 open import Function public
 open import Relation.Binary
-open import Relation.Binary.PropositionalEquality public
-
+open import Relation.Binary.PropositionalEquality hiding (J) public
 open import Level using (Level)
+open import Agda.Primitive using (lsuc ; _⊔_ ; Setω)
 
 variable
-  ℓ : Level
-  A B : Set
+  ℓ ℓ₁ ℓ₂ ℓ₃ : Level
+  A B : Set ℓ
 
 -------------------------------------------------------------------------------
 -- Section 1.3: Natural numbers
@@ -66,7 +66,7 @@ ind∅ : (P : ∅ → Set ℓ) → (x : ∅) → P x
 ind∅ _ ()
 
 ex-falso : ∅ → A
-ex-falso {A} = ind∅ (λ _ → A)
+ex-falso {A = A} = ind∅ (λ _ → A)
 
 ¬_ : Set → Set
 ¬ A = A → ∅
@@ -123,7 +123,7 @@ pr₂ {A} {B} = indΣ (λ z → B (pr₁ z)) (λ x y → y)
 
 -- We use `refl` unchanged
 
-ind≡ : (a : A) → (P : (x : A) → a ≡ x → Set ℓ) → P a refl → (x : A) → (p : a ≡ x) → P x p
+ind≡ : {A : Set ℓ₁} (a : A) → (P : (x : A) → a ≡ x → Set ℓ₂) → P a refl → (x : A) → (p : a ≡ x) → P x p
 ind≡ _ _ p _ refl = p
 
 concat : (x y z : A) → x ≡ y → y ≡ z → x ≡ z
@@ -135,17 +135,14 @@ p □ q = concat _ _ _ p q
 inv : (x y : A) → x ≡ y → y ≡ x
 inv = λ x y p → ind≡ x (λ y x≡y → y ≡ x) refl y p
 
+_⁻¹ : {x y : A} → x ≡ y → y ≡ x
+p ⁻¹ = inv _ _ p 
+
 assoc-lemma : (x y : A) (p : x ≡ y) (z : A) (q : y ≡ z) (w : A) (r : z ≡ w) → (p □ q) □ r ≡ p □ (q □ r)
-assoc-lemma {A} = λ x y p → ind≡ x (λ y x≡y → (z : A) (q : y ≡ z) (w : A) (r : z ≡ w) → (x≡y □ q) □ r ≡ x≡y □ (q □ r))
+assoc-lemma {A = A} = λ x y p → ind≡ x (λ y x≡y → (z : A) (q : y ≡ z) (w : A) (r : z ≡ w) → (x≡y □ q) □ r ≡ x≡y □ (q □ r))
                                    (λ _ _ _ _ → refl)
                                    y
                                    p
-
-assoc : (x y z w : A) → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → (p □ q) □ r ≡ p □ (q □ r)
-assoc = λ x y z w p q r → assoc-lemma x y p z q w r
-
-left-inv : (x y : A) (p : x ≡ y) → inv x y p □ p ≡ refl
-left-inv = λ x y p → ind≡ x (λ y x≡y → inv x y x≡y □ x≡y ≡ refl) refl y p
 
 ap : (f : A → B) (x y : A) → x ≡ y → f x ≡ f y
 ap = λ f x y p → ind≡ x (λ y x≡y → f x ≡ f y) refl y p
@@ -160,6 +157,70 @@ apd : {A : Set} {B : A → Set} (f : (x : A) → B x) (x y : A) (p : x ≡ y) �
 apd = λ f x y p → ind≡ x (λ y x≡y → tr x y x≡y (f x) ≡ f y) refl y p
 
 -------------------------------------------------------------------------------
+-- The groupoidal structure of types
+
+left-inv : {x y : A} (p : x ≡ y) → (p ⁻¹) □ p ≡ refl
+left-inv {x = x} {y} = λ p → ind≡ x (λ y x≡y → inv x y x≡y □ x≡y ≡ refl) refl y p
+
+right-inv : {x y : A} (p : x ≡ y) → p □ (p ⁻¹) ≡ refl
+right-inv {x = x} {y} = λ p → ind≡ x (λ y x≡y → x≡y □ inv x y x≡y ≡ refl) refl y p
+
+involution : {x y : A} (p : x ≡ y) → (p ⁻¹) ⁻¹ ≡ p
+involution {x = x} {y} = λ p → ind≡ x (λ y x≡y → (x≡y ⁻¹) ⁻¹ ≡ x≡y) refl y p
+
+left-identity : {x y : A} (p : x ≡ y) → refl □ p ≡ p
+left-identity {x = x} {y} = λ p → refl 
+
+right-identity : {x y : A} (p : x ≡ y) → p □ refl ≡ p
+right-identity {x = x} {y} = λ p → ind≡ x (λ y x≡y → x≡y □ refl ≡ x≡y) refl y p
+
+assoc : (x y z w : A) → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → (p □ q) □ r ≡ p □ (q □ r)
+assoc = λ x y z w p q r → assoc-lemma x y p z q w r
+
+
+-------------------------------------------------------------------------------
+-- A proof that path induction (the J rule) and _based_ path induction (ind≡)
+-- are equivalent.
+
+-- The type of the J rule
+Jᵀ : Setω
+Jᵀ =  ∀ {ℓ₁} {ℓ₂} {A : Set ℓ₁} (C : (x y : A) → x ≡ y → Set ℓ₂) → 
+        (∀ (x : A) → C x x refl) → 
+        (x y : A) (p : x ≡ y) → 
+        C x y p  
+
+-- The type of based path induction
+ind≡ᵀ : Setω 
+ind≡ᵀ =  ∀ {ℓ₁} {ℓ₂} {A : Set ℓ₁} (a : A) → 
+           (P : (x : A) → a ≡ x → Set ℓ₂) → 
+            P a refl → (x : A) → (p : a ≡ x) → P x p
+
+-- We first prove that based path induction implies J
+ind≡→J : ind≡ᵀ →  Jᵀ
+ind≡→J ind≡ C pf x = ind≡ x (λ y eq → C x y eq) (pf x) 
+
+-- Instantiating the J rule from its implication
+J : Jᵀ
+J = ind≡→J ind≡
+
+-- We now prove that J implies based path induction.
+-- This definition is quite tricky to nail down:
+-- We would like to define the motive given to J to be 
+--   (λ x y x≡y → P y x≡y) 
+-- where
+--  - x is a placeholder for a
+--  - y is a placeholder for b 
+--  - x≡y is a placeholder for a≡b
+-- but this fails to type, as P expects a proof that a ≡ y.
+-- We instead abstract over the motive P itself, yielding C.
+J→ind≡ : Jᵀ → ind≡ᵀ 
+J→ind≡ J {ℓ₁ = ℓ₁} {ℓ₂ = ℓ₂} {A = A} a P pf b a≡b = 
+  J {ℓ₂ = ℓ₁ ⊔ lsuc ℓ₂} 
+    (λ x y x≡y → (C : (z : A) → x ≡ z → Set ℓ₂) → C x refl → C y x≡y) 
+    (λ x C c → c) 
+    a b a≡b P pf 
+
+-----------------------------------------------------------------------------
 -- Section 1.6 Universes
 
 -- Most of this development is already in Agda, via `Set`.
