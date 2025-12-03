@@ -326,11 +326,11 @@ dist-lemma₃ = indℕ (λ n → distℕ n n ≡ 0) refl (λ n ih → dist-lemma
 _≅_mod_ : ℕ → ℕ → ℕ → Set
 x ≅ y mod k = k ∣ distℕ x y
 
-example723 : (n : ℕ) → n ≅ 0 mod n
-example723 = λ n → pair 1 ((ℕ.*-identityʳ n □ sym (dist-lemma₁ n)))
+n≅0mod-n : (n : ℕ) → n ≅ 0 mod n
+n≅0mod-n = λ n → pair 1 ((ℕ.*-identityʳ n □ sym (dist-lemma₁ n)))
 
-prop724a : (k n : ℕ) → n ≅ n mod k
-prop724a = λ k n → pair 0 (ℕ.*-zeroʳ k □ sym (dist-lemma₃ n))
+refl-≅ : (k n : ℕ) → n ≅ n mod k
+refl-≅ = λ k n → pair 0 (ℕ.*-zeroʳ k □ sym (dist-lemma₃ n))
 
 lemma724b : (m n : ℕ) → distℕ m n ≡ distℕ n m
 lemma724b = λ m → indℕ (λ m → (n : ℕ) → distℕ m n ≡ distℕ n m)
@@ -342,8 +342,8 @@ lemma724b = λ m → indℕ (λ m → (n : ℕ) → distℕ m n ≡ distℕ n m)
                        m
 
 
-prop724b : (k m n : ℕ) → m ≅ n mod k → n ≅ m mod k
-prop724b = λ k m n m≅n → indΣ (λ _ → n ≅ m mod k)
+sym-≅ : (k m n : ℕ) → m ≅ n mod k → n ≅ m mod k
+sym-≅ = λ k m n m≅n → indΣ (λ _ → n ≅ m mod k)
                               (λ x q → pair x (q □ lemma724b m n))
                               m≅n
 
@@ -475,6 +475,13 @@ lemma735 = ind-Fin (λ k x → ι k x < k)
 is-split-surjective : {A B : Set} → (A → B) → Set
 is-split-surjective {A} {B} f = (b : B) → Σ[ a ∈ A ] f a ≡ b
 
+-- For reference
+-- data Fin′ : ℕ → Set where 
+--   fzero : ∀ (k : ℕ) → Fin′ (suc k)
+--   fsuc : (k : ℕ) → Fin′ k → Fin′ (suc k)
+
+import Data.Fin
+
 zerof : (k : ℕ) → Fin (suc k)
 zerof = indℕ (λ k → Fin (suc k))
              (inr ⋆)
@@ -502,16 +509,31 @@ repr k = indℕ (λ _ → Fin (suc k))
               (zerof k)
               (λ n′ ih → succf (suc k) ih)
 
+[[_]] : ℕ → (k : ℕ) → Fin (suc k)
+[[_]] n k = repr k n
 -- The goal
 
 lem744a : {k : ℕ} → ι (suc k) (zerof k) ≡ 0
-lem744a = {!   !}
+lem744a {k} = indℕ 
+  (λ k → ι (suc k) (zerof k) ≡ 0) 
+  refl 
+  (λ n → id) k   
 
-lem744b : {k : ℕ} → (x : Fin k) → ι (suc k) (skip-zero k x) ≡ ι k x + 1
-lem744b = {!   !}
+lem744b : {k : ℕ} → (x : Fin k) → 
+  ι (suc k) (skip-zero k x) ≡ suc (ι k x)
+lem744b {k} = 
+  ind-Fin (λ k′ x′ → ι (suc k′) (skip-zero k′ x′) ≡ suc (ι k′ x′)) 
+    (λ _ → refl) (λ k′ x′ → id) k
 
-lem744c : {k : ℕ} → (x : Fin k) → ι k (succf k x) ≅ ι k x + 1 mod k
-lem744c = {!   !}
+lem744c : {k : ℕ} → (x : Fin k) → ι k (succf k x) ≅ suc (ι k x) mod k
+lem744c {k} x = 
+  ind-Fin 
+    (λ k x → ι k (succf k x) ≅ suc (ι k x) mod k) 
+    (λ k → tr 
+      {B = λ X → X ≅ suc (ι (suc k) (inr ⋆)) mod suc k} 0
+       (ι (suc k) (succf (suc k) (inr ⋆))) 
+       (sym (lem744a {k = k})) (sym-≅ (suc k) (suc k) 0 (n≅0mod-n (suc k)))) 
+     (λ k x ih → {!!}) k x   
 
 prop745 : {k : ℕ} → (x : ℕ) → ι (suc k) (repr k x) ≅ x mod suc k
 prop745 = {!   !}
