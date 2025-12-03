@@ -7,7 +7,7 @@ import Data.Empty
 open import Data.Nat hiding (_!; _<_ ; _⊔_) public
 open import Data.Product public
 import Data.Unit
-open import Function public
+open import Function hiding (_↔_) public
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality hiding (J) public
 open import Level using (Level)
@@ -16,6 +16,11 @@ open import Agda.Primitive using (lsuc ; _⊔_ ; Setω)
 variable
   ℓ ℓ₁ ℓ₂ ℓ₃ : Level
   A B : Set ℓ
+
+record _↔_ (A B : Set ℓ) : Set ℓ  where
+  field
+    to : A → B
+    fro : B → A
 
 -------------------------------------------------------------------------------
 -- Section 1.3: Natural numbers
@@ -123,7 +128,7 @@ pr₂ {A} {B} = indΣ (λ z → B (pr₁ z)) (λ x y → y)
 
 -- We use `refl` unchanged
 
-ind≡ : {A : Set ℓ₁} (a : A) → (P : (x : A) → a ≡ x → Set ℓ₂) → P a refl → (x : A) → (p : a ≡ x) → P x p
+ind≡ : {ℓ ℓ′ : Level} {A : Set ℓ} (a : A) → (P : (x : A) → a ≡ x → Set ℓ′) → P a refl → (x : A) → (p : a ≡ x) → P x p
 ind≡ _ _ p _ refl = p
 
 concat : (x y z : A) → x ≡ y → y ≡ z → x ≡ z
@@ -136,7 +141,7 @@ inv : (x y : A) → x ≡ y → y ≡ x
 inv = λ x y p → ind≡ x (λ y x≡y → y ≡ x) refl y p
 
 _⁻¹ : {x y : A} → x ≡ y → y ≡ x
-p ⁻¹ = inv _ _ p 
+p ⁻¹ = inv _ _ p
 
 assoc-lemma : (x y : A) (p : x ≡ y) (z : A) (q : y ≡ z) (w : A) (r : z ≡ w) → (p □ q) □ r ≡ p □ (q □ r)
 assoc-lemma {A = A} = λ x y p → ind≡ x (λ y x≡y → (z : A) (q : y ≡ z) (w : A) (r : z ≡ w) → (x≡y □ q) □ r ≡ x≡y □ (q □ r))
@@ -144,7 +149,7 @@ assoc-lemma {A = A} = λ x y p → ind≡ x (λ y x≡y → (z : A) (q : y ≡ z
                                    y
                                    p
 
-ap : (f : A → B) (x y : A) → x ≡ y → f x ≡ f y
+ap : { ℓ : Level} {A B : Set ℓ} → (f : A → B) (x y : A) → x ≡ y → f x ≡ f y
 ap = λ f x y p → ind≡ x (λ y x≡y → f x ≡ f y) refl y p
 
 ap-id : (x y : A) (p : x ≡ y) → p ≡ ap id x y p
@@ -169,7 +174,7 @@ involution : {x y : A} (p : x ≡ y) → (p ⁻¹) ⁻¹ ≡ p
 involution {x = x} {y} = λ p → ind≡ x (λ y x≡y → (x≡y ⁻¹) ⁻¹ ≡ x≡y) refl y p
 
 left-identity : {x y : A} (p : x ≡ y) → refl □ p ≡ p
-left-identity {x = x} {y} = λ p → refl 
+left-identity {x = x} {y} = λ p → refl
 
 right-identity : {x y : A} (p : x ≡ y) → p □ refl ≡ p
 right-identity {x = x} {y} = λ p → ind≡ x (λ y x≡y → x≡y □ refl ≡ x≡y) refl y p
@@ -184,20 +189,20 @@ assoc = λ x y z w p q r → assoc-lemma x y p z q w r
 
 -- The type of the J rule
 Jᵀ : Setω
-Jᵀ =  ∀ {ℓ₁} {ℓ₂} {A : Set ℓ₁} (C : (x y : A) → x ≡ y → Set ℓ₂) → 
-        (∀ (x : A) → C x x refl) → 
-        (x y : A) (p : x ≡ y) → 
-        C x y p  
+Jᵀ =  ∀ {ℓ₁} {ℓ₂} {A : Set ℓ₁} (C : (x y : A) → x ≡ y → Set ℓ₂) →
+        (∀ (x : A) → C x x refl) →
+        (x y : A) (p : x ≡ y) →
+        C x y p
 
 -- The type of based path induction
-ind≡ᵀ : Setω 
-ind≡ᵀ =  ∀ {ℓ₁} {ℓ₂} {A : Set ℓ₁} (a : A) → 
-           (P : (x : A) → a ≡ x → Set ℓ₂) → 
+ind≡ᵀ : Setω
+ind≡ᵀ =  ∀ {ℓ₁} {ℓ₂} {A : Set ℓ₁} (a : A) →
+           (P : (x : A) → a ≡ x → Set ℓ₂) →
             P a refl → (x : A) → (p : a ≡ x) → P x p
 
 -- We first prove that based path induction implies J
 ind≡→J : ind≡ᵀ →  Jᵀ
-ind≡→J ind≡ C pf x = ind≡ x (λ y eq → C x y eq) (pf x) 
+ind≡→J ind≡ C pf x = ind≡ x (λ y eq → C x y eq) (pf x)
 
 -- Instantiating the J rule from its implication
 J : Jᵀ
@@ -205,20 +210,20 @@ J = ind≡→J ind≡
 
 -- We now prove that J implies based path induction.
 -- This definition is quite tricky to nail down:
--- We would like to define the motive given to J to be 
---   (λ x y x≡y → P y x≡y) 
+-- We would like to define the motive given to J to be
+--   (λ x y x≡y → P y x≡y)
 -- where
 --  - x is a placeholder for a
---  - y is a placeholder for b 
+--  - y is a placeholder for b
 --  - x≡y is a placeholder for a≡b
 -- but this fails to type, as P expects a proof that a ≡ y.
 -- We instead abstract over the motive P itself, yielding C.
-J→ind≡ : Jᵀ → ind≡ᵀ 
-J→ind≡ J {ℓ₁ = ℓ₁} {ℓ₂ = ℓ₂} {A = A} a P pf b a≡b = 
-  J {ℓ₂ = ℓ₁ ⊔ lsuc ℓ₂} 
-    (λ x y x≡y → (C : (z : A) → x ≡ z → Set ℓ₂) → C x refl → C y x≡y) 
-    (λ x C c → c) 
-    a b a≡b P pf 
+J→ind≡ : Jᵀ → ind≡ᵀ
+J→ind≡ J {ℓ₁ = ℓ₁} {ℓ₂ = ℓ₂} {A = A} a P pf b a≡b =
+  J {ℓ₂ = ℓ₁ ⊔ lsuc ℓ₂}
+    (λ x y x≡y → (C : (z : A) → x ≡ z → Set ℓ₂) → C x refl → C y x≡y)
+    (λ x C c → c)
+    a b a≡b P pf
 
 -----------------------------------------------------------------------------
 -- Section 1.6 Universes
@@ -433,30 +438,132 @@ lemma735 = ind-Fin (λ k x → ι k x < k)
                    (λ k → k<k+1 k)
                    (λ k x ih → <-trans (ι k x) k (suc k) ih (k<k+1 k))
 
-lem : (k : ℕ) → (z : Fin k) → ι (suc k) (inl z) < k
-lem (suc k) (inl x) =
-  let ih = lem k x in
-  {!   !}
-lem (suc k) (inr ⋆) = {!   !}
+-- fact1 : ∀ k x → ι (suc k) (inl x) < k
+-- fact1 = ind-Fin (λ k x → ι (suc k) (inl x) < k)
+--                 {!   !}
+--                 {!   !}
 
-lemF : ∀ k x → ι (suc k) (inl x) ≡ ι (suc k) (inr ⋆) → ∅
-lemF = {!   !}
+-- fact2 : ∀ k → ι (suc k) (inr ⋆) ≡ k
+-- fact2 k = refl
 
-lemG : ∀ k x → ι (suc k) (inr ⋆) ≡ ι (suc k) (inl x) → ∅
-lemG = {!   !}
+-- lemF : ∀ k x → ι (suc k) (inl x) ≡ ι (suc k) (inr ⋆) → ∅
+-- lemF (suc k) (inl x) q = {!   !}
+-- lemF (suc k) (inr ⋆) ()
 
-ι-injective′ : (k : ℕ) → (x y : Fin k) → ι k x ≡ ι k y → x ≡ y
-ι-injective′ (suc k) (inl x) (inl y) q =
-  let q′ = ι-injective′ k x y
-  in ap inl x y (q′ q)
-ι-injective′ (suc k) (inl x) (inr ⋆) q = ex-falso (lemF _ _ q)
-ι-injective′ (suc k) (inr ⋆) (inl x) q = ex-falso (lemG _ _ q)
-ι-injective′ (suc k) (inr ⋆) (inr ⋆) q = refl
 
-ι-injective : (k : ℕ) → (x y : Fin k) → ι k x ≡ ι k y → x ≡ y
-ι-injective = ind-Fin (λ k x → (y : Fin k) → ι k x ≡ ι k y → x ≡ y)
-                      (λ k y → ind-Fin (λ k′ y′ → {!   !})
-                                       {!   !}
-                                       {!   !}
-                                       (suc k) y)
-                      {!   !}
+-- lemG : ∀ k x → ι (suc k) (inr ⋆) ≡ ι (suc k) (inl x) → ∅
+-- lemG = {!   !}
+
+-- ι-injective′ : (k : ℕ) → (x y : Fin k) → ι k x ≡ ι k y → x ≡ y
+-- ι-injective′ (suc k) (inl x) (inl y) q =
+--   let q′ = ι-injective′ k x y
+--   in ap inl x y (q′ q)
+-- ι-injective′ (suc k) (inl x) (inr ⋆) q = ex-falso (lemF _ _ q)
+-- ι-injective′ (suc k) (inr ⋆) (inl x) q = ex-falso (lemG _ _ q)
+-- ι-injective′ (suc k) (inr ⋆) (inr ⋆) q = refl
+
+-- ι-injective : (k : ℕ) → (x y : Fin k) → ι k x ≡ ι k y → x ≡ y
+-- ι-injective = ind-Fin (λ k x → (y : Fin k) → ι k x ≡ ι k y → x ≡ y)
+--                       (λ k y → ind-Fin (λ k′ y′ → {!   !})
+--                                        {!   !}
+--                                        {!   !}
+--                                        (suc k) y)
+--                       {!   !}
+
+-- Having failed at the above, I boldly proceed to the next section..
+
+is-split-surjective : {A B : Set} → (A → B) → Set
+is-split-surjective {A} {B} f = (b : B) → Σ[ a ∈ A ] f a ≡ b
+
+zerof : (k : ℕ) → Fin (suc k)
+zerof = indℕ (λ k → Fin (suc k))
+             (inr ⋆)
+             (λ _ ih → inl ih)
+
+
+skip-zero : (k : ℕ) → Fin k → Fin (suc k)
+skip-zero = indℕ (λ k → Fin k → Fin (suc k))
+                 ex-falso
+                 λ k′ ih → ind⊎ (λ _ → Fin (suc (suc k′)))
+                                (λ x → inl (ih x))
+                                (λ _ → inr ⋆)
+
+succf : (k : ℕ) → Fin k → Fin k
+succf = indℕ (λ k → Fin k → Fin k)
+             ex-falso
+             λ k′ ih → ind⊎ (λ _ → Fin (suc k′))
+                            (λ x → skip-zero k′ x)
+                            (λ _ → zerof k′)
+
+-- need a name here
+
+repr : (k : ℕ) → ℕ → Fin (suc k)
+repr k = indℕ (λ _ → Fin (suc k))
+              (zerof k)
+              (λ n′ ih → succf (suc k) ih)
+
+-- The goal
+
+lem744a : {k : ℕ} → ι (suc k) (zerof k) ≡ 0
+lem744a = {!   !}
+
+lem744b : {k : ℕ} → (x : Fin k) → ι (suc k) (skip-zero k x) ≡ ι k x + 1
+lem744b = {!   !}
+
+lem744c : {k : ℕ} → (x : Fin k) → ι k (succf k x) ≅ ι k x + 1 mod k
+lem744c = {!   !}
+
+prop745 : {k : ℕ} → (x : ℕ) → ι (suc k) (repr k x) ≅ x mod suc k
+prop745 = {!   !}
+
+prop746 : {d x : ℕ} → x < d → (d ∣ x) ↔ (x ≡ 0)
+prop746 = {!   !}
+
+-- Chapter 8
+
+is-decidable : Set → Set
+is-decidable A = A ⊎ ¬ A
+
+unit-decidable : is-decidable 𝟙
+unit-decidable = inl ⋆
+
+empty-decidable : is-decidable ∅
+empty-decidable = inr λ ()
+
+Eqℕ-decidable : (m n : ℕ) → is-decidable (Eqℕ m n)
+Eqℕ-decidable =
+  indℕ (λ m → (n : ℕ) → is-decidable (Eqℕ m n))
+       (indℕ (λ n → is-decidable (Eqℕ 0 n))
+             unit-decidable
+             (λ _ _ → empty-decidable))
+       (λ m′ outer →
+          indℕ (λ n → is-decidable (Eqℕ (suc m′) n))
+               empty-decidable
+               (λ n′ inner → outer n′))
+
+has-decidable-equality : Set → Set
+has-decidable-equality A = (x y : A) → is-decidable (x ≡ y)
+
+lemma816 : {A B : Set} → (A ↔ B) → (is-decidable A ↔ is-decidable B)
+lemma816 {A} {B} A↔B =
+  record
+    { to = f ++ g-cong
+    ; fro = g ++ f-cong
+    }
+  where open _↔_
+        f = A↔B .to
+        g = A↔B .fro
+        f-cong : ¬ B → ¬ A
+        f-cong = λ ¬B → ¬B ∘ f
+        g-cong : ¬ A → ¬ B
+        g-cong = λ ¬A → ¬A ∘ g
+        _++_ : {A B A′ B′ : Set} → (A → B) → (A′ → B′) → A ⊎ A′ → B ⊎ B′
+        (f ++ g) (inl x) = inl (f x)
+        (f ++ g) (inr x) = inr (g x)
+
+≡-decidable-ℕ : has-decidable-equality ℕ
+≡-decidable-ℕ m n = lemma816 (record { to = toEqℕ m n ; fro = fromEqℕ m n }) .fro (Eqℕ-decidable m n)
+  where open _↔_
+
+
+
