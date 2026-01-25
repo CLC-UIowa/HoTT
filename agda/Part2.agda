@@ -1,10 +1,15 @@
 module Part2 where
+
   open import Agda.Primitive
   open import Data.Bool
   open import Data.Product
+  open import Data.Product renaming (proj₁ to fst ; proj₂ to snd)
   open import Data.Sum
   open import Function
-  open import Relation.Binary.PropositionalEquality  
+  open import Relation.Binary.PropositionalEquality
+
+  -----------------------------------------------------------------------------
+  -- Pointwise equivalence of functions (homotopy equivalence)
 
   module Homotopies where 
     open import Relation.Binary using (IsEquivalence ; Setoid) public
@@ -16,7 +21,7 @@ module Part2 where
 
     -- Definition 9.1.2
     infix 4 _∼_
-    _∼_ : {A : Set ℓ₁} {B : A → Set ℓ₂} → ((x : A) → B x) → ((x : A) → B x) → Set (ℓ₁ ⊔ ℓ₂)
+    _∼_ : ((x : A) → B x) → ((x : A) → B x) → Set _ 
     _∼_ {A = A} f g = (x : A) → f x ≡ g x
     
     -- Definition 9.1.5
@@ -50,17 +55,50 @@ module Part2 where
     ∼-setoid {A = A} {B} .Setoid.Carrier = (x : A) → B x
     ∼-setoid {A = A} {B} .Setoid._≈_ = _∼_ {A = A} {B = B} 
     ∼-setoid .Setoid.isEquivalence = ∼-equiv 
+    
+  -----------------------------------------------------------------------------
+  -- Reasoning syntax over _≡_
 
-  module HomotopyReasoning {ℓ₁} {ℓ₂} (A : Set ℓ₁) (B : A → Set ℓ₂) where 
-    -- Open setoid reasoning syntax with carriers A and B
-    open Homotopies 
-    open import Relation.Binary.Reasoning.Setoid (∼-setoid {A = A} {B}) public
+  module Reasoning where 
+    -- Open reasoning syntax over _≡_. Usage:
+    -- f : foo ≡ bar 
+    -- f = begin 
+    --   ? ≡⟨ ? ⟩ 
+    --    ...
+    --   ? ≡⟨ ? ⟩ 
+    --   ? ∎     
+    open ≡-Reasoning public 
 
+  -----------------------------------------------------------------------------
+  -- Reasoning syntax over _∼_
+
+  module HomReasoning {ℓ₁} {ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} where 
+    -- Open setoid reasoning syntax with carriers A and B. Usage:
+    -- f : foo ∼ bar 
+    -- f = begin 
+    --   ? ∼⟨ ? ⟩ 
+    --    ...
+    --   ? ∼⟨ ? ⟩ 
+    --   ? ∎    
+    open Homotopies
+    open import Relation.Binary.Reasoning.Base.Single (_∼_ {A = A} {B = B}) 
+      (refl-htpy _) 
+      concat-htpy public
+
+  -----------------------------------------------------------------------------
+  -- Chapter 9
+  
   module Chapter9 where
 
     open Homotopies 
+    open HomReasoning  
+
     private variable
       ℓ : Level
+      A B C D : Set ℓ 
+      𝐁 𝐂 𝐃 : A → Set ℓ 
+      f g h i : (x : A) → 𝐁 x 
+
 
     -- Example 9.1.3
 
@@ -69,37 +107,32 @@ module Part2 where
 
     -- Proposition 9.1.6
 
-    assoc-htpy : {A : Set ℓ} {B : A → Set ℓ} {f g h i : (x : A) → B x} →
-                 (H : f ∼ g) → (K : g ∼ h) → (L : h ∼ i) → (H · K) · L ∼ H · (K · L)
+    assoc-htpy : (H : f ∼ g) → (K : g ∼ h) → (L : h ∼ i) → (H · K) · L ∼ H · (K · L)
     assoc-htpy H K L = λ x → trans-assoc (H x)
 
-    left-unit-htpy : {A : Set ℓ} {B : A → Set ℓ} {f g : (x : A) → B x}
-                     (H : f ∼ g) → refl-htpy f · H ∼ H
+    left-unit-htpy : (H : f ∼ g) → refl-htpy f · H ∼ H
     left-unit-htpy H = λ x → refl
 
-    right-unit-htpy : {A : Set ℓ} {B : A → Set ℓ} {f g : (x : A) → B x}
-                      (H : f ∼ g) → H · refl-htpy g ∼ H
-    right-unit-htpy H = λ x → trans-reflʳ (H x)
+    right-unit-htpy : (H : f ∼ g) → H · refl-htpy g ∼ H
+    right-unit-htpy H = trans-reflʳ ∘ H
 
-    left-inv-htpy : {A : Set ℓ} {B : A → Set ℓ} {f g : (x : A) → B x}
-                    (H : f ∼ g) → H ⁻¹ · H ∼ refl-htpy g
-    left-inv-htpy H = λ x → trans-symˡ (H x)
+    left-inv-htpy : (H : f ∼ g) → H ⁻¹ · H ∼ refl-htpy g
+    left-inv-htpy H = trans-symˡ ∘ H
 
-    right-inv-htpy : {A : Set ℓ} {B : A → Set ℓ} {f g : (x : A) → B x}
-                     (H : f ∼ g) → H · H ⁻¹ ∼ refl-htpy f
-    right-inv-htpy H = λ x → trans-symʳ (H x)
+    right-inv-htpy : (H : f ∼ g) → H · H ⁻¹ ∼ refl-htpy f
+    right-inv-htpy H = trans-symʳ ∘ H 
 
     -- Definition 9.1.7
 
     -- Can't overload (I think) ·, so just using names for now
 
-    whˡ : {A B C : Set ℓ} {f g : A → B} → (h : B → C) → (H : f ∼ g) → (h ∘ f) ∼ (h ∘ g)
+    whˡ : (h : B → C) → (H : f ∼ g) → (h ∘ f) ∼ (h ∘ g)
     whˡ h H = λ x → cong h (H x)
 
     infixl 25 whˡ
     syntax whˡ h H = h ·ₗ H
 
-    whʳ : {A B C : Set ℓ} {g h : B → C} → (H : g ∼ h) → (f : A → B) → (g ∘ f) ∼ (h ∘ f)
+    whʳ : (H : g ∼ h) → (f : A → B) → (g ∘ f) ∼ (h ∘ f)
     whʳ H f = λ x → H (f x)
 
     infixl 25 whʳ
@@ -107,14 +140,21 @@ module Part2 where
 
     -- Definition 9.2.1
 
-    sec : {A B : Set ℓ} (f : A → B) → Set ℓ
-    sec {A = A} {B} f = Σ[ g ∈ (B → A) ] f ∘ g ∼ id
+    sec : (f : A → B) → Set _
+    sec {A = A} {B = B} f = Σ[ g ∈ (B → A) ] f ∘ g ∼ id
 
-    retr : {A B : Set ℓ} (f : A → B) → Set ℓ
-    retr {A = A} {B} f = Σ[ h ∈ (B → A) ] h ∘ f ∼ id
+    retr : (f : A → B) → Set _ 
+    retr {A = A} {B = B} f = Σ[ h ∈ (B → A) ] h ∘ f ∼ id
 
-    is-equiv : {A B : Set ℓ} (f : A → B) → Set ℓ
+    is-equiv : (f : A → B) → Set _ 
     is-equiv f = sec f × retr f
+
+    -- Accessors for sections and retractions from is-equiv 
+    `sec : {f : A → B} → is-equiv f → B → A 
+    `sec = fst ∘ fst 
+
+    `retr : {f : A → B} → is-equiv f → B → A 
+    `retr = fst ∘ snd
 
     _≃_ : Set ℓ → Set ℓ → Set ℓ
     A ≃ B = Σ[ f ∈ (A → B) ] is-equiv f
@@ -126,33 +166,42 @@ module Part2 where
 
     -- Remark 9.2.6
 
-    has-inverse : {A B : Set ℓ} → (A → B) → Set ℓ
-    has-inverse {A = A} {B} f = Σ[ g ∈ (B → A) ] (f ∘ g ∼ id) × (g ∘ f ∼ id)
+    has-inverse : (A → B) → Set _ 
+    has-inverse {A = A} {B = B} f = Σ[ g ∈ (B → A) ] (f ∘ g ∼ id) × (g ∘ f ∼ id)
 
-    has-inverse⇒is-equiv : {A B : Set ℓ} {f : A → B} → has-inverse f → is-equiv f
+    has-inverse⇒is-equiv : has-inverse f → is-equiv f
     has-inverse⇒is-equiv (g , (H , K)) = (g , H) , (g , K)
 
     -- Proposition 9.2.7
 
-    is-equiv⇒has-inverse : {A B : Set ℓ} {f : A → B} → is-equiv f → has-inverse f
-    is-equiv⇒has-inverse {f = f} ((g , G) , (h , H)) = g , (G , L)
-      where K : g ∼ h
-            K = (H ·ᵣ g) ⁻¹ · (h ·ₗ G)
-            L : (g ∘ f) ∼ id
-            L = K ·ᵣ f · H
+    -- if f has a section g and retraction h then g ∼ h.
+    is-equiv⇒equalSplits : ∀ {f : A → B} (p : is-equiv f) → `sec p ∼ `retr p
+    is-equiv⇒equalSplits {f = f} ((g , G) , (h , H)) = begin 
+      g          ∼⟨ (H ·ᵣ g) ⁻¹ ⟩ 
+      h ∘ f ∘ g  ∼⟨ h ·ₗ G ⟩ 
+      h ∎ 
 
-    -- Corollary 9.2.8
+    is-equiv⇒has-inverse : is-equiv f → has-inverse f
+    is-equiv⇒has-inverse {f = f} p@((g , G) , (h , H)) = g , G , L
+      where 
+        L : (g ∘ f) ∼ id
+        L = begin 
+              g ∘ f ∼⟨ is-equiv⇒equalSplits p ·ᵣ f ⟩ 
+              h ∘ f ∼⟨  H ⟩ 
+              id ∎ 
 
-    equivalence-inverse-equivalence : {A B : Set ℓ} {f : A → B} →
-                                      (p : is-equiv f) →
-                                      is-equiv (p .proj₁ .proj₁)
+  -- Corollary 9.2.8
+
+    equivalence-inverse-equivalence : (p : is-equiv f) →
+                                      is-equiv (`sec p)
     equivalence-inverse-equivalence {f = f} p@((g , G) , (h , H)) =
       has-inverse⇒is-equiv (f , L , G)
-      where K : g ∼ h
-            K = (H ·ᵣ g) ⁻¹ · (h ·ₗ G)
-
-            L : g ∘ f ∼ id
-            L = K ·ᵣ f · H
+      where 
+        L : g ∘ f ∼ id
+        L = begin
+          g ∘ f ∼⟨ is-equiv⇒equalSplits p ·ᵣ f ⟩ 
+          h ∘ f ∼⟨ H ⟩ 
+          id ∎ 
 
     -- Example 9.2.9
 
