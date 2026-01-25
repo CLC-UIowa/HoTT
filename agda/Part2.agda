@@ -1,3 +1,4 @@
+{-# OPTIONS --without-K #-} 
 module Part2 where
 
   open import Agda.Primitive
@@ -6,7 +7,41 @@ module Part2 where
   open import Data.Product renaming (proj₁ to fst ; proj₂ to snd)
   open import Data.Sum
   open import Function
+  open import Data.Unit 
   open import Relation.Binary.PropositionalEquality
+
+  -----------------------------------------------------------------------------
+  -- The identity type (ported from Part 1)
+
+  module Paths where 
+    private 
+      variable 
+        ℓ ℓ₁ ℓ₂ : Level 
+        A B : Set ℓ 
+        x y z w : A 
+
+    _○_ : x ≡ y → y ≡ z → x ≡ z
+    _○_ = trans 
+
+    ！_ : x ≡ y → y ≡ x
+    ！_ = sym 
+
+    assoc-lemma : (p : x ≡ y) (q : y ≡ z) (r : z ≡ w) → (p ○ q) ○ r ≡ p ○ (q ○ r)
+    assoc-lemma refl refl refl = refl 
+
+    ap : (f : A → B) → x ≡ y → f x ≡ f y
+    ap f refl = refl 
+
+    ap-id : (p : x ≡ y) → p ≡ ap id p
+    ap-id refl = refl 
+
+    tr : (B : A → Set ℓ) → x ≡ y → B x → B y
+    tr B refl b = b 
+
+    apd : {B : A → Set ℓ} (f : (x : A) → B x) (p : x ≡ y) → tr B p (f x) ≡ f y
+    apd f refl = refl 
+
+  open Paths   
 
   -----------------------------------------------------------------------------
   -- Pointwise equivalence of functions (homotopy equivalence)
@@ -55,18 +90,19 @@ module Part2 where
     ∼-setoid {A = A} {B} .Setoid.Carrier = (x : A) → B x
     ∼-setoid {A = A} {B} .Setoid._≈_ = _∼_ {A = A} {B = B} 
     ∼-setoid .Setoid.isEquivalence = ∼-equiv 
-    
+
+  open Homotopies
   -----------------------------------------------------------------------------
   -- Reasoning syntax over _≡_
 
-  module Reasoning where 
+  module PathReasoning where 
     -- Open reasoning syntax over _≡_. Usage:
     -- f : foo ≡ bar 
     -- f = begin 
-    --   ? ≡⟨ ? ⟩ 
-    --    ...
-    --   ? ≡⟨ ? ⟩ 
-    --   ? ∎     
+    --   foo ≡⟨ ? ⟩ 
+    --   ...
+    --   ?   ≡⟨ ? ⟩ 
+    --   bar ∎     
     open ≡-Reasoning public 
 
   -----------------------------------------------------------------------------
@@ -76,10 +112,10 @@ module Part2 where
     -- Open setoid reasoning syntax with carriers A and B. Usage:
     -- f : foo ∼ bar 
     -- f = begin 
-    --   ? ∼⟨ ? ⟩ 
-    --    ...
-    --   ? ∼⟨ ? ⟩ 
-    --   ? ∎    
+    --   foo ∼⟨ ? ⟩ 
+    --   ...
+    --   ?   ∼⟨ ? ⟩ 
+    --   bar ∎    
     open Homotopies
     open import Relation.Binary.Reasoning.Base.Single (_∼_ {A = A} {B = B}) 
       (refl-htpy _) 
@@ -89,12 +125,10 @@ module Part2 where
   -- Chapter 9
   
   module Chapter9 where
-
-    open Homotopies 
     open HomReasoning  
 
     private variable
-      ℓ : Level
+      ℓ ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Level
       A B C D : Set ℓ 
       𝐁 𝐂 𝐃 : A → Set ℓ 
       f g h i : (x : A) → 𝐁 x 
@@ -140,14 +174,14 @@ module Part2 where
 
     -- Definition 9.2.1
 
-    sec : (f : A → B) → Set _
-    sec {A = A} {B = B} f = Σ[ g ∈ (B → A) ] f ∘ g ∼ id
+    section : (f : A → B) → Set _
+    section {A = A} {B = B} f = Σ[ g ∈ (B → A) ] f ∘ g ∼ id
 
-    retr : (f : A → B) → Set _ 
-    retr {A = A} {B = B} f = Σ[ h ∈ (B → A) ] h ∘ f ∼ id
+    retraction : (f : A → B) → Set _ 
+    retraction {A = A} {B = B} f = Σ[ h ∈ (B → A) ] h ∘ f ∼ id
 
     is-equiv : (f : A → B) → Set _ 
-    is-equiv f = sec f × retr f
+    is-equiv f = section f × retraction f
 
     -- Accessors for sections and retractions from is-equiv 
     `sec : {f : A → B} → is-equiv f → B → A 
@@ -156,7 +190,7 @@ module Part2 where
     `retr : {f : A → B} → is-equiv f → B → A 
     `retr = fst ∘ snd
 
-    _≃_ : Set ℓ → Set ℓ → Set ℓ
+    _≃_ : Set ℓ₁ → Set ℓ₂ → Set (ℓ₁ ⊔ ℓ₂)
     A ≃ B = Σ[ f ∈ (A → B) ] is-equiv f
 
     not-quite-triviality : Bool ≃ Bool
@@ -231,3 +265,78 @@ module Part2 where
       G = λ { (inj₁ x) → refl ; (inj₂ y) → refl}
       H : β ∘ α ∼ id
       H = λ { (fst , inj₁ x) → refl ; (fst , inj₂ y) → refl}
+
+    -- Example 9.2.10: 
+    -- generalizing laws for cartesian products (_×_) to 
+    -- arbitrary dependent products.
+
+    -- Σ[ x ∈ ⊥ ] (B x) is the dependent version of ⊥ × B ≃ ⊥ 
+    Σ-absorptionₗ : (Σ[ x ∈ ⊥ ] (𝐁 x)) ≃ ⊥ 
+    Σ-absorptionₗ {𝐁 = B} = 
+      to , has-inverse⇒is-equiv (from , (λ ()) , λ ()) 
+      where 
+        to : Σ[ x ∈ ⊥ ] (B x) → ⊥ 
+        to () 
+
+        from : ⊥ → Σ[ x ∈ ⊥ ] (B x) 
+        from () 
+
+      
+    -- Σ[ x ∈ ⊤ ] (B x) ≃ B tt is the dependent version of ⊤ × B ≃ B
+    Σ-unitₗ :  (Σ[ x ∈ ⊤ ] (𝐁 x)) ≃ 𝐁 tt 
+    Σ-unitₗ  {𝐁 = B} = to , has-inverse⇒is-equiv (from , H , G) 
+      where 
+        -- N.b. I'm using pattern matching on x : ⊤, which isn't 
+        -- strictly the same as the induction principle for ⊤ 
+        to : (Σ[ x ∈ ⊤ ] (B x)) → B tt
+        to (tt , b) = b   
+
+        from : B tt → (Σ[ x ∈ ⊤ ] (B x)) 
+        from b = (tt , b) 
+
+        H : to ∘ from ∼ id 
+        H = refl-htpy _ 
+
+        G : from ∘ to ∼ id 
+        G (tt , b) = refl 
+
+    -- 9.3 Characterizing the identity types of Σ-types 
+
+    _≡Σ_ : Σ A 𝐁 → Σ A 𝐁 → Set _ 
+    _≡Σ_ {A = A} {𝐁 = B} s t = 
+      Σ[ α ∈ (proj₁ s ≡ proj₁ t) ]  
+        tr B α (proj₂ s) ≡ proj₂ t 
+
+    -- Lemma 9.3.2: _≡Σ_ is reflexive
+
+    refl-≡Σ : ∀ (p : Σ A 𝐁) → p ≡Σ p 
+    refl-≡Σ p = refl , refl 
+
+  -- Definition 9.3.3: pair-eq 
+  -- Or: _≡Σ_ respects propositional equivalence
+
+    pair-eq : ∀ {s t : Σ A 𝐁} → s ≡ t → s ≡Σ t 
+    pair-eq refl = refl-≡Σ _
+
+  -- Theorem 9.3.4: pair-eq is an equivalence 
+    pairEqv : ∀ {s t : Σ A 𝐁} → is-equiv (pair-eq {s = s} {t = t})
+    pairEqv {s = s} {t} = has-inverse⇒is-equiv 
+      (eq-pair , 
+        (λ p → eq-pair-section (proj₁ p) (proj₂ p)) , 
+        eq-pair-retraction)
+      where 
+        eq-pair : ∀ {s t : Σ A 𝐁} → s ≡Σ t → s ≡ t 
+        eq-pair {s = x , y} {t = x′ , y′} (refl , refl) = refl 
+
+        eq-pair-section : ∀ {s t : Σ A 𝐁} (α : (proj₁ s ≡ proj₁ t))
+                            (β : tr _ α (proj₂ s) ≡ proj₂ t) → 
+                            pair-eq (eq-pair (α , β)) ≡ (α , β)
+        eq-pair-section refl refl = refl          
+
+        eq-pair-retraction : ∀{s t : Σ A 𝐁}
+                              (p : s ≡ t) → 
+                              eq-pair (pair-eq p) ≡ p 
+        eq-pair-retraction refl = refl                                   
+
+
+
