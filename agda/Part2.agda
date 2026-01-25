@@ -1,43 +1,71 @@
 module Part2 where
+  open import Agda.Primitive
+  open import Data.Bool
+  open import Data.Product
+  open import Data.Sum
+  open import Function
+  open import Relation.Binary.PropositionalEquality  
+
+  module Homotopies where 
+    open import Relation.Binary using (IsEquivalence ; Setoid) public
+    private 
+      variable 
+        ℓ ℓ₁ ℓ₂ ℓ₃ : Level 
+        A : Set ℓ
+        B : A → Set ℓ 
+
+    -- Definition 9.1.2
+    infix 4 _∼_
+    _∼_ : {A : Set ℓ₁} {B : A → Set ℓ₂} → ((x : A) → B x) → ((x : A) → B x) → Set (ℓ₁ ⊔ ℓ₂)
+    _∼_ {A = A} f g = (x : A) → f x ≡ g x
+    
+    -- Definition 9.1.5
+
+    refl-htpy : (f : (x : A) → B x) → f ∼ f
+    refl-htpy f _ = refl
+
+    private 
+      variable 
+        f g h : (x : A) → B x 
+
+    inv-htpy : f ∼ g → g ∼ f
+    inv-htpy f∼g = sym ∘ f∼g
+
+    concat-htpy : f ∼ g → g ∼ h → f ∼ h
+    concat-htpy f∼g g∼h x = trans (f∼g x) (g∼h x)
+
+    infixl 30 inv-htpy
+    syntax inv-htpy H = H ⁻¹         
+    infixl 25 concat-htpy
+    syntax concat-htpy G H = G · H
+  
+    -- _∼_ is an equivalence relation
+    ∼-equiv : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} → IsEquivalence (_∼_ {A = A} {B = B})
+    ∼-equiv .IsEquivalence.refl {f} = refl-htpy f
+    ∼-equiv .IsEquivalence.sym = inv-htpy
+    ∼-equiv .IsEquivalence.trans = concat-htpy
+  
+    -- ((x : A) → B x , _∼_) is a setoid on any type A and family B.
+    ∼-setoid : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} → Setoid (ℓ₁ ⊔ ℓ₂) _ 
+    ∼-setoid {A = A} {B} .Setoid.Carrier = (x : A) → B x
+    ∼-setoid {A = A} {B} .Setoid._≈_ = _∼_ {A = A} {B = B} 
+    ∼-setoid .Setoid.isEquivalence = ∼-equiv 
+
+  module HomotopyReasoning {ℓ₁} {ℓ₂} (A : Set ℓ₁) (B : A → Set ℓ₂) where 
+    -- Open setoid reasoning syntax with carriers A and B
+    open Homotopies 
+    open import Relation.Binary.Reasoning.Setoid (∼-setoid {A = A} {B}) public
 
   module Chapter9 where
 
-    open import Agda.Primitive
-    open import Data.Bool
-    open import Data.Product
-    open import Data.Sum
-    open import Function
-    open import Relation.Binary.PropositionalEquality
-
+    open Homotopies 
     private variable
       ℓ : Level
-
-    -- Definition 9.1.2
-
-    infix 4 _∼_
-    _∼_ : {A : Set ℓ} {B : A → Set ℓ} → ((x : A) → B x) → ((x : A) → B x) → Set ℓ
-    _∼_ {A = A} f g = (x : A) → f x ≡ g x
 
     -- Example 9.1.3
 
     neg-bool-id : not ∘ not ∼ id
     neg-bool-id = λ { false → refl ; true → refl}
-
-    -- Definition 9.1.5
-
-    refl-htpy : {A : Set ℓ} {B : A → Set ℓ} → (f : (x : A) → B x) → f ∼ f
-    refl-htpy f = λ x → refl
-
-    inv-htpy : {A : Set ℓ} {B : A → Set ℓ} {f g : (x : A) → B x} → f ∼ g → g ∼ f
-    inv-htpy f∼g = λ x → sym (f∼g x)
-
-    concat-htpy : {A : Set ℓ} {B : A → Set ℓ} {f g h : (x : A) → B x} → f ∼ g → g ∼ h → f ∼ h
-    concat-htpy f∼g g∼h = λ x → trans (f∼g x) (g∼h x)
-
-    infixl 30 inv-htpy
-    syntax inv-htpy H = H ⁻¹         -- this is \^-\^1. This feels like a bad idea.
-    infixl 25 concat-htpy
-    syntax concat-htpy G H = G · H
 
     -- Proposition 9.1.6
 
