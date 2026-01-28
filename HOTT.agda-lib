@@ -1,0 +1,9 @@
+name: HOTT
+depend: standard-library
+include : ./agda/
+
+flags:
+  --allow-unsolved-metas
+  --without-K
+  --cubical-compatible
+

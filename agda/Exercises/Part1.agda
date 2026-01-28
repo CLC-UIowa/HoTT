@@ -1,8 +1,7 @@
-{-# OPTIONS --allow-unsolved-metas #-}
+module Exercises.Part1 where 
 
 open import Data.Nat.Properties
-open import Rijke renaming (𝟙 to ⊤ ; ind𝟙 to ind⊤)
-open import Data.Nat.Properties
+open import Part1 renaming (𝟙 to ⊤ ; ind𝟙 to ind⊤)
 
 _≲_ : ℕ → ℕ → Set
 _≲_ = λ m → indℕ (λ _ → ℕ → Set)

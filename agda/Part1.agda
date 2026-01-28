@@ -1,7 +1,7 @@
 {-# OPTIONS --cubical-compatible #-}
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module Rijke where
+module Part1 where
 
 import Data.Empty
 open import Data.Nat hiding (_!; _<_ ; _⊔_) public
