@@ -6,9 +6,20 @@ module Part2 where
   open import Data.Product
   open import Data.Product renaming (proj₁ to fst ; proj₂ to snd)
   open import Data.Sum
-  open import Function
+  open import Function hiding (_↔_)
   open import Data.Unit 
   open import Relation.Binary.PropositionalEquality
+
+
+  -----------------------------------------------------------------------------
+  -- Bi-implication
+  -- (the std. library defines _↔_ instead as isomorphism.)
+
+  record _↔_ {ℓ₁} {ℓ₂} (A : Set ℓ₁) (B : Set ℓ₂) : Set (ℓ₁ ⊔ ℓ₂) where 
+    constructor _,_
+    field 
+      to : A → B 
+      from : B → A 
 
   -----------------------------------------------------------------------------
   -- The identity type (ported from Part 1)
@@ -41,7 +52,7 @@ module Part2 where
     apd : {B : A → Set ℓ} (f : (x : A) → B x) (p : x ≡ y) → tr B p (f x) ≡ f y
     apd f refl = refl 
 
-  open Paths   
+  open Paths public 
 
   -----------------------------------------------------------------------------
   -- Pointwise equivalence of functions (homotopy equivalence)
@@ -91,7 +102,7 @@ module Part2 where
     ∼-setoid {A = A} {B} .Setoid._≈_ = _∼_ {A = A} {B = B} 
     ∼-setoid .Setoid.isEquivalence = ∼-equiv 
 
-  open Homotopies
+  open Homotopies public 
   -----------------------------------------------------------------------------
   -- Reasoning syntax over _≡_
 
@@ -157,8 +168,6 @@ module Part2 where
     right-inv-htpy H = trans-symʳ ∘ H 
 
     -- Definition 9.1.7
-
-    -- Can't overload (I think) ·, so just using names for now
 
     whˡ : (h : B → C) → (H : f ∼ g) → (h ∘ f) ∼ (h ∘ g)
     whˡ h H = λ x → cong h (H x)
