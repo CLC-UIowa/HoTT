@@ -202,6 +202,11 @@ module Part2 where
     _≃_ : Set ℓ₁ → Set ℓ₂ → Set (ℓ₁ ⊔ ℓ₂)
     A ≃ B = Σ[ f ∈ (A → B) ] is-equiv f
 
+    -- "For any equivalence e : A ≃ B, we define e⁻¹ to be the
+    --  section of e."
+    `inv : A ≃ B → B → A 
+    `inv = `sec ∘ snd 
+
     not-quite-triviality : Bool ≃ Bool
     not-quite-triviality = not , ((not , neg-bool-id) , (not , neg-bool-id))
 
