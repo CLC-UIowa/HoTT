@@ -219,5 +219,55 @@ module 9-4 where
     (h : A → B) 
     (g : B → C)
     (H : f ∼ g ∘ h) where 
-    -- ... 
+
+    -- (i) ---------------------------------------------------------------------
+    -- show that if any two f , g , h are equivalences, then so is the third.
+
+    fg-equiv : is-equiv f → is-equiv g → is-equiv h 
+    fg-equiv ((f⁻¹ , F) , retr-f) (sec-g , (r , G)) .fst = f⁻¹ ∘ g , 
+      (begin 
+        h ∘ f⁻¹ ∘ g    ∼⟨ I ·ᵣ f⁻¹ ·ᵣ g ⟩ 
+        r ∘ f ∘ f⁻¹ ∘ g ∼⟨ r ·ₗ F ·ᵣ g ⟩ 
+        r ∘ g ∼⟨ G ⟩ 
+        id ∎)
+      where 
+        open 9-4b f h g H (r , G) 
+    fg-equiv (sec-f , retr-f) (sec-g , retr-g) .snd = f-retraction↔h-retraction .to retr-f 
+      where open 9-4b f h g H retr-g 
+
+    fh-equiv : is-equiv f → is-equiv h → is-equiv g 
+    fh-equiv (sec-f , retr-f) (sec-h , retr-h) .fst = f-section↔g-section .to sec-f
+      where 
+        open 9-4a f h g H sec-h 
+    fh-equiv (sec-f , (f⁻¹ , F)) ((h⁻¹ , H′), retr-h) .snd = h ∘ f⁻¹ , 
+      (begin 
+        h ∘ f⁻¹ ∘ g       ∼⟨ h ·ₗ (f⁻¹ ·ₗ I) ⟩ 
+        h ∘ f⁻¹ ∘ f ∘ h⁻¹ ∼⟨ h ·ₗ F ·ᵣ h⁻¹ ⟩ 
+        h ∘ h⁻¹           ∼⟨ H′ ⟩ 
+        id ∎)
+      where 
+        open 9-4a f h g H (h⁻¹ , H′)
+
+    gh-equiv : is-equiv g → is-equiv h → is-equiv f 
+    gh-equiv (sec-g , retr-g) (sec-h , retr-h) = 
+      f-section↔g-section .from sec-g , f-retraction↔h-retraction .from retr-h 
+      where 
+        open 9-4a f h g H sec-h hiding (I) 
+        open 9-4b f h g H retr-g hiding (I)
+
+  -- (ii) --------------------------------------------------------------------
+  -- Conclude that any section and any retraction of an equivalence is
+  -- again an equivalence. 
+  module 9-4c-ii (f : A → B) where 
+
+    equivSections : (e : is-equiv f) → is-equiv (`sec e)
+    equivSections e@((s , S) , (r , R)) = 
+      (f , is-equiv⇒equalSplits e ·ᵣ f · R) , 
+      f , S 
+
+    equivRetractions : (e : is-equiv f) → is-equiv (`retr e) 
+    equivRetractions e@((s , S) , (r , R)) = 
+      (f , R) , 
+      f , f ·ₗ (is-equiv⇒equalSplits e) ⁻¹ · S 
+
 
