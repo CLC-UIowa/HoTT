@@ -36,10 +36,11 @@ module 9-3 where
   -- --------------------------------------------------------------------------
   -- (a) Consider two functions f, g : A → B and a homotopy H : f ∼ g. Then
   --     is-equiv(f) ↔ is-equiv(g).
+  -- 
   -- AH> I prove this directly over the definition of is-equiv f (that f has
   --     both a section and retraction). Could have just-as-well used
-  --     is-equiv⇒has-inverse and has-inverse⇒is-equiv to reduce the cases,
-  --     but I suspect this would not be *that* much more concise.
+  --     is-equiv⇒has-inverse and has-inverse⇒is-equiv, but you would
+  --     still have 4 cases to prove, so I don't think it saves work.
   
   
   is-equiv↔ : (f g : A → B) (H : f ∼ g) → is-equiv f ↔ is-equiv g
@@ -67,10 +68,11 @@ module 9-3 where
   -- --------------------------------------------------------------------------
   -- (b) Show that for any two homotopic equivalences e₁ , e₂ : A ≃ B, their
   --     inverses are also homotopic.
-  --     AH> recall (1) that the inverse of an equivalence e is its section
-  --         f : B → A
-  --         and (2) we mean by "are also homotopic" that the sections
-  --         of e₁ and e₂ are homotopically equivalent under _∼_.
+  -- 
+  -- AH> recall (1) that the inverse of an equivalence e : A ≃ B is its section
+  --       f : B → A,
+  --     and (2) we mean by "are also homotopic" that the sections
+  --     of e₁ and e₂ are homotopically equivalent under _∼_.
 
   inverses-homotopic : ∀ (e₁ e₂ : A ≃ B) → `inv e₁ ∼ `inv e₂ 
   inverses-homotopic (f , (f⁻¹ , f∘f⁻¹∼id) , retr-f) (g , (g⁻¹ , g∘g⁻¹∼id) , retr-g) = {!!}
@@ -82,12 +84,12 @@ module 9-3 where
   𝔹 : Bool ≃ Bool 
   𝔹 = id , (id , refl-htpy _) , (id , refl-htpy _)
 
-  what? : ¬ (`inv 𝔹 ∼ `inv 𝔹⁻¹)
-  what? f with f true
+  counter-example : ¬ (`inv 𝔹 ∼ `inv 𝔹⁻¹)
+  counter-example f with f true
   ... | () 
 
-  -- I believe the author may have meant that 
-  -- e₁ and e₂ are equivalences built from (resp.) f and g such that
+  -- I believe the author may have meant that if e₁ and e₂
+  -- are equivalences built from (resp.) f and g such that
   -- H : f ∼ g, then the sections of their equivalences are homotopic:
   sections-homotopic : (f g : A → B) (H : f ∼ g) (eq-f : is-equiv f) (eq-g : is-equiv g) → 
                         `sec eq-f ∼ `sec eq-g
@@ -103,11 +105,119 @@ module 9-3 where
       id ∘ g⁻¹      ∼⟨ refl-htpy _ ⟩ 
       g⁻¹ ∎ 
   
-  
-  
-
-
 
 -------------------------------------------------------------------------------
 -- #9.4 
--- ...
+
+
+module 9-4 where 
+  private
+    variable
+      ℓ : Level 
+      A B C X : Set ℓ 
+  
+  open _↔_ public
+  open HomReasoning
+
+{- ----------------------------------------------------------------------------
+  Consider a commuting triangle
+                  h
+               A ---> B
+              f \   / g   
+                 v  v      
+                  C  
+  with H : f ∼ g ∘ h.
+  (a) Suppose that the map h has a section s : B → A. 
+      (i) Show that the triangle
+                  s
+               A <--- B
+              f \   / g
+                 v  v      
+                  C     
+          commutes (that is, g ∼ f ∘ s), and 
+      (ii) that f has a section iff g has a section.
+-} 
+  module 9-4a 
+    (f : A → C) 
+    (h : A → B) 
+    (g : B → C)
+    (H : f ∼ g ∘ h)
+    (σ : section h) where 
+ 
+    -- equivalent to let (s , S) = σ in ...
+    open Σ σ renaming (proj₁ to  s ; proj₂ to S)
+
+    -- (i) The triangle commutes.
+    I : g  ∼ f ∘ s 
+    I = begin 
+      g         ∼⟨ refl-htpy _ ⟩ 
+      g ∘ id    ∼⟨ g ·ₗ S ⁻¹ ⟩ 
+      g ∘ h ∘ s ∼⟨ H ⁻¹ ·ᵣ s ⟩ 
+      f ∘ s ∎ 
+    
+    -- (ii) f has a section iff g has a section.
+    f-section↔g-section : section f ↔ section g 
+    f-section↔g-section .to (f⁻¹ , F) .fst = h ∘ f⁻¹ 
+    f-section↔g-section .to (f⁻¹ , F) .snd = begin 
+      g ∘ h ∘ f⁻¹ ∼⟨ H ⁻¹ ·ᵣ f⁻¹ ⟩ 
+      f ∘ f⁻¹    ∼⟨ F ⟩ 
+      id ∎ 
+    f-section↔g-section .from (g⁻¹ , G) .fst = s ∘ g⁻¹ 
+    f-section↔g-section .from (g⁻¹ , G) .snd = begin 
+      f ∘ s ∘ g⁻¹ ∼⟨ I ⁻¹  ·ᵣ g⁻¹ ⟩ 
+      g ∘ g⁻¹    ∼⟨ G ⟩ 
+      id ∎ 
+
+{- ----------------------------------------------------------------------------
+  (b) Suppose that the map g has a retraction r : X → B. 
+    (i)  Show that the triangle
+           h ∼ r ∘ f 
+         commutes, and 
+    (ii) that f has a retraction iff h has a retraction.
+-}   
+
+  module 9-4b 
+    (f : A → C) 
+    (h : A → B) 
+    (g : B → C)
+    (H : f ∼ g ∘ h)
+    (ρ : retraction g) where 
+
+    open Σ ρ renaming (proj₁ to  r ; proj₂ to R)
+    -- (i) The triangle commutes.
+    I : h ∼ r ∘ f
+    I = begin 
+      h         ∼⟨ refl-htpy _ ⟩ 
+      id ∘ h    ∼⟨ R ⁻¹ ·ᵣ h ⟩ 
+      r ∘ g ∘ h   ∼⟨ r ·ₗ H ⁻¹ ⟩ 
+      r ∘ f ∎ 
+    
+    -- (ii) f has a retraction iff h has a retraction.
+    f-retraction↔h-retraction : retraction f ↔ retraction h
+    f-retraction↔h-retraction .to (f⁻¹ , F) .fst = f⁻¹ ∘ g 
+    f-retraction↔h-retraction .to (f⁻¹ , F) .snd = begin 
+      f⁻¹ ∘ g ∘ h  ∼⟨  f⁻¹ ·ₗ H ⁻¹  ⟩ 
+      f⁻¹ ∘ f    ∼⟨ F ⟩ 
+      id ∎ 
+    f-retraction↔h-retraction .from (h⁻¹ , H) .fst = h⁻¹ ∘ r 
+    f-retraction↔h-retraction .from (h⁻¹ , H) .snd = begin 
+      h⁻¹ ∘ r ∘ f ∼⟨ h⁻¹ ·ₗ I ⁻¹ ⟩ 
+      h⁻¹ ∘ h   ∼⟨ H ⟩ 
+      id ∎ 
+
+{- ----------------------------------------------------------------------------
+  (c) (The 3-for-2 property for equivalences.) 
+    (i) Show that if any two of the functions
+          f, g, h 
+        are equivalences, then so is the third. 
+    (ii) Conclude that any section and any retraction of an equivalence is
+         again an equivalence. 
+-}   
+
+  module 9-4c 
+    (f : A → C) 
+    (h : A → B) 
+    (g : B → C)
+    (H : f ∼ g ∘ h) where 
+    -- ... 
+
