@@ -20,6 +20,47 @@ open Chapter9
 -------------------------------------------------------------------------------
 -- #9.2 
 -- ...
+module 9-2 where
+  private
+    variable
+      ℓ : Level
+  open _↔_ public
+  open HomReasoning
+
+  -- I'm stupid
+  true-neq-false : ¬ (true ≡ false)
+  true-neq-false = λ () -- okey dokey
+
+  -- I'm stupid
+  false-neq-true : ¬ (false ≡ true)
+  false-neq-true = λ ()
+
+  -- I'm stupid
+  bool-neq-neg : (b : Bool) → ¬(not b ≡ b)
+  bool-neq-neg false = λ ()
+  bool-neq-neg true = λ ()
+
+  const-bool-not-equiv : (b : Bool) → ¬(is-equiv (λ (x : Bool) → b))
+  const-bool-not-equiv false = λ x → true-neq-false (sym ((proj₂ ∘ proj₁) x true ))
+  const-bool-not-equiv true = λ x → true-neq-false ((proj₂ ∘ proj₁) x false)
+
+  bool-not-hom-unit : ¬(Bool ≃ ⊤)
+  bool-not-hom-unit h =
+    let
+      f = proj₁ h
+      fh = proj₂ h
+      retraction = (proj₁ ∘ proj₂) fh
+      retraction-h = (proj₂ ∘ proj₂) fh 
+      K = retraction ∘ f
+      b = retraction tt
+
+      K-h : (b' : Bool) → K b' ≡ b
+      K-h = λ b' → snd (snd (snd h)) b
+      
+      not-b-sent-to-b : K (not b) ≡ b
+      not-b-sent-to-b = snd (snd (snd h)) b
+    in
+      bool-neq-neg b (sym (retraction-h (not b)))
 
 -------------------------------------------------------------------------------
 -- #9.3:
