@@ -2,6 +2,7 @@ module Exercises.Ch9 where
 
 open import Agda.Primitive
 open import Data.Bool
+open import Data.Nat
 open import Data.Product
 open import Data.Product renaming (proj₁ to fst ; proj₂ to snd)
 open import Data.Sum
@@ -47,20 +48,15 @@ module 9-2 where
   bool-not-hom-unit : ¬(Bool ≃ ⊤)
   bool-not-hom-unit h =
     let
-      f = proj₁ h
       fh = proj₂ h
       retraction = (proj₁ ∘ proj₂) fh
       retraction-h = (proj₂ ∘ proj₂) fh 
-      K = retraction ∘ f
       b = retraction tt
-
-      K-h : (b' : Bool) → K b' ≡ b
-      K-h = λ b' → snd (snd (snd h)) b
-      
-      not-b-sent-to-b : K (not b) ≡ b
-      not-b-sent-to-b = snd (snd (snd h)) b
     in
       bool-neq-neg b (sym (retraction-h (not b)))
+
+--  ℕ-not-equiv-Fin : (k : ℕ) → ¬(ℕ ≃ Fin k)
+--  ℕ-not-equiv-Fin = ?
 
 -------------------------------------------------------------------------------
 -- #9.3:
