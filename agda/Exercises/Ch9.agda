@@ -22,21 +22,9 @@ open Chapter9
 -- #9.2 
 -- ...
 module 9-2 where
-  private
-    variable
-      ℓ : Level
-  open _↔_ public
-  open HomReasoning
-
-  -- I'm stupid
   true-neq-false : ¬ (true ≡ false)
   true-neq-false = λ () -- okey dokey
 
-  -- I'm stupid
-  false-neq-true : ¬ (false ≡ true)
-  false-neq-true = λ ()
-
-  -- I'm stupid
   bool-neq-neg : (b : Bool) → ¬(not b ≡ b)
   bool-neq-neg false = λ ()
   bool-neq-neg true = λ ()
@@ -45,8 +33,8 @@ module 9-2 where
   const-bool-not-equiv false = λ x → true-neq-false (sym ((proj₂ ∘ proj₁) x true ))
   const-bool-not-equiv true = λ x → true-neq-false ((proj₂ ∘ proj₁) x false)
 
-  bool-not-hom-unit : ¬(Bool ≃ ⊤)
-  bool-not-hom-unit h =
+  bool-not-equiv-unit : ¬(Bool ≃ ⊤)
+  bool-not-equiv-unit h =
     let
       fh = proj₂ h
       retraction = (proj₁ ∘ proj₂) fh
