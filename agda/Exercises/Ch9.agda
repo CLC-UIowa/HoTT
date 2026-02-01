@@ -1,4 +1,4 @@
-module Exercises.Ch9 where 
+module Exercises.Ch9 where
 
 open import Agda.Primitive
 open import Data.Bool
@@ -7,7 +7,7 @@ open import Data.Product
 open import Data.Product renaming (proj₁ to fst ; proj₂ to snd)
 open import Data.Sum
 open import Function hiding (_↔_)
-open import Data.Unit 
+open import Data.Unit
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary using (¬_)
 open import Data.Empty
@@ -15,8 +15,201 @@ open import Part2
 open Chapter9
 
 -------------------------------------------------------------------------------
--- #9.1 
--- ...
+--- #9.1
+
+module 9-1 where
+
+  ind≡ : {ℓ ℓ′ : Level}
+         {A : Set ℓ}
+         (a : A) →                        -- 1st
+         (P : (x : A) → a ≡ x → Set ℓ′) → -- 2nd
+         P a refl →                       -- 3rd
+         (x : A) →                        -- 4th
+         (p : a ≡ x) →                    -- 5th
+         P x p
+  ind≡ _ _ p _ refl = p
+
+  inv : {ℓ : Level} → {A : Set ℓ} → (x y : A) → x ≡ y → y ≡ x
+  inv = λ x y p → ind≡ x (λ y x≡y → y ≡ x) refl y p
+
+  inv-is-equiv : (A : Set) → (x y : A) → is-equiv (inv x y)
+  inv-is-equiv _ x y = ((inv y x , λ p → helper x y p) , inv y x , λ p → helper y x p)
+    where
+    -- Note: We write "equals" in double quotes because we don't have the
+    -- wherewithal to show that two functions are ≡
+    --
+    -- ind≡(y) is our way to say "if a property P holds for y : A, then P also
+    -- holds for any x equivalent to y"
+    --
+    -- Suppose we want to prove inv(x, y) ∘ inv(y, x) "equals" id
+    --
+    -- Let P(z) be the property that inv(z, y) ∘ inv(y, z) "equals" id
+    --
+    -- It's easy to prove P(y), which is concretely
+    -- inv(y, y) ∘ inv(y, y) "equals" id
+    --
+    -- We use ind≡(y) to prove P(x) when we have a proof p that shows y ≡ x
+    helper : {ℓ : Level} → {A : Set ℓ} → (x y : A) → (p : y ≡ x) → inv x y (inv y x p) ≡ id p
+    helper x y p = let principle = (ind≡ y)
+                       motive y' p' = (inv y' y (inv y y' p') ≡ id p')
+                       base-case = refl
+                       what-equal = x
+                       how-equal = p
+                   in  principle motive base-case what-equal how-equal
+
+    concat : {A : Set} → (x y z : A) → x ≡ y → y ≡ z → x ≡ z
+    concat = λ x y z p → ind≡ x (λ y x≡y → y ≡ z → x ≡ z) id y p
+
+    concat-has-section : {A : Set} → (x y z : A) → (p : x ≡ y) → Chapter9.section (concat x y z p)
+    concat-has-section x y z p =
+      concat y x z (inv x y p) ,
+      λ (q : x ≡ z) →
+        let principle = (ind≡ x)
+            -- The goal is easier to prove, i.e. refl, when x and y are the same.
+            motive x' p' = (concat x x' z p' (concat x' x z (inv x x' p') q) ≡ id q)
+            base-case = refl
+            what-equal = y
+            how-equal = p
+        in  principle motive base-case what-equal how-equal
+
+    concat-has-retraction : {A : Set} → (x y z : A) → (p : x ≡ y) → Chapter9.retraction (concat x y z p)
+    concat-has-retraction x y z p =
+      concat y x z (inv x y p) ,
+      λ (q : y ≡ z) → let principle = (ind≡ y)
+                          -- The outer goal is easier to prove when y and z are the same.
+                          motive y' q' = concat y x y' (inv x y p) (concat x y y' p q') ≡ id q'
+                          inner-principle = (ind≡ x)
+                          -- The inner goal (outer goal's base case) is easier to prove when x and y are the same.
+                          inner-motive = (λ x' p' → concat x' x x' (inv x x' p') (concat x x' x' p' refl) ≡ id refl)
+                          inner-base-case = refl
+                          inner-what-equal = y
+                          inner-how-equal = p
+                          base-case = inner-principle inner-motive inner-base-case inner-what-equal inner-how-equal
+                          what-equal = z
+                          how-equal = q
+                      in  principle motive base-case what-equal how-equal
+
+    concat-is-equiv : {A : Set} → (x y z : A) → (p : x ≡ y) → Chapter9.is-equiv (concat x y z p)
+    concat-is-equiv x y z p = concat-has-section x y z p , concat-has-retraction x y z p
+
+    concat' : {A : Set} → (x y z : A) → (q : y ≡ z) → (p : x ≡ y) → (x ≡ z)
+    concat' x y z q p =  concat x y z p q
+
+    concat'-has-section0 : (A : Set) → (x y z : A) → (q : z ≡ y) → Chapter9.section (concat' x y z (inv z y q))
+    concat'-has-section0 A x y z q = (concat' x z y q) , λ (p : x ≡ z) → ind≡ z ((λ z' q' → concat' x z' z (inv z z' q') (concat' x z z' q' p) ≡ id p)) (ind≡ x (λ x' p' → concat' x x' x' (inv x' x' refl) (concat' x x' x' refl p') ≡ id p') refl z p) y q
+
+    {-
+    -- Fix a type A.
+    -- Fix terms x, y, z of type A.
+    -- Fix a proof q that y ≡ z.
+    -- We want to prove:
+    --
+    --     section ((concat' x y z) q)
+    --
+    -- We will prove the goal using transport with the type (y ≡ z) and motive (λ (q' : y ≡ z) → section ((concat' x y z) q'))
+    -- We have already proved the goal when the motive is instantiated with (inv z y) ((inv y z) q).
+    -- We have also proved that ((inv z y) ((inv y z) q) ≡ q).
+    -- That's really all we need.
+    -}
+    concat'-has-section : (A : Set) → (x y z : A) → (q : y ≡ z) → Chapter9.section (concat' x y z q)
+    concat'-has-section A x y z q = tr {_} {y ≡ z} (section ∘ (concat' x y z)) (helper z y q) (concat'-has-section0 A x y z ((inv y z) q))
+
+    {-
+    -- Fix a type A.
+    -- Fix terms x, y and z : A.
+    -- Fix q, a proof that y ≡ z.
+    -- Recall that (concat' x y z) : (y ≡ z) → (x ≡ y) → (x ≡ z).
+    -- We want to show that ((concat' x y z) q) has a retraction.
+    -- This is to say that we want to create a function h : (x ≡ z) → (x ≡ y) such that:
+    --
+    --     ∀ p : (x ≡ y),
+    --       h $ concat' x y z q p ≡ id p
+    --
+    -- Going off the type of h we can guess that it might be:
+    --
+    --     λ r : (x ≡ z),
+    --       (concat x z y) r (inv y z q)
+    --
+    -- We need to prove that h is really a retraction:
+    --
+    --     (concat x z y) ((concat' x y z) q p) (inv y z q) ≡ id p
+    --
+    -- Will the goal typecheck if z is replaced with a fresh variable z', while q is replaced with a fresh variable q' : y ≡ z' ?
+    --
+    --     e0 = (concat' x y z) q' p : x ≡ z'
+    --     e1 = inv y z' q' : z' ≡ y
+    --     (concat x z y) e0 e1 : x ≡ y
+    --
+    -- Yes!  The goal will typecheck.  Induction will simplify the aforementioned goal to:
+    --
+    --     (concat x y y) ((concat' x y y) refl p) (inv y y refl) ≡ id p
+    --
+    -- The new goal necessitates another induction.  Will it typecheck if y is replaced with a fresh variable y', while p is replaced with a fresh variable p' : x ≡ y'?
+    --
+    --     e0 = (concat' x y' y') refl p' : x ≡ y'
+    --     e1 = inv y' y' refl : y' ≡ y'
+    --     (concat x y' y') e0 e1 : x ≡ y'
+    --
+    -- Yes, the goal will typecheck.  Moreover the resulting subgoal is trivial:
+    --
+    --     (concat x x x) ((concat' x x x) refl refl) (inv x x refl) ≡ id refl
+    -}
+    concat'-has-retraction : (A : Set) → (x y z : A) → (q : y ≡ z) → Chapter9.retraction (concat' x y z q)
+    concat'-has-retraction A x y z q =
+      (λ (r : x ≡ z) → (concat x z y) r (inv y z $ q)) ,
+      λ (p : x ≡ y) →
+        let lhs = y
+            motive = λ z' q' → (concat x z' y) ((concat' x y z') q' p) (inv y z' q') ≡ id p
+            base = concat'-has-retraction_base p
+            rhs = z
+            lhs≡rhs = q
+        in  ind≡ lhs motive base rhs lhs≡rhs
+      where
+      concat'-has-retraction_base : (p : x ≡ y) → (concat x y y) ((concat' x y y) refl p) (inv y y refl) ≡ id p
+      concat'-has-retraction_base p =
+        let lhs = x
+            motive = λ x' p' → (concat x x' x') ((concat' x x' x') refl p') (inv x' x' refl) ≡ id p'
+            base = refl
+            rhs = y
+            lhs≡rhs = p
+        in  ind≡ lhs motive base rhs lhs≡rhs
+
+    concat'-is-equiv : (A : Set) → (x y z : A) → (q : y ≡ z) → Chapter9.is-equiv (concat' x y z q)
+    concat'-is-equiv A x y z q = concat'-has-section A x y z q , concat'-has-retraction A x y z q
+
+    transport-has-section0 : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : y ≡ x) → Chapter9.section (tr {ℓ} {A} B (inv y x p))
+    transport-has-section0 ℓ A B x y p =
+      (λ (q : B y) → tr {ℓ} {A} B p q) ,
+      λ (q : B y) → let principle = (ind≡ y)
+                        motive = (λ x' p' → tr {ℓ} {A} B (inv y x' p') (tr {ℓ} {A} B p' q) ≡ id q)
+                        base-case = refl
+                        what-equal = x
+                        how-equal = p
+                    in  principle motive base-case what-equal how-equal
+
+    transport-has-section : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : x ≡ y) → Chapter9.section (tr {ℓ} {A} B p)
+    transport-has-section ℓ A B x y p =
+      let type_ = (x ≡ y)
+          motive = (λ (p' : x ≡ y) → Chapter9.section (tr {ℓ} {A} B p'))
+          show-for = (inv y x (inv x y p))
+          what-equal = p
+          how-equal = helper y x p
+          proof_ = (transport-has-section0 ℓ A B x y (inv x y p))
+      in  tr {ℓ} {type_} motive how-equal proof_
+
+    transport-has-retraction : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : x ≡ y) → Chapter9.retraction (tr {ℓ} {A} B p)
+    transport-has-retraction ℓ A B x y p =
+      (λ (q : B y) → tr {ℓ} {A} B (inv x y p) q) ,
+      λ (r : B x) →
+        let principle = (ind≡ {ℓ} {ℓ} x)
+            motive = (λ y' p' → tr {ℓ} {A} B (inv x y' p') (tr {ℓ} {A} B p' r) ≡ id r)
+            base-case = refl
+            what-equal = y
+            how-equal = p
+        in  principle motive base-case what-equal how-equal
+
+    transport-is-equiv : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : x ≡ y) → Chapter9.is-equiv (tr {ℓ} {A} B p)
+    transport-is-equiv ℓ A B x y p = (transport-has-section ℓ A B x y p) , transport-has-retraction ℓ A B x y p
 
 -------------------------------------------------------------------------------
 -- #9.2 
