@@ -2,13 +2,11 @@ module Exercises.Ch9 where
 
 open import Agda.Primitive
 open import Data.Bool
-open import Data.Nat
 open import Data.Product
 open import Data.Product renaming (proj₁ to fst ; proj₂ to snd)
-open import Data.Sum
 open import Function hiding (_↔_)
 open import Data.Unit
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Relation.Nullary using (¬_)
 open import Data.Empty
 open import Part2
@@ -488,4 +486,140 @@ module 9-4 where
       (f , R) , 
       f , f ·ₗ (is-equiv⇒equalSplits e) ⁻¹ · S 
 
+-------------------------------------------------------------------------------
+-- #9.5
+module 9-5 where 
+  private
+    variable
+      ℓ ℓ₁ ℓ₂ ℓ₃ : Level 
+  open HomReasoning
 
+  -- --------------------------------------------------------------------
+  -- (a) Let A and B be types, and let C be a family over x : A, y : B.
+  --     Construct an equivalence 
+  --       Σ_{x : A} Σ_{y : B} C(x , y) ≃ Σ_{y : B} Σ_{x : A} C(x , y)
+
+
+  -- --------------------------------------------------------------------
+  -- (a) Let A be a type and let B and C be type families over A.
+  --     Construct an equivalence 
+  --     (Σ_{u : Σ_{x : A} B(x)} C(pr₁(u))) ≃ (Σ_{v : Σ_{x : A} C(x)} B(pr₁(v)))
+
+-------------------------------------------------------------------------------
+-- #9.6
+{- 
+Recall from remark 4.4.2 that coproducts have a *functorial action*, i.e.,
+that for every f : A → A′ and every g : B → B′ we have a map
+  f + g : (A + B) → (A′ + B′) 
+-} 
+
+module 9-6 where 
+  private
+    variable
+      ℓ : Level 
+      A A′ A′′ B B′ B′′ C C′ D D′ X Y Z : Set ℓ 
+  open HomReasoning
+  open import Data.Sum 
+    renaming (_⊎_ to _+_ ; inj₁ to ι₁ ; inj₂ to ι₂)
+    hiding ([_,_])
+
+  -- --------------------------------------------------------------------
+  -- (a - 1) Let's set up the bifunctorial action of coproducts.
+  -- 
+  -- Technically we're showing that any category 𝒞 that admits coproducts
+  -- (denoted by _+_) has a bifunctor _⊕_ : 𝒞 × 𝒞 → 𝒞 defined by:
+  --   - A ⊕ B = A + B
+  --   - f ⊕ g = [ι₁ ∘ f, ι₂ ∘ g]
+  -- where ι₁ and ι₂ are canonical injections and [f, g] : A + B → C is 
+  -- the unique morphism that makes the coproduct diagram commute.
+
+  [_,_] : (f : A → C) (g : B → C) → A + B → C 
+  [ f , g ] (ι₁ a) = f a 
+  [ f , g ] (ι₂ b) = g b 
+
+    -- [ g , h ] is unique up to homotopy
+  []-unique : ∀ {f : A + B → C} {g : A → C} {h : B → C} → 
+              g ∼ f ∘ ι₁ → h ∼ f ∘ ι₂ → [ g , h ] ∼ f 
+  []-unique {f = f} {g} {h} f∘ι₁ f∘ι₂ (ι₁ a) = f∘ι₁ a
+  []-unique {f = f} {g} {h} f∘ι₁ f∘ι₂ (ι₂ b) = f∘ι₂ b 
+
+  []-η : ∀ {f : A + B → C} → [ f ∘ ι₁ , f ∘ ι₂ ] ∼ f 
+  []-η {f = f} = []-unique (refl-htpy (f ∘ ι₁)) (refl-htpy (f ∘ ι₂)) 
+  --
+  []-η-id : [ ι₁ {A = A} , ι₂ {B = B} ] ∼ id 
+  []-η-id {A = A} {B = B} = []-η {f = id}
+
+
+  _⊕_ : (f : A → C) (g : B → D) → (A + B) → (C + D) 
+  (f ⊕ g) = [ ι₁ ∘ f , ι₂ ∘ g ]
+
+  -- --------------------------------------------------------------------
+  -- (a) Show that id_A + id_B ∼ id_{A + B}
+  -- 
+  -- (Or: The coproduct bifunctor preserves identities.)
+
+  [id] : id {A = A} ⊕ id {A = B} ∼ id 
+  [id] = begin 
+    (id ⊕ id) ∼⟨ refl-htpy _ ⟩
+    [ ι₁ , ι₂ ] ∼⟨ []-η-id ⟩
+    id ∎ 
+
+  -- --------------------------------------------------------------------
+  -- (b) Show that for any two pairs of composable functions
+  --        f       g                h       k     
+  --     A ---> A′ ---> A′′  and  B ---> B′ ---> B′′ 
+  -- there is a homotopy (g ∘ f) + (k ∘ h) ∼ (g + k) ∘ (f + h)
+
+  ∘+-distribute : ∀ (f : A → B) (g : B → C) (h : X → Y) (k : Y → Z) → 
+                  (g ∘ f) ⊕ (k ∘ h) ∼ (g ⊕ k) ∘ (f ⊕ h)
+  ∘+-distribute f g h k = begin 
+    (g ∘ f) ⊕ (k ∘ h) ∼⟨ {!   !} ⟩ 
+    {!   !}                   ∼⟨ {!   !} ⟩ 
+    (g ⊕ k) ∘ (f ⊕ h) ∎
+
+
+  -- --------------------------------------------------------------------
+  -- (c) Show that if H : f ∼ f′ and K : g ∼ g′, then there is a homotopy
+  --     H + K : (f + g) ∼ (f′ + g′) 
+
+  -- --------------------------------------------------------------------
+  -- (d) Show that if both f and g are equivalences, then so is f + g.
+
+-------------------------------------------------------------------------------
+-- #9.7
+
+module 9-7 where 
+  private
+    variable
+      ℓ : Level 
+      A A′ A′′ B B′ B′′ : Set ℓ       
+  open HomReasoning
+
+  -- --------------------------------------------------------------------
+  -- (a) Construct for any two maps f : A → A′ and g : B → B′, a map
+  --     f × g : A × B → A′ × B′ 
+  -- (I've added _⊗_ as the recommended syntax for this definition. -Alex)
+
+  _⊗_ : (f : A → A′) (g : B → B′) → A × B → A′ × B′ 
+  (f ⊗ g) (a , b) = {!   !} 
+  
+  -- --------------------------------------------------------------------
+  -- (b) Show that id_A × id_B ∼ id_{A × B}
+
+  -- --------------------------------------------------------------------
+  -- (c) Show that for any two pairs of composable functions
+  --        f       f′               g       g′     
+  --     A ---> A′ ---> A′′  and  B ---> B′ ---> B′′ 
+  -- there is a homotopy (f′ ∘ f) × (g′ ∘ g) ∼ (f′ × g′) ∘ (f × g)
+
+  -- --------------------------------------------------------------------
+  -- (d) Show that if H : f ∼ f′ and K : g ∼ g′, then there is a homotopy
+  --     H + K : (f × g) ∼ (f′ × g′) 
+
+  -- --------------------------------------------------------------------
+  -- (e) Show that for any two maps f : A → A′ and g : B → B′, the following
+  --     are equivalent:
+  --     (i) The map f × g is an equivalence 
+  --     (ii) There are functions
+  --          - α : B → is-equiv f 
+  --          - β : A → is-equiv g 
