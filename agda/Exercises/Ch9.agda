@@ -291,7 +291,10 @@ module 9-3 where
   --     of e₁ and e₂ are homotopically equivalent under _∼_.
 
   inverses-homotopic : ∀ (e₁ e₂ : A ≃ B) → `inv e₁ ∼ `inv e₂ 
-  inverses-homotopic (f , (f⁻¹ , f∘f⁻¹∼id) , retr-f) (g , (g⁻¹ , g∘g⁻¹∼id) , retr-g) = {!!}
+  inverses-homotopic (f , (f⁻¹ , f∘f⁻¹∼id) , retr-f) (g , (g⁻¹ , g∘g⁻¹∼id) , retr-g) = ⊥-elim wrong!
+    where 
+      postulate 
+        wrong! : ⊥
 
   -- Actually, this statement is not true. Consider the two distinct
   -- identifications of bools.
@@ -535,21 +538,39 @@ module 9-6 where
 
   [_,_] : (f : A → C) (g : B → C) → A + B → C 
   [ f , g ] (ι₁ a) = f a 
-  [ f , g ] (ι₂ b) = g b 
+  [ f , g ] (ι₂ b) = g b
 
-    -- [ g , h ] is unique up to homotopy
+  -- Computational laws for [_,_] stated as homotopies
+  []-reduce₁ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ ι₁ ∼ f 
+  []-reduce₁ = refl-htpy _ 
+
+  []-reduce₂ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ ι₂ ∼ g
+  []-reduce₂ = refl-htpy _ 
+
+  -- [ g , h ] is unique up to homotopy
   []-unique : ∀ {f : A + B → C} {g : A → C} {h : B → C} → 
               g ∼ f ∘ ι₁ → h ∼ f ∘ ι₂ → [ g , h ] ∼ f 
   []-unique {f = f} {g} {h} f∘ι₁ f∘ι₂ (ι₁ a) = f∘ι₁ a
   []-unique {f = f} {g} {h} f∘ι₁ f∘ι₂ (ι₂ b) = f∘ι₂ b 
 
+  -- η-rule for coproducts
   []-η : ∀ {f : A + B → C} → [ f ∘ ι₁ , f ∘ ι₂ ] ∼ f 
   []-η {f = f} = []-unique (refl-htpy (f ∘ ι₁)) (refl-htpy (f ∘ ι₂)) 
-  --
+  
   []-η-id : [ ι₁ {A = A} , ι₂ {B = B} ] ∼ id 
   []-η-id {A = A} {B = B} = []-η {f = id}
 
+  -- congruence over [_,_]
+  ∼[_,_]∼ : ∀ {f g : A → C} {h k : B → C} → f ∼ g → h ∼ k → 
+               [ f , h ] ∼ [ g , k ] 
+  ∼[_,_]∼ F H = []-unique F H                 
+  
+  -- distributivity 
+  []-distrib : ∀ (h : C → D) (f : A → C) (g : B → C) → 
+                  h ∘ [ f , g ] ∼ [ h ∘ f , h ∘ g ] 
+  []-distrib _ _ _ = ([]-unique (refl-htpy _) (refl-htpy _)) ⁻¹ 
 
+  -- f ⊕ g is given by the universal morphism
   _⊕_ : (f : A → C) (g : B → D) → (A + B) → (C + D) 
   (f ⊕ g) = [ ι₁ ∘ f , ι₂ ∘ g ]
 
@@ -558,32 +579,72 @@ module 9-6 where
   -- 
   -- (Or: The coproduct bifunctor preserves identities.)
 
-  [id] : id {A = A} ⊕ id {A = B} ∼ id 
-  [id] = begin 
+  ⊕-id : id {A = A} ⊕ id {A = B} ∼ id 
+  ⊕-id = begin 
     (id ⊕ id) ∼⟨ refl-htpy _ ⟩
     [ ι₁ , ι₂ ] ∼⟨ []-η-id ⟩
     id ∎ 
 
   -- --------------------------------------------------------------------
   -- (b) Show that for any two pairs of composable functions
-  --        f       g                h       k     
-  --     A ---> A′ ---> A′′  and  B ---> B′ ---> B′′ 
-  -- there is a homotopy (g ∘ f) + (k ∘ h) ∼ (g + k) ∘ (f + h)
+  --        f      g              h       k     
+  --     A ---> B ---> C  and  X ---> Y ---> Z
+  -- there is a homotopy (g ∘ f) + (k ∘ h) ∼ (g + k) ∘ (f + h):
+  --   
 
-  ∘+-distribute : ∀ (f : A → B) (g : B → C) (h : X → Y) (k : Y → Z) → 
-                  (g ∘ f) ⊕ (k ∘ h) ∼ (g ⊕ k) ∘ (f ⊕ h)
-  ∘+-distribute f g h k = begin 
-    (g ∘ f) ⊕ (k ∘ h) ∼⟨ {!   !} ⟩ 
-    {!   !}                   ∼⟨ {!   !} ⟩ 
-    (g ⊕ k) ∘ (f ⊕ h) ∎
+  ∘+-distribute : ∀ {f : A → B} {g : B → C} {h : X → Y} {k : Y → Z} → 
+                  (g ⊕ k) ∘ (f ⊕ h) ∼ (g ∘ f) ⊕ (k ∘ h)
+  ∘+-distribute {f = f} {g} {h} {k} = begin 
+    (g ⊕ k) ∘ (f ⊕ h)                                               ∼⟨ refl-htpy _ ⟩ 
+    -- Expand (f ⊕ h)
+    (g ⊕ k) ∘ [ ι₁ ∘ f , ι₂ ∘ h ]                                    ∼⟨ []-distrib (g ⊕ k) (ι₁ ∘ f) (ι₂ ∘ h) ⟩ 
+    -- Distribute (g ⊕ k) over [ ι₁ ∘ f , ι₂ ∘ h ]
+    [ (g ⊕ k) ∘ ι₁ ∘ f , (g ⊕ k) ∘ ι₂ ∘ h ]                          ∼⟨ refl-htpy _ ⟩ 
+    -- Expand (g ⊕ k) 
+    [ [ ι₁ ∘ g , ι₂ ∘ k ] ∘ ι₁ ∘ f , [ ι₁ ∘ g , ι₂ ∘ k ] ∘ ι₂ ∘ h ]   ∼⟨ ∼[ []-reduce₁ {g = ι₂ ∘ k}  , []-reduce₂ {f = ι₁ ∘ g} ]∼ ⟩ 
+    -- Reduce---Recall that [ f , g ] ∘ ι₁ ∼ f, [ f , g ] ∘ ι₂ ∼ g.
+    [ ι₁ ∘ g ∘ f ,  ι₂ ∘ k ∘ h ]                                     ∼⟨ refl-htpy _ ⟩ 
+    -- Repackage
+     (g ∘ f) ⊕ (k ∘ h) ∎
 
 
   -- --------------------------------------------------------------------
   -- (c) Show that if H : f ∼ f′ and K : g ∼ g′, then there is a homotopy
   --     H + K : (f + g) ∼ (f′ + g′) 
 
+  -- Follows simply from congruence over [_,_]
+  ∼⟨_⊕_⟩∼ : ∀ {f f′ : A → C} {g g′ : B → D} → f ∼ f′ → g ∼ g′ → 
+               f ⊕ g ∼ f′ ⊕ g′ 
+  ∼⟨ H ⊕ K ⟩∼ = ∼[ ι₁ ·ₗ H , ι₂ ·ₗ K ]∼ 
+
   -- --------------------------------------------------------------------
   -- (d) Show that if both f and g are equivalences, then so is f + g.
+
+  module _ (f : A → C) (g : B → D) (f-eqv : is-equiv f) (g-eqv : is-equiv g) where 
+
+    ⊕-section : section (f ⊕ g) 
+    ⊕-section  = 
+      f⁻¹ ⊕ g⁻¹ , (begin
+          (f ⊕ g) ∘ (f⁻¹ ⊕ g⁻¹)  ∼⟨ ∘+-distribute ⟩ 
+          (f ∘ f⁻¹) ⊕ (g ∘ g⁻¹)   ∼⟨ ∼⟨ sec-f ⊕ sec-g ⟩∼ ⟩ 
+          id ⊕ id             ∼⟨ ⊕-id ⟩ 
+          id ∎)
+      where 
+        open Σ (f-eqv .fst) renaming (proj₁ to f⁻¹ ; proj₂ to sec-f)
+        open Σ (g-eqv .fst) renaming (proj₁ to g⁻¹ ; proj₂ to sec-g)
+
+    ⊕-retr : retraction (f ⊕ g) 
+    ⊕-retr = f⁻¹ ⊕ g⁻¹ , (begin 
+      (f⁻¹ ⊕ g⁻¹) ∘ (f ⊕ g) ∼⟨ ∘+-distribute ⟩ 
+      (f⁻¹ ∘ f) ⊕ (g⁻¹ ∘ g) ∼⟨ ∼⟨ retr-f ⊕ retr-g ⟩∼ ⟩ 
+      id ⊕ id ∼⟨ ⊕-id ⟩ 
+      id ∎)
+      where 
+        open Σ (f-eqv .snd) renaming (proj₁ to f⁻¹ ; proj₂ to retr-f)
+        open Σ (g-eqv .snd) renaming (proj₁ to g⁻¹ ; proj₂ to retr-g)      
+
+    ⊕-equiv : is-equiv (f ⊕ g)
+    ⊕-equiv = ⊕-section , ⊕-retr
 
 -------------------------------------------------------------------------------
 -- #9.7
