@@ -570,13 +570,13 @@ module 9-6 where
                   h ∘ [ f , g ] ∼ [ h ∘ f , h ∘ g ] 
   []-distrib _ _ _ = ([]-unique (refl-htpy _) (refl-htpy _)) ⁻¹ 
 
-  -- f ⊕ g is given by the universal morphism
+  -- f ⊕ g is the unique arrow from (A + B) to (C + D)
+  -- s.t. ι₁ ∘ f ∼ (f ⊕ g) ∘ ι₁  and ι₂ ∘ g ∼ (f ⊕ g) ∘ ι₂.
   _⊕_ : (f : A → C) (g : B → D) → (A + B) → (C + D) 
   (f ⊕ g) = [ ι₁ ∘ f , ι₂ ∘ g ]
 
   -- --------------------------------------------------------------------
   -- (a) Show that id_A + id_B ∼ id_{A + B}
-  -- 
   -- (Or: The coproduct bifunctor preserves identities.)
 
   ⊕-id : id {A = A} ⊕ id {A = B} ∼ id 
@@ -589,28 +589,25 @@ module 9-6 where
   -- (b) Show that for any two pairs of composable functions
   --        f      g              h       k     
   --     A ---> B ---> C  and  X ---> Y ---> Z
-  -- there is a homotopy (g ∘ f) + (k ∘ h) ∼ (g + k) ∘ (f + h):
-  --   
+  -- there is a homotopy (g ∘ f) + (k ∘ h) ∼ (g + k) ∘ (f + h).
+  -- (We can compose componentwise.)
 
   ∘+-distribute : ∀ {f : A → B} {g : B → C} {h : X → Y} {k : Y → Z} → 
                   (g ⊕ k) ∘ (f ⊕ h) ∼ (g ∘ f) ⊕ (k ∘ h)
   ∘+-distribute {f = f} {g} {h} {k} = begin 
-    (g ⊕ k) ∘ (f ⊕ h)                                               ∼⟨ refl-htpy _ ⟩ 
-    -- Expand (f ⊕ h)
-    (g ⊕ k) ∘ [ ι₁ ∘ f , ι₂ ∘ h ]                                    ∼⟨ []-distrib (g ⊕ k) (ι₁ ∘ f) (ι₂ ∘ h) ⟩ 
-    -- Distribute (g ⊕ k) over [ ι₁ ∘ f , ι₂ ∘ h ]
-    [ (g ⊕ k) ∘ ι₁ ∘ f , (g ⊕ k) ∘ ι₂ ∘ h ]                          ∼⟨ refl-htpy _ ⟩ 
-    -- Expand (g ⊕ k) 
-    [ [ ι₁ ∘ g , ι₂ ∘ k ] ∘ ι₁ ∘ f , [ ι₁ ∘ g , ι₂ ∘ k ] ∘ ι₂ ∘ h ]   ∼⟨ ∼[ []-reduce₁ {g = ι₂ ∘ k}  , []-reduce₂ {f = ι₁ ∘ g} ]∼ ⟩ 
-    -- Reduce---Recall that [ f , g ] ∘ ι₁ ∼ f, [ f , g ] ∘ ι₂ ∼ g.
-    [ ι₁ ∘ g ∘ f ,  ι₂ ∘ k ∘ h ]                                     ∼⟨ refl-htpy _ ⟩ 
-    -- Repackage
+    (g ⊕ k) ∘ (f ⊕ h)                         ∼⟨ refl-htpy _ ⟩ 
+    (g ⊕ k) ∘ [ ι₁ ∘ f , ι₂ ∘ h ]             ∼⟨ []-distrib (g ⊕ k) (ι₁ ∘ f) (ι₂ ∘ h) ⟩ 
+    [ (g ⊕ k) ∘ ι₁ ∘ f , (g ⊕ k) ∘ ι₂ ∘ h ]   ∼⟨ refl-htpy _ ⟩ 
+    [ ([ ι₁ ∘ g , ι₂ ∘ k ] ∘ ι₁) ∘ f , 
+      ([ ι₁ ∘ g , ι₂ ∘ k ] ∘ ι₂) ∘ h ]         ∼⟨ ∼[ []-reduce₁ {g = ι₂ ∘ k}  , []-reduce₂ {f = ι₁ ∘ g} ]∼ ⟩ 
+    [ ι₁ ∘ g ∘ f ,  ι₂ ∘ k ∘ h ]               ∼⟨ refl-htpy _ ⟩ 
      (g ∘ f) ⊕ (k ∘ h) ∎
 
 
   -- --------------------------------------------------------------------
   -- (c) Show that if H : f ∼ f′ and K : g ∼ g′, then there is a homotopy
-  --     H + K : (f + g) ∼ (f′ + g′) 
+  --     H + K : (f + g) ∼ (f′ + g′).
+  -- (Congruence over _⊕_.)
 
   -- Follows simply from congruence over [_,_]
   ∼⟨_⊕_⟩∼ : ∀ {f f′ : A → C} {g g′ : B → D} → f ∼ f′ → g ∼ g′ → 
@@ -618,16 +615,16 @@ module 9-6 where
   ∼⟨ H ⊕ K ⟩∼ = ∼[ ι₁ ·ₗ H , ι₂ ·ₗ K ]∼ 
 
   -- --------------------------------------------------------------------
-  -- (d) Show that if both f and g are equivalences, then so is f + g.
+  -- (d) Show that if both f and g are equivalences, then so is f ⊕ g.
 
   module _ (f : A → C) (g : B → D) (f-eqv : is-equiv f) (g-eqv : is-equiv g) where 
 
     ⊕-section : section (f ⊕ g) 
     ⊕-section  = 
       f⁻¹ ⊕ g⁻¹ , (begin
-          (f ⊕ g) ∘ (f⁻¹ ⊕ g⁻¹)  ∼⟨ ∘+-distribute ⟩ 
-          (f ∘ f⁻¹) ⊕ (g ∘ g⁻¹)   ∼⟨ ∼⟨ sec-f ⊕ sec-g ⟩∼ ⟩ 
-          id ⊕ id             ∼⟨ ⊕-id ⟩ 
+          (f ⊕ g) ∘ (f⁻¹ ⊕ g⁻¹) ∼⟨ ∘+-distribute ⟩ 
+          (f ∘ f⁻¹) ⊕ (g ∘ g⁻¹) ∼⟨ ∼⟨ sec-f ⊕ sec-g ⟩∼ ⟩ 
+          id ⊕ id               ∼⟨ ⊕-id ⟩ 
           id ∎)
       where 
         open Σ (f-eqv .fst) renaming (proj₁ to f⁻¹ ; proj₂ to sec-f)
@@ -635,9 +632,9 @@ module 9-6 where
 
     ⊕-retr : retraction (f ⊕ g) 
     ⊕-retr = f⁻¹ ⊕ g⁻¹ , (begin 
-      (f⁻¹ ⊕ g⁻¹) ∘ (f ⊕ g) ∼⟨ ∘+-distribute ⟩ 
-      (f⁻¹ ∘ f) ⊕ (g⁻¹ ∘ g) ∼⟨ ∼⟨ retr-f ⊕ retr-g ⟩∼ ⟩ 
-      id ⊕ id ∼⟨ ⊕-id ⟩ 
+      (f⁻¹ ⊕ g⁻¹) ∘ (f ⊕ g)  ∼⟨ ∘+-distribute ⟩ 
+      (f⁻¹ ∘ f) ⊕ (g⁻¹ ∘ g)  ∼⟨ ∼⟨ retr-f ⊕ retr-g ⟩∼ ⟩ 
+      id ⊕ id                ∼⟨ ⊕-id ⟩ 
       id ∎)
       where 
         open Σ (f-eqv .snd) renaming (proj₁ to f⁻¹ ; proj₂ to retr-f)
