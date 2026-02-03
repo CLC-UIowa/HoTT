@@ -1,7 +1,7 @@
-module Exercises.Part1 where 
+module Chapters.`01-08.Exercises where 
 
 open import Data.Nat.Properties
-open import Part1 renaming (𝟙 to ⊤ ; ind𝟙 to ind⊤)
+open import Chapters.`01-08.Reading renaming (𝟙 to ⊤ ; ind𝟙 to ind⊤)
 
 _≲_ : ℕ → ℕ → Set
 _≲_ = λ m → indℕ (λ _ → ℕ → Set)

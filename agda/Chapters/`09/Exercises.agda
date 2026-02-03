@@ -1,16 +1,7 @@
-module Exercises.Ch9 where
+module Chapters.`09.Exercises where
 
-open import Agda.Primitive
-open import Data.Bool
-open import Data.Product
-open import Data.Product renaming (proj₁ to fst ; proj₂ to snd)
-open import Function hiding (_↔_)
-open import Data.Unit
-open import Relation.Binary.PropositionalEquality hiding ([_])
-open import Relation.Nullary using (¬_)
-open import Data.Empty
-open import Part2
-open Chapter9
+open import Prelude hiding ([_,_])
+open import Chapters.`09.Reading 
 
 -------------------------------------------------------------------------------
 --- #9.1
@@ -58,7 +49,7 @@ module 9-1 where
     concat : {A : Set} → (x y z : A) → x ≡ y → y ≡ z → x ≡ z
     concat = λ x y z p → ind≡ x (λ y x≡y → y ≡ z → x ≡ z) id y p
 
-    concat-has-section : {A : Set} → (x y z : A) → (p : x ≡ y) → Chapter9.section (concat x y z p)
+    concat-has-section : {A : Set} → (x y z : A) → (p : x ≡ y) → section (concat x y z p)
     concat-has-section x y z p =
       concat y x z (inv x y p) ,
       λ (q : x ≡ z) →
@@ -70,7 +61,7 @@ module 9-1 where
             how-equal = p
         in  principle motive base-case what-equal how-equal
 
-    concat-has-retraction : {A : Set} → (x y z : A) → (p : x ≡ y) → Chapter9.retraction (concat x y z p)
+    concat-has-retraction : {A : Set} → (x y z : A) → (p : x ≡ y) → retraction (concat x y z p)
     concat-has-retraction x y z p =
       concat y x z (inv x y p) ,
       λ (q : y ≡ z) → let principle = (ind≡ y)
@@ -87,13 +78,13 @@ module 9-1 where
                           how-equal = q
                       in  principle motive base-case what-equal how-equal
 
-    concat-is-equiv : {A : Set} → (x y z : A) → (p : x ≡ y) → Chapter9.is-equiv (concat x y z p)
+    concat-is-equiv : {A : Set} → (x y z : A) → (p : x ≡ y) → is-equiv (concat x y z p)
     concat-is-equiv x y z p = concat-has-section x y z p , concat-has-retraction x y z p
 
     concat' : {A : Set} → (x y z : A) → (q : y ≡ z) → (p : x ≡ y) → (x ≡ z)
     concat' x y z q p =  concat x y z p q
 
-    concat'-has-section0 : (A : Set) → (x y z : A) → (q : z ≡ y) → Chapter9.section (concat' x y z (inv z y q))
+    concat'-has-section0 : (A : Set) → (x y z : A) → (q : z ≡ y) → section (concat' x y z (inv z y q))
     concat'-has-section0 A x y z q = (concat' x z y q) , λ (p : x ≡ z) → ind≡ z ((λ z' q' → concat' x z' z (inv z z' q') (concat' x z z' q' p) ≡ id p)) (ind≡ x (λ x' p' → concat' x x' x' (inv x' x' refl) (concat' x x' x' refl p') ≡ id p') refl z p) y q
 
     {-
@@ -109,7 +100,7 @@ module 9-1 where
     -- We have also proved that ((inv z y) ((inv y z) q) ≡ q).
     -- That's really all we need.
     -}
-    concat'-has-section : (A : Set) → (x y z : A) → (q : y ≡ z) → Chapter9.section (concat' x y z q)
+    concat'-has-section : (A : Set) → (x y z : A) → (q : y ≡ z) → section (concat' x y z q)
     concat'-has-section A x y z q = tr {_} {y ≡ z} (section ∘ (concat' x y z)) (helper z y q) (concat'-has-section0 A x y z ((inv y z) q))
 
     {-
@@ -152,7 +143,7 @@ module 9-1 where
     --
     --     (concat x x x) ((concat' x x x) refl refl) (inv x x refl) ≡ id refl
     -}
-    concat'-has-retraction : (A : Set) → (x y z : A) → (q : y ≡ z) → Chapter9.retraction (concat' x y z q)
+    concat'-has-retraction : (A : Set) → (x y z : A) → (q : y ≡ z) → retraction (concat' x y z q)
     concat'-has-retraction A x y z q =
       (λ (r : x ≡ z) → (concat x z y) r (inv y z $ q)) ,
       λ (p : x ≡ y) →
@@ -172,10 +163,10 @@ module 9-1 where
             lhs≡rhs = p
         in  ind≡ lhs motive base rhs lhs≡rhs
 
-    concat'-is-equiv : (A : Set) → (x y z : A) → (q : y ≡ z) → Chapter9.is-equiv (concat' x y z q)
+    concat'-is-equiv : (A : Set) → (x y z : A) → (q : y ≡ z) → is-equiv (concat' x y z q)
     concat'-is-equiv A x y z q = concat'-has-section A x y z q , concat'-has-retraction A x y z q
 
-    transport-has-section0 : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : y ≡ x) → Chapter9.section (tr {ℓ} {A} B (inv y x p))
+    transport-has-section0 : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : y ≡ x) → section (tr {ℓ} {A} B (inv y x p))
     transport-has-section0 ℓ A B x y p =
       (λ (q : B y) → tr {ℓ} {A} B p q) ,
       λ (q : B y) → let principle = (ind≡ y)
@@ -185,17 +176,17 @@ module 9-1 where
                         how-equal = p
                     in  principle motive base-case what-equal how-equal
 
-    transport-has-section : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : x ≡ y) → Chapter9.section (tr {ℓ} {A} B p)
+    transport-has-section : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : x ≡ y) → section (tr {ℓ} {A} B p)
     transport-has-section ℓ A B x y p =
       let type_ = (x ≡ y)
-          motive = (λ (p' : x ≡ y) → Chapter9.section (tr {ℓ} {A} B p'))
+          motive = (λ (p' : x ≡ y) → section (tr {ℓ} {A} B p'))
           show-for = (inv y x (inv x y p))
           what-equal = p
           how-equal = helper y x p
           proof_ = (transport-has-section0 ℓ A B x y (inv x y p))
       in  tr {ℓ} {type_} motive how-equal proof_
 
-    transport-has-retraction : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : x ≡ y) → Chapter9.retraction (tr {ℓ} {A} B p)
+    transport-has-retraction : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : x ≡ y) → retraction (tr {ℓ} {A} B p)
     transport-has-retraction ℓ A B x y p =
       (λ (q : B y) → tr {ℓ} {A} B (inv x y p) q) ,
       λ (r : B x) →
@@ -206,7 +197,7 @@ module 9-1 where
             how-equal = p
         in  principle motive base-case what-equal how-equal
 
-    transport-is-equiv : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : x ≡ y) → Chapter9.is-equiv (tr {ℓ} {A} B p)
+    transport-is-equiv : (ℓ : Level) → (A : Set ℓ) → (B : A → Set ℓ) → (x y : A) → (p : x ≡ y) → is-equiv (tr {ℓ} {A} B p)
     transport-is-equiv ℓ A B x y p = (transport-has-section ℓ A B x y p) , transport-has-retraction ℓ A B x y p
 
 -------------------------------------------------------------------------------
@@ -221,15 +212,15 @@ module 9-2 where
   bool-neq-neg true = λ ()
 
   const-bool-not-equiv : (b : Bool) → ¬(is-equiv (λ (x : Bool) → b))
-  const-bool-not-equiv false = λ x → true-neq-false (sym ((proj₂ ∘ proj₁) x true ))
-  const-bool-not-equiv true = λ x → true-neq-false ((proj₂ ∘ proj₁) x false)
+  const-bool-not-equiv false = λ x → true-neq-false (sym ((snd ∘ fst) x true ))
+  const-bool-not-equiv true = λ x → true-neq-false ((snd ∘ fst) x false)
 
   bool-not-equiv-unit : ¬(Bool ≃ ⊤)
   bool-not-equiv-unit h =
     let
-      fh = proj₂ h
-      retraction = (proj₁ ∘ proj₂) fh
-      retraction-h = (proj₂ ∘ proj₂) fh 
+      fh = snd h
+      retraction = (fst ∘ snd) fh
+      retraction-h = (snd ∘ snd) fh 
       b = retraction tt
     in
       bool-neq-neg b (sym (retraction-h (not b)))
@@ -357,7 +348,7 @@ module 9-4 where
       (ii) that f has a section iff g has a section.
 -} 
   module 9-4a 
-    (f : A → C) 
+    (f : A → C)  
     (h : A → B) 
     (g : B → C)
     (H : f ∼ g ∘ h)
@@ -522,42 +513,39 @@ module 9-6 where
       ℓ : Level 
       A A′ A′′ B B′ B′′ C C′ D D′ X Y Z : Set ℓ 
   open HomReasoning
-  open import Data.Sum 
-    renaming (_⊎_ to _+_ ; inj₁ to ι₁ ; inj₂ to ι₂)
-    hiding ([_,_])
-
+  
   -- --------------------------------------------------------------------
   -- (a - 1) Let's set up the bifunctorial action of coproducts.
   -- 
   -- Technically we're showing that any category 𝒞 that admits coproducts
   -- (denoted by _+_) has a bifunctor _⊕_ : 𝒞 × 𝒞 → 𝒞 defined by:
   --   - A ⊕ B = A + B
-  --   - f ⊕ g = [ι₁ ∘ f, ι₂ ∘ g]
-  -- where ι₁ and ι₂ are canonical injections and [f, g] : A + B → C is 
+  --   - f ⊕ g = [inj₁ ∘ f, inj₂ ∘ g]
+  -- where inj₁ and inj₂ are canonical injections and [f, g] : A + B → C is 
   -- the unique morphism that makes the coproduct diagram commute.
 
   [_,_] : (f : A → C) (g : B → C) → A + B → C 
-  [ f , g ] (ι₁ a) = f a 
-  [ f , g ] (ι₂ b) = g b
+  [ f , g ] (inj₁ a) = f a 
+  [ f , g ] (inj₂ b) = g b
 
   -- Computational laws for [_,_] stated as homotopies
-  []-reduce₁ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ ι₁ ∼ f 
+  []-reduce₁ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ inj₁ ∼ f 
   []-reduce₁ = refl-htpy _ 
 
-  []-reduce₂ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ ι₂ ∼ g
+  []-reduce₂ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ inj₂ ∼ g
   []-reduce₂ = refl-htpy _ 
 
   -- [ g , h ] is unique up to homotopy
   []-unique : ∀ {f : A + B → C} {g : A → C} {h : B → C} → 
-              g ∼ f ∘ ι₁ → h ∼ f ∘ ι₂ → [ g , h ] ∼ f 
-  []-unique {f = f} {g} {h} f∘ι₁ f∘ι₂ (ι₁ a) = f∘ι₁ a
-  []-unique {f = f} {g} {h} f∘ι₁ f∘ι₂ (ι₂ b) = f∘ι₂ b 
+              g ∼ f ∘ inj₁ → h ∼ f ∘ inj₂ → [ g , h ] ∼ f 
+  []-unique {f = f} {g} {h} f∘inj₁ f∘inj₂ (inj₁ a) = f∘inj₁ a
+  []-unique {f = f} {g} {h} f∘inj₁ f∘inj₂ (inj₂ b) = f∘inj₂ b 
 
   -- η-rule for coproducts
-  []-η : ∀ {f : A + B → C} → [ f ∘ ι₁ , f ∘ ι₂ ] ∼ f 
-  []-η {f = f} = []-unique (refl-htpy (f ∘ ι₁)) (refl-htpy (f ∘ ι₂)) 
+  []-η : ∀ {f : A + B → C} → [ f ∘ inj₁ , f ∘ inj₂ ] ∼ f 
+  []-η {f = f} = []-unique (refl-htpy (f ∘ inj₁)) (refl-htpy (f ∘ inj₂)) 
   
-  []-η-id : [ ι₁ {A = A} , ι₂ {B = B} ] ∼ id 
+  []-η-id : [ inj₁ {A = A} , inj₂ {B = B} ] ∼ id 
   []-η-id {A = A} {B = B} = []-η {f = id}
 
   -- congruence over [_,_]
@@ -571,9 +559,9 @@ module 9-6 where
   []-distrib _ _ _ = ([]-unique (refl-htpy _) (refl-htpy _)) ⁻¹ 
 
   -- f ⊕ g is the unique arrow from (A + B) to (C + D)
-  -- s.t. ι₁ ∘ f ∼ (f ⊕ g) ∘ ι₁  and ι₂ ∘ g ∼ (f ⊕ g) ∘ ι₂.
+  -- s.t. inj₁ ∘ f ∼ (f ⊕ g) ∘ inj₁  and inj₂ ∘ g ∼ (f ⊕ g) ∘ inj₂.
   _⊕_ : (f : A → C) (g : B → D) → (A + B) → (C + D) 
-  (f ⊕ g) = [ ι₁ ∘ f , ι₂ ∘ g ]
+  (f ⊕ g) = [ inj₁ ∘ f , inj₂ ∘ g ]
 
   -- --------------------------------------------------------------------
   -- (a) Show that id_A + id_B ∼ id_{A + B}
@@ -582,7 +570,7 @@ module 9-6 where
   ⊕-id : id {A = A} ⊕ id {A = B} ∼ id 
   ⊕-id = begin 
     (id ⊕ id) ∼⟨ refl-htpy _ ⟩
-    [ ι₁ , ι₂ ] ∼⟨ []-η-id ⟩
+    [ inj₁ , inj₂ ] ∼⟨ []-η-id ⟩
     id ∎ 
 
   -- --------------------------------------------------------------------
@@ -596,11 +584,11 @@ module 9-6 where
                   (g ⊕ k) ∘ (f ⊕ h) ∼ (g ∘ f) ⊕ (k ∘ h)
   ∘+-distribute {f = f} {g} {h} {k} = begin 
     (g ⊕ k) ∘ (f ⊕ h)                         ∼⟨ refl-htpy _ ⟩ 
-    (g ⊕ k) ∘ [ ι₁ ∘ f , ι₂ ∘ h ]             ∼⟨ []-distrib (g ⊕ k) (ι₁ ∘ f) (ι₂ ∘ h) ⟩ 
-    [ (g ⊕ k) ∘ ι₁ ∘ f , (g ⊕ k) ∘ ι₂ ∘ h ]   ∼⟨ refl-htpy _ ⟩ 
-    [ ([ ι₁ ∘ g , ι₂ ∘ k ] ∘ ι₁) ∘ f , 
-      ([ ι₁ ∘ g , ι₂ ∘ k ] ∘ ι₂) ∘ h ]         ∼⟨ ∼[ []-reduce₁ {g = ι₂ ∘ k}  , []-reduce₂ {f = ι₁ ∘ g} ]∼ ⟩ 
-    [ ι₁ ∘ g ∘ f ,  ι₂ ∘ k ∘ h ]               ∼⟨ refl-htpy _ ⟩ 
+    (g ⊕ k) ∘ [ inj₁ ∘ f , inj₂ ∘ h ]             ∼⟨ []-distrib (g ⊕ k) (inj₁ ∘ f) (inj₂ ∘ h) ⟩ 
+    [ (g ⊕ k) ∘ inj₁ ∘ f , (g ⊕ k) ∘ inj₂ ∘ h ]   ∼⟨ refl-htpy _ ⟩ 
+    [ ([ inj₁ ∘ g , inj₂ ∘ k ] ∘ inj₁) ∘ f , 
+      ([ inj₁ ∘ g , inj₂ ∘ k ] ∘ inj₂) ∘ h ]         ∼⟨ ∼[ []-reduce₁ {g = inj₂ ∘ k}  , []-reduce₂ {f = inj₁ ∘ g} ]∼ ⟩ 
+    [ inj₁ ∘ g ∘ f ,  inj₂ ∘ k ∘ h ]               ∼⟨ refl-htpy _ ⟩ 
      (g ∘ f) ⊕ (k ∘ h) ∎
 
 
@@ -612,7 +600,7 @@ module 9-6 where
   -- Follows simply from congruence over [_,_]
   ∼⟨_⊕_⟩∼ : ∀ {f f′ : A → C} {g g′ : B → D} → f ∼ f′ → g ∼ g′ → 
                f ⊕ g ∼ f′ ⊕ g′ 
-  ∼⟨ H ⊕ K ⟩∼ = ∼[ ι₁ ·ₗ H , ι₂ ·ₗ K ]∼ 
+  ∼⟨ H ⊕ K ⟩∼ = ∼[ inj₁ ·ₗ H , inj₂ ·ₗ K ]∼ 
 
   -- --------------------------------------------------------------------
   -- (d) Show that if both f and g are equivalences, then so is f ⊕ g.
