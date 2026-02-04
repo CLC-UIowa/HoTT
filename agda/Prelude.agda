@@ -38,14 +38,26 @@ module Paths where
       A B : Set ℓ 
       x y z w : A 
 
+  -- based path induction
+  ind≡ : (a : A) → 
+         (P : (x : A) → a ≡ x → Set ℓ) → 
+         P a refl → (x : A) → (p : a ≡ x) → 
+         P x p
+  ind≡ _ _ p _ refl = p
+
+  -- The MLTT J eliminator (equivalent to based path induction)
+  J : ∀ (C : (x y : A) → x ≡ y → Set ℓ) →
+        (∀ (x : A) → C x x refl) →
+        (x y : A) (p : x ≡ y) →
+        C x y p
+  J C pf x = ind≡ x (C x) (pf x) 
+
+  infixr 5 _○_
   _○_ : x ≡ y → y ≡ z → x ≡ z
   _○_ = trans 
 
-  ！_ : x ≡ y → y ≡ x
-  ！_ = sym 
-
-  assoc-lemma : (p : x ≡ y) (q : y ≡ z) (r : z ≡ w) → (p ○ q) ○ r ≡ p ○ (q ○ r)
-  assoc-lemma refl refl refl = refl 
+  !_ : x ≡ y → y ≡ x
+  !_ = sym 
 
   ap : (f : A → B) → x ≡ y → f x ≡ f y
   ap f refl = refl 
@@ -58,6 +70,27 @@ module Paths where
 
   apd : {B : A → Set ℓ} (f : (x : A) → B x) (p : x ≡ y) → tr B p (f x) ≡ f y
   apd f refl = refl 
+
+  -------------------------------------------------------------------------------
+  -- The groupoidal structure of types
+
+  left-inv : {x y : A} (p : x ≡ y) → (! p) ○ p ≡ refl
+  left-inv {x = x} {y} refl = refl 
+
+  right-inv : {x y : A} (p : x ≡ y) → p ○ ! p ≡ refl
+  right-inv {x = x} {y} refl = refl 
+
+  involution : {x y : A} (p : x ≡ y) → ! (! p) ≡ p
+  involution {x = x} {y} refl = refl 
+
+  left-identity : {x y : A} (p : x ≡ y) → refl ○ p ≡ p
+  left-identity {x = x} {y}  refl = refl 
+
+  right-identity : {x y : A} (p : x ≡ y) → p ○ refl ≡ p
+  right-identity {x = x} {y} refl = refl 
+
+  assoc : {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → (p ○ q) ○ r ≡ p ○ (q ○ r)
+  assoc refl refl refl = refl 
 
 open Paths public 
 
