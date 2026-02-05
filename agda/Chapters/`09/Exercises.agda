@@ -1,6 +1,6 @@
 module Chapters.`09.Exercises where
 
-open import Prelude hiding ([_,_])
+open import Prelude hiding ([_,_] ; ind≡)
 open import Chapters.`09.Reading 
 
 -------------------------------------------------------------------------------
@@ -493,11 +493,96 @@ module 9-5 where
   --     Construct an equivalence 
   --       Σ_{x : A} Σ_{y : B} C(x , y) ≃ Σ_{y : B} Σ_{x : A} C(x , y)
 
+  {-
+  -- We want an *equivalence* between Σ_{x : A} Σ_{y : B} C(x , y) and
+  -- Σ_{y : B} Σ_{x : A} C(x , y).
+  --
+  -- This just means that we want a function `eqv` from the former type to the
+  -- latter type such that `eqv` has both a section (a right inverse)
+  -- `eqv-lt-inv` as well as a retraction `eqv-rt-inv` (a left inverse)
+  --
+  -- We'll proceed with the proof in a bottom-up manner.
+  -- First we'll define `eqv`.
+  -- Then we'll show that `eqv` has a section.
+  -- Once we're through with that we'll show that `eqv` has a retraction.
+  -- Finally we'll assemble the pieces to show that `eqv` is an equivalence
+  -- between the given types.
+  -}
+
+  {-
+  -- If we forget about the implicit type arguments, `eqv` just maps (x, (y, z))
+  -- to (y, (x, z)).
+  -}
+
+  eqv : {A B : Set} →
+        {C : A → B → Set} →
+        (Σ[ x ∈ A ] (Σ[ y ∈ B ] (C x y))) →
+        (Σ[ y ∈ B ] (Σ[ x ∈ A ] (C x y)))
+  eqv x = (fst $ snd x) , (fst x , (snd $ snd x))
+
+  {-
+  -- Our intuition might tell us `eqv` ought to be its own left inverse and
+  -- right inverse.  If it does, we should trust it.  Let's provide an explicit
+  -- proof that `eqv` is an involution.
+  -}
+
+  eqv-is-involution : {A B : Set} → {C : A → B → Set} →
+                        (y : Σ[ y ∈ B ] (Σ[ x ∈ A ] (C x y))) →
+                        (eqv (eqv y)) ≡ y
+  eqv-is-involution y = refl
+
+  {-
+  -- We can easily show that `eqv` its own section and retraction.  Since `eqv`
+  -- has a section as well as a retraction, it must be an equivalence between
+  -- the given types.
+  -}
+
+  9-5-a-goal : {A B : Set} →
+               {C : A → B → Set} →
+               (Σ[ x ∈ A ] (Σ[ y ∈ B ] (C x y))) ≃
+               (Σ[ y ∈ B ] (Σ[ x ∈ A ] (C x y)))
+  9-5-a-goal = let eqv-has-section = eqv , eqv-is-involution
+                   eqv-has-retraction = eqv , eqv-is-involution
+               in  eqv , (eqv-has-section , eqv-has-retraction)
 
   -- --------------------------------------------------------------------
-  -- (a) Let A be a type and let B and C be type families over A.
+  -- (b) Let A be a type and let B and C be type families over A.
   --     Construct an equivalence 
   --     (Σ_{u : Σ_{x : A} B(x)} C(pr₁(u))) ≃ (Σ_{v : Σ_{x : A} C(x)} B(pr₁(v)))
+
+  {-
+  -- This time, let S be the type Σ[ u ∈ Σ[ x ∈ A ] (B x) ] (C (fst u)).
+  -- S appears to hold some x : A, a proof of (B x), and a proof of (C x).
+  --
+  -- Let T be the type Σ[ u ∈ Σ[ x ∈ A ] (C x) ] (B (fst u)).
+  -- T also appears to hold some x : A, a proof of (C x), and a proof of (B x).
+  --
+  -- In a sense every element of S is a rearrangement of the components of some
+  -- element of T and vice-versa.
+  -}
+
+  eqv-b : {A : Set} → {B C : A → Set} →
+          Σ[ u ∈ Σ[ x ∈ A ] (B x) ] (C (fst u)) →
+          Σ[ u ∈ Σ[ x ∈ A ] (C x) ] (B (fst u))
+  eqv-b z = (fst (fst z) , snd z) , snd (fst z)
+
+  {-
+  -- At this point it's clear that `eqv_b` is an involution.  It follows that
+  -- `eqv_b` is its own section as well as its own retraction.  Consequently it
+  -- is almost trivial to show that `eqv_b` is an equivalence between S and T.
+  -}
+
+  eqv-b-is-involution : {A : Set} → {B C : A → Set} →
+                        (z : Σ[ u ∈ Σ[ x ∈ A ] (B x) ] (C (fst u))) →
+                        (eqv-b (eqv-b z)) ≡ z
+  eqv-b-is-involution z = refl
+
+  9-5-b-goal : {A : Set} → {B C : A → Set} →
+               ((Σ[ u ∈ Σ[ x ∈ A ] (B x) ] (C (fst u))) ≃
+               (Σ[ u ∈ Σ[ x ∈ A ] (C x) ] (B (fst u))))
+  9-5-b-goal = let eqv-b-has-section = eqv-b , eqv-b-is-involution
+                   eqv-b-has-retraction = eqv-b , eqv-b-is-involution
+               in  eqv-b , (eqv-b-has-section , eqv-b-has-retraction)
 
 -------------------------------------------------------------------------------
 -- #9.6
