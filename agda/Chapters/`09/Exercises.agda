@@ -824,4 +824,22 @@ module 9-7 where
     in
       (β , α)
   -- I'm tapping out
-  is-equiv-equiv f g ._↔_.from = λ x → {!   !}
+  is-equiv-equiv f g ._↔_.from = λ x →
+    let
+      α = fst x
+      β = snd x
+      f-sec b = `sec (α b)
+      f-retr b = `retr (α b)
+      g-sec b = `sec (β b)
+      g-retr b = `retr (β b)
+
+      -- Uhhh, how do I produce an A from an A′ and a B from a B′? 
+      sec-fun = λ (a′ , b′) → {!   !}
+      sec-proof = {!   !}
+      sec = (sec-fun , sec-proof)
+
+      retr-fun = {!   !}
+      retr-proof = {!   !}
+      retr = (retr-fun , retr-proof)
+    in
+      (sec , retr)
