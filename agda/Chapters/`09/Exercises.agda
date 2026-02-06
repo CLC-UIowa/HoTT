@@ -725,6 +725,8 @@ module 9-7 where
       ℓ : Level 
       A A′ A′′ B B′ B′′ : Set ℓ       
   open HomReasoning
+  open 9-1
+  open Paths
 
   -- --------------------------------------------------------------------
   -- (a) Construct for any two maps f : A → A′ and g : B → B′, a map
@@ -732,20 +734,43 @@ module 9-7 where
   -- (I've added _⊗_ as the recommended syntax for this definition. -Alex)
 
   _⊗_ : (f : A → A′) (g : B → B′) → A × B → A′ × B′ 
-  (f ⊗ g) (a , b) = {!   !} 
+  (f ⊗ g) (a , b) = (f a , g b) 
   
   -- --------------------------------------------------------------------
   -- (b) Show that id_A × id_B ∼ id_{A × B}
+  id-funprod : id ⊗ id ∼ id
+  id-funprod = λ x → refl
 
   -- --------------------------------------------------------------------
   -- (c) Show that for any two pairs of composable functions
   --        f       f′               g       g′     
   --     A ---> A′ ---> A′′  and  B ---> B′ ---> B′′ 
   -- there is a homotopy (f′ ∘ f) × (g′ ∘ g) ∼ (f′ × g′) ∘ (f × g)
+  comp-dist : (f : A → A′) (f′ : A′ → A′′) (g : B → B′) (g′ : B′ → B′′) →  (f′ ∘ f) ⊗ (g′ ∘ g) ∼ (f′ ⊗ g′) ∘ (f ⊗ g)
+  comp-dist f f′ g g′ = λ x → refl
 
   -- --------------------------------------------------------------------
   -- (d) Show that if H : f ∼ f′ and K : g ∼ g′, then there is a homotopy
   --     H + K : (f × g) ∼ (f′ × g′) 
+  pair-eqₗ : {a a′ : A} {b : B} (eq : a ≡ a′) → (a , b) ≡ (a′ , b)
+  pair-eqₗ eq = refl
+
+  pair-eqᵣ : {a : A} {b b′ : B} (eq : b ≡ b′) → (a , b) ≡ (a , b′)
+  pair-eqᵣ eq = refl
+
+
+  hom-funprodₗ : {f f′ : A → A′} {g : B → B′} (H : f ∼ f′) → (f ⊗ g) ∼ (f′ ⊗ g)
+  hom-funprodₗ H = λ (a , _) → pair-eqₗ (H a)
+
+  hom-funprod : {f : A → A′} {g g′ : B → B′} (H : g ∼ g′) → (f ⊗ g) ∼ (f ⊗ g′)
+  hom-funprod K = λ (_ , b) → pair-eqᵣ (K b)
+
+  hom-dist : (f f′ : A → A′) (g g′ : B → B′) (H : f ∼ f′) (K : g ∼ g′) → (f ⊗ g) ∼ (f′ ⊗ g′)
+  hom-dist f f′ g g′ H K = 
+    begin
+      (f ⊗ g) ∼⟨ hom-funprodₗ H ⟩
+      (f′ ⊗ g) ∼⟨ hom-funprod K ⟩
+      (f′ ⊗ g′) ∎
 
   -- --------------------------------------------------------------------
   -- (e) Show that for any two maps f : A → A′ and g : B → B′, the following
@@ -754,3 +779,49 @@ module 9-7 where
   --     (ii) There are functions
   --          - α : B → is-equiv f 
   --          - β : A → is-equiv g 
+  funprod-fst : (f : A → A′) (g : B → B′) (x : A × B) → fst ((f ⊗ g) x) ≡ f (fst x)
+  funprod-fst _ _ = λ x → refl
+
+  funprod-snd : (f : A → A′) (g : B → B′) (x : A × B) → snd ((f ⊗ g) x) ≡ g (snd x)
+  funprod-snd _ _ = λ x → refl
+
+  is-equiv-equiv : (f : A → A′) (g : B → B′) → (is-equiv (f ⊗ g)) ↔ ((B → is-equiv f) × (A → is-equiv g))
+  is-equiv-equiv f g ._↔_.to = λ equiv →
+    let 
+      sec = `sec equiv
+      sec-h = equiv |> fst |> snd
+
+      retr = `retr equiv
+      retr-h = equiv |> snd |> snd
+
+      -- β
+      β-sec-fun b = λ a′ → (a′ , g b) |> sec |> fst 
+      β-sec-rw a′ b = funprod-fst f g (sec (a′ , g b)) |> sym
+      β-sec-rw2 a′ b = ap fst (sec-h (a′ , g b))
+      β-sec-proof b = λ a′ → (β-sec-rw a′ b) ○ (β-sec-rw2 a′ b) ○ refl
+      β-sec b = (β-sec-fun b , β-sec-proof b)
+
+      β-retr-fun b = λ a′ → (a′ , g b) |> retr |> fst 
+      β-retr-rw a b = ap fst (retr-h (a , b))
+      β-retr-proof b = λ a → β-retr-rw a b ○ refl
+      β-retr b = (β-retr-fun b , β-retr-proof b)
+
+      β b = β-sec b , β-retr b
+
+      -- α
+      α-sec-fun a = λ b′ → (f a , b′) |> sec |> snd 
+      α-sec-rw a b′ = funprod-snd f g (sec (f a , b′)) |> sym
+      α-sec-rw2 a b′ = ap snd (sec-h (f a , b′))
+      α-sec-proof a = λ b′ → α-sec-rw a b′ ○ α-sec-rw2 a b′
+      α-sec a = (α-sec-fun a , α-sec-proof a)
+
+      α-retr-fun a = λ b′ → (f a , b′) |> retr |> snd 
+      α-retr-rw a b = ap snd (retr-h (a , b))
+      α-retr-proof a = λ b → α-retr-rw a b ○ refl
+      α-retr a = (α-retr-fun a , α-retr-proof a)
+
+      α a = α-sec a , α-retr a
+    in
+      (β , α)
+  -- I'm tapping out
+  is-equiv-equiv f g ._↔_.from = λ x → {!   !}
