@@ -738,7 +738,7 @@ module 9-7 where
   
   -- --------------------------------------------------------------------
   -- (b) Show that id_A × id_B ∼ id_{A × B}
-  id-funprod : id ⊗ id ∼ id
+  id-funprod : id {A = A} ⊗ id {A = B} ∼ id {A = A × B}
   id-funprod = λ x → refl
 
   -- --------------------------------------------------------------------
@@ -752,11 +752,11 @@ module 9-7 where
   -- --------------------------------------------------------------------
   -- (d) Show that if H : f ∼ f′ and K : g ∼ g′, then there is a homotopy
   --     H + K : (f × g) ∼ (f′ × g′) 
-  pair-eqₗ : {a a′ : A} {b : B} (eq : a ≡ a′) → (a , b) ≡ (a′ , b)
-  pair-eqₗ eq = refl
+  pair-eqₗ : {a a′ : A} {b : B} (eq : a ≡ a′) → _≡_ {A = A × B} (a , b) (a′ , b)
+  pair-eqₗ refl = refl
 
-  pair-eqᵣ : {a : A} {b b′ : B} (eq : b ≡ b′) → (a , b) ≡ (a , b′)
-  pair-eqᵣ eq = refl
+  pair-eqᵣ : {a : A} {b b′ : B} (eq : b ≡ b′) → _≡_ {A = A × B} (a , b) (a , b′)
+  pair-eqᵣ refl = refl
 
 
   hom-funprodₗ : {f f′ : A → A′} {g : B → B′} (H : f ∼ f′) → (f ⊗ g) ∼ (f′ ⊗ g)
