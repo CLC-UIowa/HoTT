@@ -851,16 +851,24 @@ module 9-7 where
       β a′ = (β-sec a′ , β-retr a′)
     in
       (α , β)
-  is-equiv-equiv f g ._↔_.from (α , β) =
-    let
+  is-equiv-equiv {A = A} {A′ = A′} {B = B} {B′ = B′} f g ._↔_.from (α , β) = sec , retr
+    where
+      α-sec : B′ → (A′ → A)
       α-sec b′ = `sec (α b′)
+      α-sec-h : (b′ : B′) → (f ∘ α-sec b′ ∼ id)
       α-sec-h b′ = α b′ |> fst |> snd
+      α-retr : B′ → (A′ → A)
       α-retr b′ = `retr (α b′)
+      α-retr-h : (b′ : B′) → (α-retr b′ ∘ f ∼ id)
       α-retr-h b′ = α b′ |> snd |> snd
 
+      β-sec : A′ → (B′ → B)
       β-sec a′ = `sec (β a′)
+      β-sec-h : (a′ : A′) → (g ∘ β-sec a′ ∼ id)
       β-sec-h a′ = β a′ |> fst |> snd
+      β-retr : A′ → (B′ → B)
       β-retr a′ = `retr (β a′)
+      β-retr-h : (a′ : A′) → (β-retr a′ ∘ g ∼ id)
       β-retr-h a′ = β a′ |> snd |> snd
 
       -- This direction is much easier.
@@ -869,14 +877,16 @@ module 9-7 where
       -- The proofs simply consist of showing equality in each component.
 
       -- section
-      sec-fun = λ (a′ , b′) → α-sec b′ a′ , β-sec a′ b′
+      sec-fun : A′ × B′ → A × B
+      sec-fun (a′ , b′) = α-sec b′ a′ , β-sec a′ b′
+      sec-proof : (λ x → (f ⊗ g) (sec-fun x)) ∼ id
       sec-proof = λ (a′ , b′) → pair-ext (α-sec-h b′ a′) (β-sec-h a′ b′)
       sec = sec-fun , sec-proof
 
       -- retraction
-      retr-fun = λ (a′ , b′) → α-retr b′ a′ , β-retr a′ b′
-      retr-proof = λ (a , b) → pair-ext (α-retr-h (g b) a) (β-retr-h (f a) b)
+      retr-fun : A′ × B′ → A × B
+      retr-fun (a′ , b′) = α-retr b′ a′ , β-retr a′ b′
+      retr-proof : (λ x → retr-fun ((f ⊗ g) x)) ∼ id
+      retr-proof (a , b) = pair-ext (α-retr-h (g b) a) (β-retr-h (f a) b)
 
       retr =  retr-fun , retr-proof
-    in
-      sec , retr
