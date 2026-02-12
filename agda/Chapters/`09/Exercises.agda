@@ -794,11 +794,11 @@ module 9-7 where
       retr = `retr equiv -- retr ∘ (f ⊗ g) ∼ id
       retr-h = equiv |> snd |> snd
 
+      -- α
       -- This is fairly straightforward
       α-sec-fun b′ = λ a′ →  (a′ , b′) |> sec |> fst
-      α-sec-rw1 a′ b′ = funprod-fst f g (sec (a′ , b′)) |> sym
       α-sec-rw2 a′ b′ = ap fst (sec-h (a′ , b′))
-      α-sec-proof b′ = λ a′ → α-sec-rw1 a′ b′ ○ α-sec-rw2 a′ b′
+      α-sec-proof b′ = λ a′ → α-sec-rw2 a′ b′
       α-sec b′ = (α-sec-fun b′ , α-sec-proof b′)
 
       -- The difficulty here is that we need to prove "fst (retr (f a , b′)) ≡ a".
@@ -809,18 +809,15 @@ module 9-7 where
         let
           b′-preimage = (snd (sec (f a , b′)))
           b′-rw : b′ ≡ g b′-preimage
-          b′-rw = (ap snd (sec-h (f a , b′)) |> sym) ○ funprod-snd f g (sec (f a , b′))
+          b′-rw = ap snd (sec-h (f a , b′)) |> sym
 
           rw1 : fst (retr (f a , b′)) ≡ fst (retr (f a , g b′-preimage))
           rw1 = ap (λ x → fst (retr (f a , x))) b′-rw
 
-          rw2 : fst (retr (f a , g b′-preimage)) ≡ fst ((retr ∘ (f ⊗ g)) (a , b′-preimage))
-          rw2 = refl
-
-          rw3 : fst ((retr ∘ (f ⊗ g)) (a , b′-preimage)) ≡ a
-          rw3 = ap fst (retr-h (a , b′-preimage))
+          rw2 : fst (retr (f a , g b′-preimage)) ≡ a
+          rw2 = ap fst (retr-h (a , b′-preimage))
         in
-          rw1 ○ rw2 ○ rw3
+          rw1 ○ rw2
       α-retr b′ = ( α-retr-fun b′ , α-retr-proof b′ )
 
       α b′ = (α-sec b′ , α-retr b′)
