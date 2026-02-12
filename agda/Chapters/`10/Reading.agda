@@ -109,6 +109,57 @@ module Contr⇒SI {ℓ} {A : Set ℓ} (cntr : is-contr A) where
   p : C′ a ≡ refl
   p = left-inv (C a) 
 
+  -- Pfft 
   SI : SingletonInduction A 
   SI = {!   !} 
+
+--------------------------------------------------------------------
+-- §10.3: Contractible maps 
+
+-- Def. 10.3.1: fibers
+
+fib : (f : A → B) → (b : B) → Set _ 
+fib {A = A} f b = Σ[ a ∈ A ] (f a ≡ b)
+
+-- Def. 10.3.2
+
+-- Eq-fib (f : A → B) 
+
+-- Prop 10.3.3: The canonical map 
+--   ((x, p) ≡ (x′ , p′)) → Eq-fib f ((x, p), (x′ , p′))
+-- induced by the reflexivity of Eq-fib f is an equivalence for any
+-- (x, p), (x′, p′) : fib f y.
+
+-- Def 10.3.4: contractible maps 
+-- AH> This is how the HOTT book defines is-equiv, actually. 
+is-contr-map : (f : A → B) → Set _ 
+is-contr-map {B = B} f = ∀ (b : B) → is-contr (fib f b) 
+
+-- Thm 10.3.5: Any contractible map is an equivalence
+
+--------------------------------------------------------------------
+-- §10.4: Contractible maps 
+
+-- Def 10.4.1: coherently invertible 
+
+record is-coh-invertible (f : A → B) : Set _ where 
+
+-- Prop 10.4.2: Any coherently invertible map has contractible fibers
+
+coh-invertible⇒is-contr-map : ∀ (f : A → B) → is-coh-invertible f → is-contr-map f 
+coh-invertible⇒is-contr-map f coh = {!   !} 
+
+-- Def. 10.4.3: natural squares of homotopies
+
+-- Def. 10.4.4: ... 
+
+-- Lem 10.4.5: has-inverse f → is-coh-invertible f.
+
+-- Thm 10.4.6: Any equivalence is a contractible map. 
+
+-- Cor 10.4.7: for any a : A, the type Σ_{x : A} (a ≡ x) is contractible
+-- AH> We already proved this in thm-10∙1∙4. 
+
+
+
   

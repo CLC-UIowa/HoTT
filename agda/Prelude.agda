@@ -11,6 +11,9 @@ open import Data.Sum
     renaming (_⊎_ to _+_) public 
 open import Data.Unit using (⊤ ; tt) public 
 open import Data.Empty using (⊥ ; ⊥-elim) public
+open import Data.Fin 
+  using (Fin ; fromℕ) 
+  renaming (zero to fzero ; suc to fsuc) public 
 
 open import Function hiding (_↔_) public 
 
