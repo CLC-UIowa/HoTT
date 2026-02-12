@@ -14,6 +14,7 @@ open import Data.Empty using (⊥ ; ⊥-elim) public
 open import Data.Fin 
   using (Fin ; fromℕ) 
   renaming (zero to fzero ; suc to fsuc) public 
+open import Data.Nat using (ℕ ; suc ; zero) public
 
 open import Function hiding (_↔_) public 
 

@@ -51,4 +51,8 @@ module 10-4 where
   private
     variable
       ℓ : Level  
+    
+  fin-not-contractible : ∀ (n : ℕ) → ¬ is-contr (Fin (suc (suc n)))
+  fin-not-contractible n (center , contraction) with ! (contraction fzero) ○ ((contraction (fsuc fzero))) 
+  ... | ()
       
