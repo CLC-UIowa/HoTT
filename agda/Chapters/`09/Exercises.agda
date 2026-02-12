@@ -739,7 +739,7 @@ module 9-7 where
   -- --------------------------------------------------------------------
   -- (b) Show that id_A × id_B ∼ id_{A × B}
   id-funprod : id {A = A} ⊗ id {A = B} ∼ id {A = A × B}
-  id-funprod = λ x → refl
+  id-funprod = refl-htpy _
 
   -- --------------------------------------------------------------------
   -- (c) Show that for any two pairs of composable functions
@@ -747,7 +747,7 @@ module 9-7 where
   --     A ---> A′ ---> A′′  and  B ---> B′ ---> B′′ 
   -- there is a homotopy (f′ ∘ f) × (g′ ∘ g) ∼ (f′ × g′) ∘ (f × g)
   comp-dist : (f : A → A′) (f′ : A′ → A′′) (g : B → B′) (g′ : B′ → B′′) →  (f′ ∘ f) ⊗ (g′ ∘ g) ∼ (f′ ⊗ g′) ∘ (f ⊗ g)
-  comp-dist f f′ g g′ = λ x → refl
+  comp-dist f f′ g g′ = refl-htpy _
 
   -- --------------------------------------------------------------------
   -- (d) Show that if H : f ∼ f′ and K : g ∼ g′, then there is a homotopy
@@ -760,16 +760,16 @@ module 9-7 where
 
 
   hom-funprodₗ : {f f′ : A → A′} {g : B → B′} (H : f ∼ f′) → (f ⊗ g) ∼ (f′ ⊗ g)
-  hom-funprodₗ H = λ (a , _) → pair-eqₗ (H a)
+  hom-funprodₗ {g = g} H (fst₁ , snd₁) = ap (_, g snd₁) (H fst₁) -- pair-eqₗ (H a)
 
-  hom-funprod : {f : A → A′} {g g′ : B → B′} (H : g ∼ g′) → (f ⊗ g) ∼ (f ⊗ g′)
-  hom-funprod K = λ (_ , b) → pair-eqᵣ (K b)
+  hom-funprodᵣ : {f : A → A′} {g g′ : B → B′} (H : g ∼ g′) → (f ⊗ g) ∼ (f ⊗ g′)
+  hom-funprodᵣ K = λ (_ , b) → pair-eqᵣ (K b)
 
   hom-dist : (f f′ : A → A′) (g g′ : B → B′) (H : f ∼ f′) (K : g ∼ g′) → (f ⊗ g) ∼ (f′ ⊗ g′)
   hom-dist f f′ g g′ H K = 
     begin
       (f ⊗ g) ∼⟨ hom-funprodₗ H ⟩
-      (f′ ⊗ g) ∼⟨ hom-funprod K ⟩
+      (f′ ⊗ g) ∼⟨ hom-funprodᵣ K ⟩
       (f′ ⊗ g′) ∎
 
   -- --------------------------------------------------------------------
@@ -777,69 +777,53 @@ module 9-7 where
   --     are equivalent:
   --     (i) The map f × g is an equivalence 
   --     (ii) There are functions
-  --          - α : B → is-equiv f 
-  --          - β : A → is-equiv g 
+  --          - α : B′ → is-equiv f 
+  --          - β : A′ → is-equiv g 
   funprod-fst : (f : A → A′) (g : B → B′) (x : A × B) → fst ((f ⊗ g) x) ≡ f (fst x)
   funprod-fst _ _ = λ x → refl
 
   funprod-snd : (f : A → A′) (g : B → B′) (x : A × B) → snd ((f ⊗ g) x) ≡ g (snd x)
   funprod-snd _ _ = λ x → refl
 
-  is-equiv-equiv : (f : A → A′) (g : B → B′) → (is-equiv (f ⊗ g)) ↔ ((B → is-equiv f) × (A → is-equiv g))
+  is-equiv-equiv : (f : A → A′) (g : B → B′) → (is-equiv (f ⊗ g)) ↔ ((B′ → is-equiv f) × (A′ → is-equiv g))
   is-equiv-equiv f g ._↔_.to = λ equiv →
     let 
-      sec = `sec equiv
+      sec = `sec equiv -- (f ⊗ g) ∘ sec ∼ id
       sec-h = equiv |> fst |> snd
 
-      retr = `retr equiv
+      retr = `retr equiv -- retr ∘ (f ⊗ g) ∼ id
       retr-h = equiv |> snd |> snd
 
-      -- β
-      β-sec-fun b = λ a′ → (a′ , g b) |> sec |> fst 
-      β-sec-rw a′ b = funprod-fst f g (sec (a′ , g b)) |> sym
-      β-sec-rw2 a′ b = ap fst (sec-h (a′ , g b))
-      β-sec-proof b = λ a′ → (β-sec-rw a′ b) ○ (β-sec-rw2 a′ b) ○ refl
-      β-sec b = (β-sec-fun b , β-sec-proof b)
+      -- This is fairly straightforward
+      α-sec-fun b′ = λ a′ →  (a′ , b′) |> sec |> fst
+      α-sec-rw1 a′ b′ = funprod-fst f g (sec (a′ , b′)) |> sym
+      α-sec-rw2 a′ b′ = ap fst (sec-h (a′ , b′))
+      α-sec-proof b′ = λ a′ → α-sec-rw1 a′ b′ ○ α-sec-rw2 a′ b′
+      α-sec b′ = (α-sec-fun b′ , α-sec-proof b′)
 
-      β-retr-fun b = λ a′ → (a′ , g b) |> retr |> fst 
-      β-retr-rw a b = ap fst (retr-h (a , b))
-      β-retr-proof b = λ a → β-retr-rw a b ○ refl
-      β-retr b = (β-retr-fun b , β-retr-proof b)
+      -- The difficulty here is that we need to prove "fst (retr (f a , b′)) ≡ a".
+      -- We only know that "retr (f a, g b) ≡ (a, b)".
+      -- So we need to obtain an explicit pre-image for b′.
+      α-retr-fun b′ =  λ a′ → (a′ , b′) |> retr |> fst
+      α-retr-proof b′ = λ a → 
+        let
+          b′-preimage = (snd (sec (f a , b′)))
+          b′-rw : b′ ≡ g b′-preimage
+          b′-rw = (ap snd (sec-h (f a , b′)) |> sym) ○ funprod-snd f g (sec (f a , b′))
 
-      β b = β-sec b , β-retr b
+          rw1 : fst (retr (f a , b′)) ≡ fst (retr (f a , g b′-preimage))
+          rw1 = ap (λ x → fst (retr (f a , x))) b′-rw
 
-      -- α
-      α-sec-fun a = λ b′ → (f a , b′) |> sec |> snd 
-      α-sec-rw a b′ = funprod-snd f g (sec (f a , b′)) |> sym
-      α-sec-rw2 a b′ = ap snd (sec-h (f a , b′))
-      α-sec-proof a = λ b′ → α-sec-rw a b′ ○ α-sec-rw2 a b′
-      α-sec a = (α-sec-fun a , α-sec-proof a)
+          rw2 : fst (retr (f a , g b′-preimage)) ≡ fst ((retr ∘ (f ⊗ g)) (a , b′-preimage))
+          rw2 = refl
 
-      α-retr-fun a = λ b′ → (f a , b′) |> retr |> snd 
-      α-retr-rw a b = ap snd (retr-h (a , b))
-      α-retr-proof a = λ b → α-retr-rw a b ○ refl
-      α-retr a = (α-retr-fun a , α-retr-proof a)
+          rw3 : fst ((retr ∘ (f ⊗ g)) (a , b′-preimage)) ≡ a
+          rw3 = ap fst (retr-h (a , b′-preimage))
+        in
+          rw1 ○ rw2 ○ rw3
+      α-retr b′ = ( α-retr-fun b′ , α-retr-proof b′ )
 
-      α a = α-sec a , α-retr a
+      α b′ = (α-sec b′ , α-retr b′)
     in
-      (β , α)
-  -- I'm tapping out
-  is-equiv-equiv f g ._↔_.from = λ x →
-    let
-      α = fst x
-      β = snd x
-      f-sec b = `sec (α b)
-      f-retr b = `retr (α b)
-      g-sec b = `sec (β b)
-      g-retr b = `retr (β b)
-
-      -- Uhhh, how do I produce an A from an A′ and a B from a B′? 
-      sec-fun = λ (a′ , b′) → {!   !}
-      sec-proof = {!   !}
-      sec = (sec-fun , sec-proof)
-
-      retr-fun = {!   !}
-      retr-proof = {!   !}
-      retr = (retr-fun , retr-proof)
-    in
-      (sec , retr)
+      (α , {!!})
+  is-equiv-equiv f g ._↔_.from = {!!}
