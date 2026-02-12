@@ -785,6 +785,9 @@ module 9-7 where
   funprod-snd : (f : A → A′) (g : B → B′) (x : A × B) → snd ((f ⊗ g) x) ≡ g (snd x)
   funprod-snd _ _ = λ x → refl
 
+  pair-ext : {a a′ : A} {b b′ : B} (eq : a ≡ a′) → (eq' : b ≡ b′) → _≡_ {A = A × B} (a , b) (a′ , b′)
+  pair-ext refl refl = refl
+
   is-equiv-equiv : (f : A → A′) (g : B → B′) → (is-equiv (f ⊗ g)) ↔ ((B′ → is-equiv f) × (A′ → is-equiv g))
   is-equiv-equiv f g ._↔_.to equiv =
     let 
@@ -848,4 +851,32 @@ module 9-7 where
       β a′ = (β-sec a′ , β-retr a′)
     in
       (α , β)
-  is-equiv-equiv f g ._↔_.from = {!!}
+  is-equiv-equiv f g ._↔_.from (α , β) =
+    let
+      α-sec b′ = `sec (α b′)
+      α-sec-h b′ = α b′ |> fst |> snd
+      α-retr b′ = `retr (α b′)
+      α-retr-h b′ = α b′ |> snd |> snd
+
+      β-sec a′ = `sec (β a′)
+      β-sec-h a′ = β a′ |> fst |> snd
+      β-retr a′ = `retr (β a′)
+      β-retr-h a′ = β a′ |> snd |> snd
+
+      -- This direction is much easier.
+      -- We simply construct the section (resp. retraction)
+      -- by pairwise application of the α and β sections (resp. retrations).
+      -- The proofs simply consist of showing equality in each component.
+
+      -- section
+      sec-fun = λ (a′ , b′) → α-sec b′ a′ , β-sec a′ b′
+      sec-proof = λ (a′ , b′) → pair-ext (α-sec-h b′ a′) (β-sec-h a′ b′)
+      sec = sec-fun , sec-proof
+
+      -- retraction
+      retr-fun = λ (a′ , b′) → α-retr b′ a′ , β-retr a′ b′
+      retr-proof = λ (a , b) → pair-ext (α-retr-h (g b) a) (β-retr-h (f a) b)
+
+      retr =  retr-fun , retr-proof
+    in
+      sec , retr
