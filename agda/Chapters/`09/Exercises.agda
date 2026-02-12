@@ -786,7 +786,7 @@ module 9-7 where
   funprod-snd _ _ = λ x → refl
 
   is-equiv-equiv : (f : A → A′) (g : B → B′) → (is-equiv (f ⊗ g)) ↔ ((B′ → is-equiv f) × (A′ → is-equiv g))
-  is-equiv-equiv f g ._↔_.to = λ equiv →
+  is-equiv-equiv f g ._↔_.to equiv =
     let 
       sec = `sec equiv -- (f ⊗ g) ∘ sec ∼ id
       sec-h = equiv |> fst |> snd
@@ -797,9 +797,8 @@ module 9-7 where
       -- α
       -- This is fairly straightforward
       α-sec-fun b′ = λ a′ →  (a′ , b′) |> sec |> fst
-      α-sec-rw2 a′ b′ = ap fst (sec-h (a′ , b′))
-      α-sec-proof b′ = λ a′ → α-sec-rw2 a′ b′
-      α-sec b′ = (α-sec-fun b′ , α-sec-proof b′)
+      α-sec-proof b′ = λ a′ → ap fst (sec-h (a′ , b′))
+      α-sec b′ = α-sec-fun b′ , α-sec-proof b′
 
       -- The difficulty here is that we need to prove "fst (retr (f a , b′)) ≡ a".
       -- We only know that "retr (f a, g b) ≡ (a, b)".
@@ -818,9 +817,35 @@ module 9-7 where
           rw2 = ap fst (retr-h (a , b′-preimage))
         in
           rw1 ○ rw2
-      α-retr b′ = ( α-retr-fun b′ , α-retr-proof b′ )
+      α-retr b′ = α-retr-fun b′ , α-retr-proof b′
 
-      α b′ = (α-sec b′ , α-retr b′)
+      α b′ = α-sec b′ , α-retr b′
+
+      -- β
+      -- Similarly straightforward
+      β-sec-fun a′ = λ b′ →  (a′ , b′) |> sec |> snd
+      β-sec-proof a′ = λ b′ → ap snd (sec-h (a′ , b′))
+      β-sec a′ = β-sec-fun a′ , β-sec-proof a′
+
+      -- Similarly annoying because we must obtain an explicit preimage of a′.
+      -- But, we can pretty must copy the previous proof and modify it in the obvious way.
+      β-retr-fun a′ = λ b′ → (a′ , b′) |> retr |> snd
+      β-retr-proof a′ = λ b →
+        let
+          a′-preimage = fst (sec (a′ , g b))
+          a′-rw : a′ ≡ f a′-preimage
+          a′-rw = ap fst (sec-h (a′ , g b)) |> sym
+
+          rw1 : snd (retr (a′ , g b)) ≡ snd (retr (f a′-preimage , g b))
+          rw1 = ap (λ x → snd (retr (x , g b))) a′-rw
+
+          rw2 : snd (retr (f a′-preimage , g b)) ≡ b
+          rw2 = ap snd (retr-h (a′-preimage , b))
+        in
+          rw1 ○ rw2
+      β-retr a′ = β-retr-fun a′ , β-retr-proof a′
+
+      β a′ = (β-sec a′ , β-retr a′)
     in
-      (α , {!!})
+      (α , β)
   is-equiv-equiv f g ._↔_.from = {!!}
