@@ -790,26 +790,38 @@ module 9-7 where
 
   is-equiv-equiv : (f : A → A′) (g : B → B′) → (is-equiv (f ⊗ g)) ↔ ((B′ → is-equiv f) × (A′ → is-equiv g))
   is-equiv-equiv f g ._↔_.to equiv =
-    let 
+    let
+      -- In this direction, we have that (f ⊗ g) is an equivalence,
+      -- so we begin by obtaining its section and retraction.
       sec = `sec equiv -- (f ⊗ g) ∘ sec ∼ id
       sec-h = equiv |> fst |> snd
 
       retr = `retr equiv -- retr ∘ (f ⊗ g) ∼ id
       retr-h = equiv |> snd |> snd
 
+      -- Now we define α : B′ → is-equiv f and β : A′ → is-equiv g.
+      -- For α, that means we need to map each b′ : B′ to a section
+      -- and a retraction for f.
+      -- That means that with b′ : B′ in scope, we need to define α-sec : A′ → A (resp. α-retr A′ → A)
+      -- along with a proof that f ∘ α-sec ∼ id (resp. α-retr ∘ f ∼ id).
+      -- To define α-sec-fun (resp. α-retr-fun), we first pair the a′ : A′ and b′ : B′ together,
+      -- then apply the section (resp. retraction) for (f ⊗ g), and finally take the first projection.
+      -- The process for β is similar.
+
       -- α
-      -- This is fairly straightforward
+      -- The proof here is fairly straightforward.
       α-sec-fun b′ = λ a′ →  (a′ , b′) |> sec |> fst
       α-sec-proof b′ = λ a′ → ap fst (sec-h (a′ , b′))
       α-sec b′ = α-sec-fun b′ , α-sec-proof b′
 
-      -- The difficulty here is that we need to prove "fst (retr (f a , b′)) ≡ a".
-      -- We only know that "retr (f a, g b) ≡ (a, b)".
+      -- For the retraction, we need to prove "fst (retr (f a , b′)) ≡ a".
+      -- The difficulty is that we only know that "retr (f a , g b) ≡ (a, b)".
       -- So we need to obtain an explicit pre-image for b′.
+      -- That pre-image turns out to be "snd (sec (f a , b′))".
       α-retr-fun b′ =  λ a′ → (a′ , b′) |> retr |> fst
       α-retr-proof b′ = λ a → 
         let
-          b′-preimage = (snd (sec (f a , b′)))
+          b′-preimage = snd (sec (f a , b′))
           b′-rw : b′ ≡ g b′-preimage
           b′-rw = ap snd (sec-h (f a , b′)) |> sym
 
@@ -853,6 +865,14 @@ module 9-7 where
       (α , β)
   is-equiv-equiv {A = A} {A′ = A′} {B = B} {B′ = B′} f g ._↔_.from (α , β) = sec , retr
     where
+      -- Now we are given α : B′ → is-equiv f and β : A′ → is-equiv g,
+      -- and we must define sec : section (f ⊗ g) and retr : retraction (f ⊗ g).
+      -- This is much easier than the previous direction.
+      -- We simply construct sec (resp. retr)
+      -- by pairwise application of the section and retraction given by α (resp. β).
+      -- The proofs consist of showing equality in each component, which I do
+      -- by establishing the simple auxiliary lemma pair-ext, defined above.
+
       α-sec : B′ → (A′ → A)
       α-sec b′ = `sec (α b′)
       α-sec-h : (b′ : B′) → (f ∘ α-sec b′ ∼ id)
@@ -871,16 +891,12 @@ module 9-7 where
       β-retr-h : (a′ : A′) → (β-retr a′ ∘ g ∼ id)
       β-retr-h a′ = β a′ |> snd |> snd
 
-      -- This direction is much easier.
-      -- We simply construct the section (resp. retraction)
-      -- by pairwise application of the α and β sections (resp. retrations).
-      -- The proofs simply consist of showing equality in each component.
 
       -- section
       sec-fun : A′ × B′ → A × B
       sec-fun (a′ , b′) = α-sec b′ a′ , β-sec a′ b′
       sec-proof : (λ x → (f ⊗ g) (sec-fun x)) ∼ id
-      sec-proof = λ (a′ , b′) → pair-ext (α-sec-h b′ a′) (β-sec-h a′ b′)
+      sec-proof (a′ , b′) = pair-ext (α-sec-h b′ a′) (β-sec-h a′ b′)
       sec = sec-fun , sec-proof
 
       -- retraction
@@ -888,5 +904,4 @@ module 9-7 where
       retr-fun (a′ , b′) = α-retr b′ a′ , β-retr a′ b′
       retr-proof : (λ x → retr-fun ((f ⊗ g) x)) ∼ id
       retr-proof (a , b) = pair-ext (α-retr-h (g b) a) (β-retr-h (f a) b)
-
       retr =  retr-fun , retr-proof
