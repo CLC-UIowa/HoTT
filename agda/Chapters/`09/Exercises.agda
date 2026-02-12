@@ -1,7 +1,7 @@
 module Chapters.`09.Exercises where
 
 open import Prelude hiding ([_,_] ; ind≡)
-open import Chapters.`09.Reading 
+open import Chapters.`09.Reading
 
 -------------------------------------------------------------------------------
 --- #9.1
@@ -201,7 +201,7 @@ module 9-1 where
     transport-is-equiv ℓ A B x y p = (transport-has-section ℓ A B x y p) , transport-has-retraction ℓ A B x y p
 
 -------------------------------------------------------------------------------
--- #9.2 
+-- #9.2
 -- ...
 module 9-2 where
   true-neq-false : ¬ (true ≡ false)
@@ -220,7 +220,7 @@ module 9-2 where
     let
       fh = snd h
       retraction = (fst ∘ snd) fh
-      retraction-h = (snd ∘ snd) fh 
+      retraction-h = (snd ∘ snd) fh
       b = retraction tt
     in
       bool-neq-neg b (sym (retraction-h (not b)))
@@ -231,101 +231,101 @@ module 9-2 where
 -------------------------------------------------------------------------------
 -- #9.3:
 
-module 9-3 where 
+module 9-3 where
   private
     variable
-      ℓ : Level 
-      A B : Set ℓ 
-  
+      ℓ : Level
+      A B : Set ℓ
+
   open _↔_ public
   open HomReasoning
 
   -- --------------------------------------------------------------------------
   -- (a) Consider two functions f, g : A → B and a homotopy H : f ∼ g. Then
   --     is-equiv(f) ↔ is-equiv(g).
-  -- 
+  --
   -- AH> I prove this directly over the definition of is-equiv f (that f has
   --     both a section and retraction). Could have just-as-well used
   --     is-equiv⇒has-inverse and has-inverse⇒is-equiv, but you would
   --     still have 4 cases to prove, so I don't think it saves work.
-  
-  
+
+
   is-equiv↔ : (f g : A → B) (H : f ∼ g) → is-equiv f ↔ is-equiv g
-  is-equiv↔ f g H .to ((r , f∘r∼id) , (l , l∘f∼id)) .fst = 
-    r , (begin 
-      g ∘ r ∼⟨ H ⁻¹ ·ᵣ r ⟩ 
-      f ∘ r ∼⟨ f∘r∼id    ⟩ 
+  is-equiv↔ f g H .to ((r , f∘r∼id) , (l , l∘f∼id)) .fst =
+    r , (begin
+      g ∘ r ∼⟨ H ⁻¹ ·ᵣ r ⟩
+      f ∘ r ∼⟨ f∘r∼id    ⟩
       id ∎)
-  is-equiv↔ f g H .to ((r , f∘r∼id) , (l , l∘f∼id)) .snd = 
-    l , (begin 
-      l ∘ g ∼⟨ l ·ₗ H ⁻¹ ⟩ 
-      l ∘ f ∼⟨ l∘f∼id    ⟩ 
+  is-equiv↔ f g H .to ((r , f∘r∼id) , (l , l∘f∼id)) .snd =
+    l , (begin
+      l ∘ g ∼⟨ l ·ₗ H ⁻¹ ⟩
+      l ∘ f ∼⟨ l∘f∼id    ⟩
       id ∎)
-  is-equiv↔ f g H .from ((r , g∘r∼id) , (l , l∘g∼id)) .fst = 
-    r , (begin 
-      f ∘ r ∼⟨ H ·ᵣ r ⟩ 
-      g ∘ r ∼⟨ g∘r∼id ⟩ 
+  is-equiv↔ f g H .from ((r , g∘r∼id) , (l , l∘g∼id)) .fst =
+    r , (begin
+      f ∘ r ∼⟨ H ·ᵣ r ⟩
+      g ∘ r ∼⟨ g∘r∼id ⟩
       id ∎)
-  is-equiv↔ f g H .from ((r , g∘r∼id) , (l , l∘g∼id)) .snd = 
-    l , (begin 
-      l ∘ f ∼⟨ l ·ₗ H ⟩ 
-      l ∘ g ∼⟨ l∘g∼id ⟩ 
+  is-equiv↔ f g H .from ((r , g∘r∼id) , (l , l∘g∼id)) .snd =
+    l , (begin
+      l ∘ f ∼⟨ l ·ₗ H ⟩
+      l ∘ g ∼⟨ l∘g∼id ⟩
       id ∎)
 
   -- --------------------------------------------------------------------------
   -- (b) Show that for any two homotopic equivalences e₁ , e₂ : A ≃ B, their
   --     inverses are also homotopic.
-  -- 
+  --
   -- AH> recall (1) that the inverse of an equivalence e : A ≃ B is its section
   --       f : B → A,
   --     and (2) we mean by "are also homotopic" that the sections
   --     of e₁ and e₂ are homotopically equivalent under _∼_.
 
-  inverses-homotopic : ∀ (e₁ e₂ : A ≃ B) → `inv e₁ ∼ `inv e₂ 
+  inverses-homotopic : ∀ (e₁ e₂ : A ≃ B) → `inv e₁ ∼ `inv e₂
   inverses-homotopic (f , (f⁻¹ , f∘f⁻¹∼id) , retr-f) (g , (g⁻¹ , g∘g⁻¹∼id) , retr-g) = ⊥-elim wrong!
-    where 
-      postulate 
+    where
+      postulate
         wrong! : ⊥
 
   -- Actually, this statement is not true. Consider the two distinct
   -- identifications of bools.
   𝔹⁻¹ : Bool ≃ Bool
   𝔹⁻¹ = not , ((not , neg-bool-id) , (not , neg-bool-id))
-  𝔹 : Bool ≃ Bool 
+  𝔹 : Bool ≃ Bool
   𝔹 = id , (id , refl-htpy _) , (id , refl-htpy _)
 
   counter-example : ¬ (`inv 𝔹 ∼ `inv 𝔹⁻¹)
   counter-example f with f true
-  ... | () 
+  ... | ()
 
   -- I believe the author may have meant that if e₁ and e₂
   -- are equivalences built from (resp.) f and g such that
   -- H : f ∼ g, then the sections of their equivalences are homotopic:
-  sections-homotopic : (f g : A → B) (H : f ∼ g) (eq-f : is-equiv f) (eq-g : is-equiv g) → 
+  sections-homotopic : (f g : A → B) (H : f ∼ g) (eq-f : is-equiv f) (eq-g : is-equiv g) →
                         `sec eq-f ∼ `sec eq-g
-  sections-homotopic f g H eqv-f@((f⁻¹ , f∘f⁻¹∼id) , (h , h∘f∼id)) ((g⁻¹ , g∘g⁻¹∼id) , retr-g) 
-    with is-equiv⇒equalSplits eqv-f 
+  sections-homotopic f g H eqv-f@((f⁻¹ , f∘f⁻¹∼id) , (h , h∘f∼id)) ((g⁻¹ , g∘g⁻¹∼id) , retr-g)
+    with is-equiv⇒equalSplits eqv-f
   ... | G =
     begin
-      f⁻¹          ∼⟨ f⁻¹ ·ₗ refl-htpy id  ⟩ 
-      f⁻¹ ∘ id     ∼⟨ f⁻¹ ·ₗ g∘g⁻¹∼id ⁻¹  ⟩ 
-      f⁻¹ ∘ g ∘ g⁻¹ ∼⟨ f⁻¹ ·ₗ H ⁻¹ ·ᵣ g⁻¹ ⟩ 
-      f⁻¹ ∘ f ∘ g⁻¹ ∼⟨  G ·ᵣ f ·ᵣ g⁻¹ ⟩ 
-      h ∘ f ∘ g⁻¹   ∼⟨  h∘f∼id ·ᵣ g⁻¹ ⟩ 
-      id ∘ g⁻¹      ∼⟨ refl-htpy _ ⟩ 
-      g⁻¹ ∎ 
-  
+      f⁻¹          ∼⟨ f⁻¹ ·ₗ refl-htpy id  ⟩
+      f⁻¹ ∘ id     ∼⟨ f⁻¹ ·ₗ g∘g⁻¹∼id ⁻¹  ⟩
+      f⁻¹ ∘ g ∘ g⁻¹ ∼⟨ f⁻¹ ·ₗ H ⁻¹ ·ᵣ g⁻¹ ⟩
+      f⁻¹ ∘ f ∘ g⁻¹ ∼⟨  G ·ᵣ f ·ᵣ g⁻¹ ⟩
+      h ∘ f ∘ g⁻¹   ∼⟨  h∘f∼id ·ᵣ g⁻¹ ⟩
+      id ∘ g⁻¹      ∼⟨ refl-htpy _ ⟩
+      g⁻¹ ∎
+
 
 -------------------------------------------------------------------------------
--- #9.4 
+-- #9.4
 
 
-module 9-4 where 
+module 9-4 where
   private
     variable
-      ℓ : Level 
-      A B C X : Set ℓ 
-  
+      ℓ : Level
+      A B C X : Set ℓ
+
   open _↔_ public
   open HomReasoning
 
@@ -333,164 +333,164 @@ module 9-4 where
   Consider a commuting triangle
                   h
                A ---> B
-              f \   / g   
-                 v  v      
-                  C  
+              f \   / g
+                 v  v
+                  C
   with H : f ∼ g ∘ h.
-  (a) Suppose that the map h has a section s : B → A. 
+  (a) Suppose that the map h has a section s : B → A.
       (i) Show that the triangle
                   s
                A <--- B
               f \   / g
-                 v  v      
-                  C     
-          commutes (that is, g ∼ f ∘ s), and 
+                 v  v
+                  C
+          commutes (that is, g ∼ f ∘ s), and
       (ii) that f has a section iff g has a section.
--} 
-  module 9-4a 
-    (f : A → C)  
-    (h : A → B) 
+-}
+  module 9-4a
+    (f : A → C)
+    (h : A → B)
     (g : B → C)
     (H : f ∼ g ∘ h)
-    (σ : section h) where 
- 
+    (σ : section h) where
+
     -- equivalent to let (s , S) = σ in ...
     open Σ σ renaming (proj₁ to  s ; proj₂ to S)
 
     -- (i) The triangle commutes.
-    I : g  ∼ f ∘ s 
-    I = begin 
-      g         ∼⟨ refl-htpy _ ⟩ 
-      g ∘ id    ∼⟨ g ·ₗ S ⁻¹ ⟩ 
-      g ∘ h ∘ s ∼⟨ H ⁻¹ ·ᵣ s ⟩ 
-      f ∘ s ∎ 
-    
+    I : g  ∼ f ∘ s
+    I = begin
+      g         ∼⟨ refl-htpy _ ⟩
+      g ∘ id    ∼⟨ g ·ₗ S ⁻¹ ⟩
+      g ∘ h ∘ s ∼⟨ H ⁻¹ ·ᵣ s ⟩
+      f ∘ s ∎
+
     -- (ii) f has a section iff g has a section.
-    f-section↔g-section : section f ↔ section g 
-    f-section↔g-section .to (f⁻¹ , F) .fst = h ∘ f⁻¹ 
-    f-section↔g-section .to (f⁻¹ , F) .snd = begin 
-      g ∘ h ∘ f⁻¹ ∼⟨ H ⁻¹ ·ᵣ f⁻¹ ⟩ 
-      f ∘ f⁻¹    ∼⟨ F ⟩ 
-      id ∎ 
-    f-section↔g-section .from (g⁻¹ , G) .fst = s ∘ g⁻¹ 
-    f-section↔g-section .from (g⁻¹ , G) .snd = begin 
-      f ∘ s ∘ g⁻¹ ∼⟨ I ⁻¹  ·ᵣ g⁻¹ ⟩ 
-      g ∘ g⁻¹    ∼⟨ G ⟩ 
-      id ∎ 
+    f-section↔g-section : section f ↔ section g
+    f-section↔g-section .to (f⁻¹ , F) .fst = h ∘ f⁻¹
+    f-section↔g-section .to (f⁻¹ , F) .snd = begin
+      g ∘ h ∘ f⁻¹ ∼⟨ H ⁻¹ ·ᵣ f⁻¹ ⟩
+      f ∘ f⁻¹    ∼⟨ F ⟩
+      id ∎
+    f-section↔g-section .from (g⁻¹ , G) .fst = s ∘ g⁻¹
+    f-section↔g-section .from (g⁻¹ , G) .snd = begin
+      f ∘ s ∘ g⁻¹ ∼⟨ I ⁻¹  ·ᵣ g⁻¹ ⟩
+      g ∘ g⁻¹    ∼⟨ G ⟩
+      id ∎
 
 {- ----------------------------------------------------------------------------
-  (b) Suppose that the map g has a retraction r : X → B. 
+  (b) Suppose that the map g has a retraction r : X → B.
     (i)  Show that the triangle
-           h ∼ r ∘ f 
-         commutes, and 
+           h ∼ r ∘ f
+         commutes, and
     (ii) that f has a retraction iff h has a retraction.
--}   
+-}
 
-  module 9-4b 
-    (f : A → C) 
-    (h : A → B) 
+  module 9-4b
+    (f : A → C)
+    (h : A → B)
     (g : B → C)
     (H : f ∼ g ∘ h)
-    (ρ : retraction g) where 
+    (ρ : retraction g) where
 
     open Σ ρ renaming (proj₁ to  r ; proj₂ to R)
     -- (i) The triangle commutes.
     I : h ∼ r ∘ f
-    I = begin 
-      h         ∼⟨ refl-htpy _ ⟩ 
-      id ∘ h    ∼⟨ R ⁻¹ ·ᵣ h ⟩ 
-      r ∘ g ∘ h   ∼⟨ r ·ₗ H ⁻¹ ⟩ 
-      r ∘ f ∎ 
-    
+    I = begin
+      h         ∼⟨ refl-htpy _ ⟩
+      id ∘ h    ∼⟨ R ⁻¹ ·ᵣ h ⟩
+      r ∘ g ∘ h   ∼⟨ r ·ₗ H ⁻¹ ⟩
+      r ∘ f ∎
+
     -- (ii) f has a retraction iff h has a retraction.
     f-retraction↔h-retraction : retraction f ↔ retraction h
-    f-retraction↔h-retraction .to (f⁻¹ , F) .fst = f⁻¹ ∘ g 
-    f-retraction↔h-retraction .to (f⁻¹ , F) .snd = begin 
-      f⁻¹ ∘ g ∘ h  ∼⟨  f⁻¹ ·ₗ H ⁻¹  ⟩ 
-      f⁻¹ ∘ f    ∼⟨ F ⟩ 
-      id ∎ 
-    f-retraction↔h-retraction .from (h⁻¹ , H) .fst = h⁻¹ ∘ r 
-    f-retraction↔h-retraction .from (h⁻¹ , H) .snd = begin 
-      h⁻¹ ∘ r ∘ f ∼⟨ h⁻¹ ·ₗ I ⁻¹ ⟩ 
-      h⁻¹ ∘ h   ∼⟨ H ⟩ 
-      id ∎ 
+    f-retraction↔h-retraction .to (f⁻¹ , F) .fst = f⁻¹ ∘ g
+    f-retraction↔h-retraction .to (f⁻¹ , F) .snd = begin
+      f⁻¹ ∘ g ∘ h  ∼⟨  f⁻¹ ·ₗ H ⁻¹  ⟩
+      f⁻¹ ∘ f    ∼⟨ F ⟩
+      id ∎
+    f-retraction↔h-retraction .from (h⁻¹ , H) .fst = h⁻¹ ∘ r
+    f-retraction↔h-retraction .from (h⁻¹ , H) .snd = begin
+      h⁻¹ ∘ r ∘ f ∼⟨ h⁻¹ ·ₗ I ⁻¹ ⟩
+      h⁻¹ ∘ h   ∼⟨ H ⟩
+      id ∎
 
 {- ----------------------------------------------------------------------------
-  (c) (The 3-for-2 property for equivalences.) 
+  (c) (The 3-for-2 property for equivalences.)
     (i) Show that if any two of the functions
-          f, g, h 
-        are equivalences, then so is the third. 
+          f, g, h
+        are equivalences, then so is the third.
     (ii) Conclude that any section and any retraction of an equivalence is
-         again an equivalence. 
--}   
+         again an equivalence.
+-}
 
-  module 9-4c 
-    (f : A → C) 
-    (h : A → B) 
+  module 9-4c
+    (f : A → C)
+    (h : A → B)
     (g : B → C)
-    (H : f ∼ g ∘ h) where 
+    (H : f ∼ g ∘ h) where
 
     -- (i) ---------------------------------------------------------------------
     -- show that if any two f , g , h are equivalences, then so is the third.
 
-    fg-equiv : is-equiv f → is-equiv g → is-equiv h 
-    fg-equiv ((f⁻¹ , F) , retr-f) (sec-g , (r , G)) .fst = f⁻¹ ∘ g , 
-      (begin 
-        h ∘ f⁻¹ ∘ g    ∼⟨ I ·ᵣ f⁻¹ ·ᵣ g ⟩ 
-        r ∘ f ∘ f⁻¹ ∘ g ∼⟨ r ·ₗ F ·ᵣ g ⟩ 
-        r ∘ g ∼⟨ G ⟩ 
+    fg-equiv : is-equiv f → is-equiv g → is-equiv h
+    fg-equiv ((f⁻¹ , F) , retr-f) (sec-g , (r , G)) .fst = f⁻¹ ∘ g ,
+      (begin
+        h ∘ f⁻¹ ∘ g    ∼⟨ I ·ᵣ f⁻¹ ·ᵣ g ⟩
+        r ∘ f ∘ f⁻¹ ∘ g ∼⟨ r ·ₗ F ·ᵣ g ⟩
+        r ∘ g ∼⟨ G ⟩
         id ∎)
-      where 
-        open 9-4b f h g H (r , G) 
-    fg-equiv (sec-f , retr-f) (sec-g , retr-g) .snd = f-retraction↔h-retraction .to retr-f 
-      where open 9-4b f h g H retr-g 
+      where
+        open 9-4b f h g H (r , G)
+    fg-equiv (sec-f , retr-f) (sec-g , retr-g) .snd = f-retraction↔h-retraction .to retr-f
+      where open 9-4b f h g H retr-g
 
-    fh-equiv : is-equiv f → is-equiv h → is-equiv g 
+    fh-equiv : is-equiv f → is-equiv h → is-equiv g
     fh-equiv (sec-f , retr-f) (sec-h , retr-h) .fst = f-section↔g-section .to sec-f
-      where 
-        open 9-4a f h g H sec-h 
-    fh-equiv (sec-f , (f⁻¹ , F)) ((h⁻¹ , H′), retr-h) .snd = h ∘ f⁻¹ , 
-      (begin 
-        h ∘ f⁻¹ ∘ g       ∼⟨ h ·ₗ (f⁻¹ ·ₗ I) ⟩ 
-        h ∘ f⁻¹ ∘ f ∘ h⁻¹ ∼⟨ h ·ₗ F ·ᵣ h⁻¹ ⟩ 
-        h ∘ h⁻¹           ∼⟨ H′ ⟩ 
+      where
+        open 9-4a f h g H sec-h
+    fh-equiv (sec-f , (f⁻¹ , F)) ((h⁻¹ , H′), retr-h) .snd = h ∘ f⁻¹ ,
+      (begin
+        h ∘ f⁻¹ ∘ g       ∼⟨ h ·ₗ (f⁻¹ ·ₗ I) ⟩
+        h ∘ f⁻¹ ∘ f ∘ h⁻¹ ∼⟨ h ·ₗ F ·ᵣ h⁻¹ ⟩
+        h ∘ h⁻¹           ∼⟨ H′ ⟩
         id ∎)
-      where 
+      where
         open 9-4a f h g H (h⁻¹ , H′)
 
-    gh-equiv : is-equiv g → is-equiv h → is-equiv f 
-    gh-equiv (sec-g , retr-g) (sec-h , retr-h) = 
-      f-section↔g-section .from sec-g , f-retraction↔h-retraction .from retr-h 
-      where 
-        open 9-4a f h g H sec-h hiding (I) 
+    gh-equiv : is-equiv g → is-equiv h → is-equiv f
+    gh-equiv (sec-g , retr-g) (sec-h , retr-h) =
+      f-section↔g-section .from sec-g , f-retraction↔h-retraction .from retr-h
+      where
+        open 9-4a f h g H sec-h hiding (I)
         open 9-4b f h g H retr-g hiding (I)
 
   -- (ii) --------------------------------------------------------------------
   -- Conclude that any section and any retraction of an equivalence is
-  -- again an equivalence. 
-  module 9-4c-ii (f : A → B) where 
+  -- again an equivalence.
+  module 9-4c-ii (f : A → B) where
 
     equivSections : (e : is-equiv f) → is-equiv (`sec e)
-    equivSections e@((s , S) , (r , R)) = 
-      (f , is-equiv⇒equalSplits e ·ᵣ f · R) , 
-      f , S 
+    equivSections e@((s , S) , (r , R)) =
+      (f , is-equiv⇒equalSplits e ·ᵣ f · R) ,
+      f , S
 
-    equivRetractions : (e : is-equiv f) → is-equiv (`retr e) 
-    equivRetractions e@((s , S) , (r , R)) = 
-      (f , R) , 
-      f , f ·ₗ (is-equiv⇒equalSplits e) ⁻¹ · S 
+    equivRetractions : (e : is-equiv f) → is-equiv (`retr e)
+    equivRetractions e@((s , S) , (r , R)) =
+      (f , R) ,
+      f , f ·ₗ (is-equiv⇒equalSplits e) ⁻¹ · S
 
 -------------------------------------------------------------------------------
 -- #9.5
-module 9-5 where 
+module 9-5 where
   private
     variable
-      ℓ ℓ₁ ℓ₂ ℓ₃ : Level 
+      ℓ ℓ₁ ℓ₂ ℓ₃ : Level
   open HomReasoning
 
   -- --------------------------------------------------------------------
   -- (a) Let A and B be types, and let C be a family over x : A, y : B.
-  --     Construct an equivalence 
+  --     Construct an equivalence
   --       Σ_{x : A} Σ_{y : B} C(x , y) ≃ Σ_{y : B} Σ_{x : A} C(x , y)
 
   {-
@@ -547,7 +547,7 @@ module 9-5 where
 
   -- --------------------------------------------------------------------
   -- (b) Let A be a type and let B and C be type families over A.
-  --     Construct an equivalence 
+  --     Construct an equivalence
   --     (Σ_{u : Σ_{x : A} B(x)} C(pr₁(u))) ≃ (Σ_{v : Σ_{x : A} C(x)} B(pr₁(v)))
 
   {-
@@ -586,94 +586,94 @@ module 9-5 where
 
 -------------------------------------------------------------------------------
 -- #9.6
-{- 
+{-
 Recall from remark 4.4.2 that coproducts have a *functorial action*, i.e.,
 that for every f : A → A′ and every g : B → B′ we have a map
-  f + g : (A + B) → (A′ + B′) 
--} 
+  f + g : (A + B) → (A′ + B′)
+-}
 
-module 9-6 where 
+module 9-6 where
   private
     variable
-      ℓ : Level 
-      A A′ A′′ B B′ B′′ C C′ D D′ X Y Z : Set ℓ 
+      ℓ : Level
+      A A′ A′′ B B′ B′′ C C′ D D′ X Y Z : Set ℓ
   open HomReasoning
-  
+
   -- --------------------------------------------------------------------
   -- (a - 1) Let's set up the bifunctorial action of coproducts.
-  -- 
+  --
   -- Technically we're showing that any category 𝒞 that admits coproducts
   -- (denoted by _+_) has a bifunctor _⊕_ : 𝒞 × 𝒞 → 𝒞 defined by:
   --   - A ⊕ B = A + B
   --   - f ⊕ g = [inj₁ ∘ f, inj₂ ∘ g]
-  -- where inj₁ and inj₂ are canonical injections and [f, g] : A + B → C is 
+  -- where inj₁ and inj₂ are canonical injections and [f, g] : A + B → C is
   -- the unique morphism that makes the coproduct diagram commute.
 
-  [_,_] : (f : A → C) (g : B → C) → A + B → C 
-  [ f , g ] (inj₁ a) = f a 
+  [_,_] : (f : A → C) (g : B → C) → A + B → C
+  [ f , g ] (inj₁ a) = f a
   [ f , g ] (inj₂ b) = g b
 
   -- Computational laws for [_,_] stated as homotopies
-  []-reduce₁ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ inj₁ ∼ f 
-  []-reduce₁ = refl-htpy _ 
+  []-reduce₁ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ inj₁ ∼ f
+  []-reduce₁ = refl-htpy _
 
   []-reduce₂ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ inj₂ ∼ g
-  []-reduce₂ = refl-htpy _ 
+  []-reduce₂ = refl-htpy _
 
   -- [ g , h ] is unique up to homotopy
-  []-unique : ∀ {f : A + B → C} {g : A → C} {h : B → C} → 
-              g ∼ f ∘ inj₁ → h ∼ f ∘ inj₂ → [ g , h ] ∼ f 
+  []-unique : ∀ {f : A + B → C} {g : A → C} {h : B → C} →
+              g ∼ f ∘ inj₁ → h ∼ f ∘ inj₂ → [ g , h ] ∼ f
   []-unique {f = f} {g} {h} f∘inj₁ f∘inj₂ (inj₁ a) = f∘inj₁ a
-  []-unique {f = f} {g} {h} f∘inj₁ f∘inj₂ (inj₂ b) = f∘inj₂ b 
+  []-unique {f = f} {g} {h} f∘inj₁ f∘inj₂ (inj₂ b) = f∘inj₂ b
 
   -- η-rule for coproducts
-  []-η : ∀ {f : A + B → C} → [ f ∘ inj₁ , f ∘ inj₂ ] ∼ f 
-  []-η {f = f} = []-unique (refl-htpy (f ∘ inj₁)) (refl-htpy (f ∘ inj₂)) 
-  
-  []-η-id : [ inj₁ {A = A} , inj₂ {B = B} ] ∼ id 
+  []-η : ∀ {f : A + B → C} → [ f ∘ inj₁ , f ∘ inj₂ ] ∼ f
+  []-η {f = f} = []-unique (refl-htpy (f ∘ inj₁)) (refl-htpy (f ∘ inj₂))
+
+  []-η-id : [ inj₁ {A = A} , inj₂ {B = B} ] ∼ id
   []-η-id {A = A} {B = B} = []-η {f = id}
 
   -- congruence over [_,_]
-  ∼[_,_]∼ : ∀ {f g : A → C} {h k : B → C} → f ∼ g → h ∼ k → 
-               [ f , h ] ∼ [ g , k ] 
-  ∼[_,_]∼ F H = []-unique F H                 
-  
-  -- distributivity 
-  []-distrib : ∀ (h : C → D) (f : A → C) (g : B → C) → 
-                  h ∘ [ f , g ] ∼ [ h ∘ f , h ∘ g ] 
-  []-distrib _ _ _ = ([]-unique (refl-htpy _) (refl-htpy _)) ⁻¹ 
+  ∼[_,_]∼ : ∀ {f g : A → C} {h k : B → C} → f ∼ g → h ∼ k →
+               [ f , h ] ∼ [ g , k ]
+  ∼[_,_]∼ F H = []-unique F H
+
+  -- distributivity
+  []-distrib : ∀ (h : C → D) (f : A → C) (g : B → C) →
+                  h ∘ [ f , g ] ∼ [ h ∘ f , h ∘ g ]
+  []-distrib _ _ _ = ([]-unique (refl-htpy _) (refl-htpy _)) ⁻¹
 
   -- f ⊕ g is the unique arrow from (A + B) to (C + D)
   -- s.t. inj₁ ∘ f ∼ (f ⊕ g) ∘ inj₁  and inj₂ ∘ g ∼ (f ⊕ g) ∘ inj₂.
-  _⊕_ : (f : A → C) (g : B → D) → (A + B) → (C + D) 
+  _⊕_ : (f : A → C) (g : B → D) → (A + B) → (C + D)
   (f ⊕ g) = [ inj₁ ∘ f , inj₂ ∘ g ]
 
   -- --------------------------------------------------------------------
   -- (a) Show that id_A + id_B ∼ id_{A + B}
   -- (Or: The coproduct bifunctor preserves identities.)
 
-  ⊕-id : id {A = A} ⊕ id {A = B} ∼ id 
-  ⊕-id = begin 
+  ⊕-id : id {A = A} ⊕ id {A = B} ∼ id
+  ⊕-id = begin
     (id ⊕ id) ∼⟨ refl-htpy _ ⟩
     [ inj₁ , inj₂ ] ∼⟨ []-η-id ⟩
-    id ∎ 
+    id ∎
 
   -- --------------------------------------------------------------------
   -- (b) Show that for any two pairs of composable functions
-  --        f      g              h       k     
+  --        f      g              h       k
   --     A ---> B ---> C  and  X ---> Y ---> Z
   -- there is a homotopy (g ∘ f) + (k ∘ h) ∼ (g + k) ∘ (f + h).
   -- (We can compose componentwise.)
 
-  ∘+-distribute : ∀ {f : A → B} {g : B → C} {h : X → Y} {k : Y → Z} → 
+  ∘+-distribute : ∀ {f : A → B} {g : B → C} {h : X → Y} {k : Y → Z} →
                   (g ⊕ k) ∘ (f ⊕ h) ∼ (g ∘ f) ⊕ (k ∘ h)
-  ∘+-distribute {f = f} {g} {h} {k} = begin 
-    (g ⊕ k) ∘ (f ⊕ h)                         ∼⟨ refl-htpy _ ⟩ 
-    (g ⊕ k) ∘ [ inj₁ ∘ f , inj₂ ∘ h ]             ∼⟨ []-distrib (g ⊕ k) (inj₁ ∘ f) (inj₂ ∘ h) ⟩ 
-    [ (g ⊕ k) ∘ inj₁ ∘ f , (g ⊕ k) ∘ inj₂ ∘ h ]   ∼⟨ refl-htpy _ ⟩ 
-    [ ([ inj₁ ∘ g , inj₂ ∘ k ] ∘ inj₁) ∘ f , 
-      ([ inj₁ ∘ g , inj₂ ∘ k ] ∘ inj₂) ∘ h ]         ∼⟨ ∼[ []-reduce₁ {g = inj₂ ∘ k}  , []-reduce₂ {f = inj₁ ∘ g} ]∼ ⟩ 
-    [ inj₁ ∘ g ∘ f ,  inj₂ ∘ k ∘ h ]               ∼⟨ refl-htpy _ ⟩ 
+  ∘+-distribute {f = f} {g} {h} {k} = begin
+    (g ⊕ k) ∘ (f ⊕ h)                         ∼⟨ refl-htpy _ ⟩
+    (g ⊕ k) ∘ [ inj₁ ∘ f , inj₂ ∘ h ]             ∼⟨ []-distrib (g ⊕ k) (inj₁ ∘ f) (inj₂ ∘ h) ⟩
+    [ (g ⊕ k) ∘ inj₁ ∘ f , (g ⊕ k) ∘ inj₂ ∘ h ]   ∼⟨ refl-htpy _ ⟩
+    [ ([ inj₁ ∘ g , inj₂ ∘ k ] ∘ inj₁) ∘ f ,
+      ([ inj₁ ∘ g , inj₂ ∘ k ] ∘ inj₂) ∘ h ]         ∼⟨ ∼[ []-reduce₁ {g = inj₂ ∘ k}  , []-reduce₂ {f = inj₁ ∘ g} ]∼ ⟩
+    [ inj₁ ∘ g ∘ f ,  inj₂ ∘ k ∘ h ]               ∼⟨ refl-htpy _ ⟩
      (g ∘ f) ⊕ (k ∘ h) ∎
 
 
@@ -683,35 +683,35 @@ module 9-6 where
   -- (Congruence over _⊕_.)
 
   -- Follows simply from congruence over [_,_]
-  ∼⟨_⊕_⟩∼ : ∀ {f f′ : A → C} {g g′ : B → D} → f ∼ f′ → g ∼ g′ → 
-               f ⊕ g ∼ f′ ⊕ g′ 
-  ∼⟨ H ⊕ K ⟩∼ = ∼[ inj₁ ·ₗ H , inj₂ ·ₗ K ]∼ 
+  ∼⟨_⊕_⟩∼ : ∀ {f f′ : A → C} {g g′ : B → D} → f ∼ f′ → g ∼ g′ →
+               f ⊕ g ∼ f′ ⊕ g′
+  ∼⟨ H ⊕ K ⟩∼ = ∼[ inj₁ ·ₗ H , inj₂ ·ₗ K ]∼
 
   -- --------------------------------------------------------------------
   -- (d) Show that if both f and g are equivalences, then so is f ⊕ g.
 
-  module _ (f : A → C) (g : B → D) (f-eqv : is-equiv f) (g-eqv : is-equiv g) where 
+  module _ (f : A → C) (g : B → D) (f-eqv : is-equiv f) (g-eqv : is-equiv g) where
 
-    ⊕-section : section (f ⊕ g) 
-    ⊕-section  = 
+    ⊕-section : section (f ⊕ g)
+    ⊕-section  =
       f⁻¹ ⊕ g⁻¹ , (begin
-          (f ⊕ g) ∘ (f⁻¹ ⊕ g⁻¹) ∼⟨ ∘+-distribute ⟩ 
-          (f ∘ f⁻¹) ⊕ (g ∘ g⁻¹) ∼⟨ ∼⟨ sec-f ⊕ sec-g ⟩∼ ⟩ 
-          id ⊕ id               ∼⟨ ⊕-id ⟩ 
+          (f ⊕ g) ∘ (f⁻¹ ⊕ g⁻¹) ∼⟨ ∘+-distribute ⟩
+          (f ∘ f⁻¹) ⊕ (g ∘ g⁻¹) ∼⟨ ∼⟨ sec-f ⊕ sec-g ⟩∼ ⟩
+          id ⊕ id               ∼⟨ ⊕-id ⟩
           id ∎)
-      where 
+      where
         open Σ (f-eqv .fst) renaming (proj₁ to f⁻¹ ; proj₂ to sec-f)
         open Σ (g-eqv .fst) renaming (proj₁ to g⁻¹ ; proj₂ to sec-g)
 
-    ⊕-retr : retraction (f ⊕ g) 
-    ⊕-retr = f⁻¹ ⊕ g⁻¹ , (begin 
-      (f⁻¹ ⊕ g⁻¹) ∘ (f ⊕ g)  ∼⟨ ∘+-distribute ⟩ 
-      (f⁻¹ ∘ f) ⊕ (g⁻¹ ∘ g)  ∼⟨ ∼⟨ retr-f ⊕ retr-g ⟩∼ ⟩ 
-      id ⊕ id                ∼⟨ ⊕-id ⟩ 
+    ⊕-retr : retraction (f ⊕ g)
+    ⊕-retr = f⁻¹ ⊕ g⁻¹ , (begin
+      (f⁻¹ ⊕ g⁻¹) ∘ (f ⊕ g)  ∼⟨ ∘+-distribute ⟩
+      (f⁻¹ ∘ f) ⊕ (g⁻¹ ∘ g)  ∼⟨ ∼⟨ retr-f ⊕ retr-g ⟩∼ ⟩
+      id ⊕ id                ∼⟨ ⊕-id ⟩
       id ∎)
-      where 
+      where
         open Σ (f-eqv .snd) renaming (proj₁ to f⁻¹ ; proj₂ to retr-f)
-        open Σ (g-eqv .snd) renaming (proj₁ to g⁻¹ ; proj₂ to retr-g)      
+        open Σ (g-eqv .snd) renaming (proj₁ to g⁻¹ ; proj₂ to retr-g)
 
     ⊕-equiv : is-equiv (f ⊕ g)
     ⊕-equiv = ⊕-section , ⊕-retr
@@ -719,23 +719,23 @@ module 9-6 where
 -------------------------------------------------------------------------------
 -- #9.7
 
-module 9-7 where 
+module 9-7 where
   private
     variable
-      ℓ : Level 
-      A A′ A′′ B B′ B′′ : Set ℓ       
-  open HomReasoning
+      ℓ : Level
+      A A′ A′′ B B′ B′′ : Set ℓ
+  -- open HomReasoning
   open 9-1
   open Paths
 
   -- --------------------------------------------------------------------
   -- (a) Construct for any two maps f : A → A′ and g : B → B′, a map
-  --     f × g : A × B → A′ × B′ 
+  --     f × g : A × B → A′ × B′
   -- (I've added _⊗_ as the recommended syntax for this definition. -Alex)
 
-  _⊗_ : (f : A → A′) (g : B → B′) → A × B → A′ × B′ 
-  (f ⊗ g) (a , b) = (f a , g b) 
-  
+  _⊗_ : (f : A → A′) (g : B → B′) → A × B → A′ × B′
+  (f ⊗ g) (a , b) = (f a , g b)
+
   -- --------------------------------------------------------------------
   -- (b) Show that id_A × id_B ∼ id_{A × B}
   id-funprod : id {A = A} ⊗ id {A = B} ∼ id {A = A × B}
@@ -743,15 +743,16 @@ module 9-7 where
 
   -- --------------------------------------------------------------------
   -- (c) Show that for any two pairs of composable functions
-  --        f       f′               g       g′     
-  --     A ---> A′ ---> A′′  and  B ---> B′ ---> B′′ 
+  --        f       f′               g       g′
+  --     A ---> A′ ---> A′′  and  B ---> B′ ---> B′′
   -- there is a homotopy (f′ ∘ f) × (g′ ∘ g) ∼ (f′ × g′) ∘ (f × g)
-  comp-dist : (f : A → A′) (f′ : A′ → A′′) (g : B → B′) (g′ : B′ → B′′) →  (f′ ∘ f) ⊗ (g′ ∘ g) ∼ (f′ ⊗ g′) ∘ (f ⊗ g)
+  comp-dist : (f : A → A′) (f′ : A′ → A′′) (g : B → B′) (g′ : B′ → B′′) →
+              (f′ ∘ f) ⊗ (g′ ∘ g) ∼ (f′ ⊗ g′) ∘ (f ⊗ g)
   comp-dist f f′ g g′ = refl-htpy _
 
   -- --------------------------------------------------------------------
   -- (d) Show that if H : f ∼ f′ and K : g ∼ g′, then there is a homotopy
-  --     H + K : (f × g) ∼ (f′ × g′) 
+  --     H + K : (f × g) ∼ (f′ × g′)
   pair-eqₗ : {a a′ : A} {b : B} (eq : a ≡ a′) → _≡_ {A = A × B} (a , b) (a′ , b)
   pair-eqₗ refl = refl
 
@@ -759,149 +760,172 @@ module 9-7 where
   pair-eqᵣ refl = refl
 
 
-  hom-funprodₗ : {f f′ : A → A′} {g : B → B′} (H : f ∼ f′) → (f ⊗ g) ∼ (f′ ⊗ g)
-  hom-funprodₗ {g = g} H (fst₁ , snd₁) = ap (_, g snd₁) (H fst₁) -- pair-eqₗ (H a)
+  hom-⊗ₗ : {f f′ : A → A′} {g : B → B′} (H : f ∼ f′) → (f ⊗ g) ∼ (f′ ⊗ g)
+  hom-⊗ₗ {g = g} H (a , b) = ap (_, g b) (H a)
 
-  hom-funprodᵣ : {f : A → A′} {g g′ : B → B′} (H : g ∼ g′) → (f ⊗ g) ∼ (f ⊗ g′)
-  hom-funprodᵣ K = λ (_ , b) → pair-eqᵣ (K b)
+  hom-⊗ᵣ : {f : A → A′} {g g′ : B → B′} (H : g ∼ g′) → (f ⊗ g) ∼ (f ⊗ g′)
+  hom-⊗ᵣ {f = f} K (a , b) = ap (f a ,_ ) (K b)
 
-  hom-dist : (f f′ : A → A′) (g g′ : B → B′) (H : f ∼ f′) (K : g ∼ g′) → (f ⊗ g) ∼ (f′ ⊗ g′)
-  hom-dist f f′ g g′ H K = 
-    begin
-      (f ⊗ g) ∼⟨ hom-funprodₗ H ⟩
-      (f′ ⊗ g) ∼⟨ hom-funprodᵣ K ⟩
-      (f′ ⊗ g′) ∎
+  module _ where
+    open HomReasoning
+    hom-⊗ : (f f′ : A → A′) (g g′ : B → B′) (H : f ∼ f′) (K : g ∼ g′) → (f ⊗ g) ∼ (f′ ⊗ g′)
+    hom-⊗ f f′ g g′ H K =
+      begin
+        (f ⊗ g) ∼⟨ hom-⊗ₗ H ⟩
+        (f′ ⊗ g) ∼⟨ hom-⊗ᵣ K ⟩
+        (f′ ⊗ g′) ∎
 
   -- --------------------------------------------------------------------
   -- (e) Show that for any two maps f : A → A′ and g : B → B′, the following
   --     are equivalent:
-  --     (i) The map f × g is an equivalence 
+  --     (i) The map f × g is an equivalence
   --     (ii) There are functions
-  --          - α : B′ → is-equiv f 
-  --          - β : A′ → is-equiv g 
-  funprod-fst : (f : A → A′) (g : B → B′) (x : A × B) → fst ((f ⊗ g) x) ≡ f (fst x)
-  funprod-fst _ _ = λ x → refl
+  --          - α : B′ → is-equiv f
+  --          - β : A′ → is-equiv g
+  ⊗-fst : (f : A → A′) (g : B → B′) → fst ∘ (f ⊗ g) ∼ f ∘ fst
+  ⊗-fst _ _ = λ _ → refl
 
-  funprod-snd : (f : A → A′) (g : B → B′) (x : A × B) → snd ((f ⊗ g) x) ≡ g (snd x)
-  funprod-snd _ _ = λ x → refl
+  ⊗-snd : (f : A → A′) (g : B → B′) → snd ∘ (f ⊗ g) ∼ g ∘ snd
+  ⊗-snd _ _ = λ _ → refl
 
   pair-ext : {a a′ : A} {b b′ : B} (eq : a ≡ a′) → (eq' : b ≡ b′) → _≡_ {A = A × B} (a , b) (a′ , b′)
   pair-ext refl refl = refl
 
-  is-equiv-equiv : (f : A → A′) (g : B → B′) → (is-equiv (f ⊗ g)) ↔ ((B′ → is-equiv f) × (A′ → is-equiv g))
-  is-equiv-equiv f g ._↔_.to equiv =
-    let
-      -- In this direction, we have that (f ⊗ g) is an equivalence,
-      -- so we begin by obtaining its section and retraction.
-      sec = `sec equiv -- (f ⊗ g) ∘ sec ∼ id
-      sec-h = equiv |> fst |> snd
 
-      retr = `retr equiv -- retr ∘ (f ⊗ g) ∼ id
-      retr-h = equiv |> snd |> snd
+  module _ where
+    open PathReasoning
+    is-equiv-equiv : ∀ {ℓ} { A A′ B B′ : Set ℓ} → (f : A → A′) (g : B → B′) → (is-equiv (f ⊗ g)) ↔ ((B′ → is-equiv f) × (A′ → is-equiv g))
+    is-equiv-equiv {A = A}{A′ = A′}{B = B}{B′ = B′} f g ._↔_.to ((⊗-sec , ⊗-sec-h) , ⊗-retr , ⊗-retr-h) = α , β
+      where
 
-      -- Now we define α : B′ → is-equiv f and β : A′ → is-equiv g.
-      -- For α, that means we need to map each b′ : B′ to a section
-      -- and a retraction for f.
-      -- That means that with b′ : B′ in scope, we need to define α-sec : A′ → A (resp. α-retr A′ → A)
-      -- along with a proof that f ∘ α-sec ∼ id (resp. α-retr ∘ f ∼ id).
-      -- To define α-sec-fun (resp. α-retr-fun), we first pair the a′ : A′ and b′ : B′ together,
-      -- then apply the section (resp. retraction) for (f ⊗ g), and finally take the first projection.
-      -- The process for β is similar.
+     --   -- α
+     --   -- The proof here is fairly straightforward.
 
-      -- α
-      -- The proof here is fairly straightforward.
-      α-sec-fun b′ = λ a′ →  (a′ , b′) |> sec |> fst
-      α-sec-proof b′ = λ a′ → ap fst (sec-h (a′ , b′))
-      α-sec b′ = α-sec-fun b′ , α-sec-proof b′
+       -- In this direction, we have that (f ⊗ g) is an equivalence,
+       -- so we begin by obtaining its section and retraction.
 
-      -- For the retraction, we need to prove "fst (retr (f a , b′)) ≡ a".
-      -- The difficulty is that we only know that "retr (f a , g b) ≡ (a, b)".
-      -- So we need to obtain an explicit pre-image for b′.
-      -- That pre-image turns out to be "snd (sec (f a , b′))".
-      α-retr-fun b′ =  λ a′ → (a′ , b′) |> retr |> fst
-      α-retr-proof b′ = λ a → 
-        let
-          b′-preimage = snd (sec (f a , b′))
-          b′-rw : b′ ≡ g b′-preimage
-          b′-rw = ap snd (sec-h (f a , b′)) |> sym
+       -- Now we define α : B′ → is-equiv f and β : A′ → is-equiv g.
+       -- For α, that means we need to map each b′ : B′ to a section
+       -- and a retraction for f.
+       -- That means that with b′ : B′ in scope, we need to define α-sec : A′ → A (resp. α-retr A′ → A)
+       -- along with a proof that f ∘ α-sec ∼ id (resp. α-retr ∘ f ∼ id).
+       -- To define α-sec-fun (resp. α-retr-fun), we first pair the a′ : A′ and b′ : B′ together,
+       -- then apply the section (resp. retraction) for (f ⊗ g), and finally take the first projection.
+       -- The process for β is similar.
 
-          rw1 : fst (retr (f a , b′)) ≡ fst (retr (f a , g b′-preimage))
-          rw1 = ap (λ x → fst (retr (f a , x))) b′-rw
+        α-sec : B′ → A′ → A
+        α-sec b′ a′ = fst ∘ ⊗-sec $ (a′ , b′)
 
-          rw2 : fst (retr (f a , g b′-preimage)) ≡ a
-          rw2 = ap fst (retr-h (a , b′-preimage))
-        in
-          rw1 ○ rw2
-      α-retr b′ = α-retr-fun b′ , α-retr-proof b′
+        α-sec-h : (b′ : B′) → (λ a′ → f (α-sec b′ a′)) ∼ id
+        α-sec-h b′ = λ a′ → ap fst (⊗-sec-h (a′ , b′))
 
-      α b′ = α-sec b′ , α-retr b′
+        α-retr : B′ → A′ → A
+        α-retr b′ a′ = fst ∘ ⊗-retr $ (a′ , b′)
 
-      -- β
-      -- Similarly straightforward
-      β-sec-fun a′ = λ b′ →  (a′ , b′) |> sec |> snd
-      β-sec-proof a′ = λ b′ → ap snd (sec-h (a′ , b′))
-      β-sec a′ = β-sec-fun a′ , β-sec-proof a′
+       -- For the retraction, we need to prove "fst (retr (f a , b′)) ≡ a".
+       -- The difficulty is that we only know that "retr (f a , g b) ≡ (a, b)".
+       -- So we need to obtain an explicit pre-image for b′.
+       -- That pre-image turns out to be
 
-      -- Similarly annoying because we must obtain an explicit preimage of a′.
-      -- But, we can pretty must copy the previous proof and modify it in the obvious way.
-      β-retr-fun a′ = λ b′ → (a′ , b′) |> retr |> snd
-      β-retr-proof a′ = λ b →
-        let
-          a′-preimage = fst (sec (a′ , g b))
-          a′-rw : a′ ≡ f a′-preimage
-          a′-rw = ap fst (sec-h (a′ , g b)) |> sym
-
-          rw1 : snd (retr (a′ , g b)) ≡ snd (retr (f a′-preimage , g b))
-          rw1 = ap (λ x → snd (retr (x , g b))) a′-rw
-
-          rw2 : snd (retr (f a′-preimage , g b)) ≡ b
-          rw2 = ap snd (retr-h (a′-preimage , b))
-        in
-          rw1 ○ rw2
-      β-retr a′ = β-retr-fun a′ , β-retr-proof a′
-
-      β a′ = (β-sec a′ , β-retr a′)
-    in
-      (α , β)
-  is-equiv-equiv {A = A} {A′ = A′} {B = B} {B′ = B′} f g ._↔_.from (α , β) = sec , retr
-    where
-      -- Now we are given α : B′ → is-equiv f and β : A′ → is-equiv g,
-      -- and we must define sec : section (f ⊗ g) and retr : retraction (f ⊗ g).
-      -- This is much easier than the previous direction.
-      -- We simply construct sec (resp. retr)
-      -- by pairwise application of the section and retraction given by α (resp. β).
-      -- The proofs consist of showing equality in each component, which I do
-      -- by establishing the simple auxiliary lemma pair-ext, defined above.
-
-      α-sec : B′ → (A′ → A)
-      α-sec b′ = `sec (α b′)
-      α-sec-h : (b′ : B′) → (f ∘ α-sec b′ ∼ id)
-      α-sec-h b′ = α b′ |> fst |> snd
-      α-retr : B′ → (A′ → A)
-      α-retr b′ = `retr (α b′)
-      α-retr-h : (b′ : B′) → (α-retr b′ ∘ f ∼ id)
-      α-retr-h b′ = α b′ |> snd |> snd
-
-      β-sec : A′ → (B′ → B)
-      β-sec a′ = `sec (β a′)
-      β-sec-h : (a′ : A′) → (g ∘ β-sec a′ ∼ id)
-      β-sec-h a′ = β a′ |> fst |> snd
-      β-retr : A′ → (B′ → B)
-      β-retr a′ = `retr (β a′)
-      β-retr-h : (a′ : A′) → (β-retr a′ ∘ g ∼ id)
-      β-retr-h a′ = β a′ |> snd |> snd
+        g̅ : A → B′ → B
+        g̅ a b′ = snd ∘ ⊗-sec $ (f a , b′)
 
 
-      -- section
-      sec-fun : A′ × B′ → A × B
-      sec-fun (a′ , b′) = α-sec b′ a′ , β-sec a′ b′
-      sec-proof : (λ x → (f ⊗ g) (sec-fun x)) ∼ id
-      sec-proof (a′ , b′) = pair-ext (α-sec-h b′ a′) (β-sec-h a′ b′)
-      sec = sec-fun , sec-proof
+        g∘g̅-prf : ∀{f : A → A′}(a : A) → id ∼ (g ∘ (g̅ a))
+        g∘g̅-prf a = λ b′ → sym $ ap snd (⊗-sec-h (f a , b′))
 
-      -- retraction
-      retr-fun : A′ × B′ → A × B
-      retr-fun (a′ , b′) = α-retr b′ a′ , β-retr a′ b′
-      retr-proof : (λ x → retr-fun ((f ⊗ g) x)) ∼ id
-      retr-proof (a , b) = pair-ext (α-retr-h (g b) a) (β-retr-h (f a) b)
-      retr =  retr-fun , retr-proof
+
+
+        α-retr-h : ∀ (b′ : B′) (a : A) → (α-retr b′ (f a)) ≡ a
+        α-retr-h b′ a = begin
+                 α-retr b′ (f a)                       ≡⟨ refl ⟩
+                 (fst ∘ ⊗-retr $ (f a , id b′))        ≡⟨ ap (λ x → (fst ∘ ⊗-retr $ ((f a) , x)))
+                                                              (g∘g̅-prf {f = f} a b′) ⟩
+                 (fst ∘ ⊗-retr $ (f a , (g ∘ g̅ a) b′)) ≡⟨ ap fst (⊗-retr-h (a , g̅ a b′)) ⟩
+                 a ∎
+
+        α : (B′ → is-equiv f)
+        α b′ = ((α-sec b′) , α-sec-h b′) , (α-retr b′ , α-retr-h b′)
+
+
+
+        -- β
+        -- Similarly straightforward
+
+        β-sec-fun : A′ → B′ → B
+        β-sec-fun a′ = λ b → snd ∘ ⊗-sec $ (a′ , b)
+
+        β-sec-proof : (a′ : A′) → (λ x → g (β-sec-fun a′ x)) ∼ id
+        β-sec-proof a′ = λ b′ → ap snd (⊗-sec-h (a′ , b′))
+
+        β-sec : A′ → section g
+        β-sec a′ = β-sec-fun a′ , β-sec-proof a′
+
+        β-retr-fun : (a′ : A′) → B′ → B
+        β-retr-fun a′ b′ = snd ∘ ⊗-retr $ (a′ , b′)
+
+        -- Similarly annoying because we must obtain an explicit preimage of a′.
+        -- But, we can pretty must copy the previous proof and modify it in the obvious way.
+
+        f̅ :  B → A′ → A
+        f̅ b a′ =  fst ∘ ⊗-sec $ (a′ , g b)
+
+        f∘f̅-prf : ∀ {b : B}(a′ : A′) → f (f̅ b a′) ≡ a′
+        f∘f̅-prf {b} a′ = ap fst (⊗-sec-h $ (a′ , g b))
+
+        β-retr-proof : ∀(a′ : A′)(b : B) → β-retr-fun a′ (g b) ≡ b
+        β-retr-proof a′ b = begin
+           β-retr-fun a′ (g b) ≡⟨ refl ⟩
+           (snd ∘ ⊗-retr $ (a′ , g b)) ≡⟨ ap (λ x → snd ∘ ⊗-retr $ (x , g b)) (sym (f∘f̅-prf a′)) ⟩
+           (snd ∘ ⊗-retr $ (f (f̅ b a′) , g b)) ≡⟨ ap snd (⊗-retr-h (f̅ b a′ , b)) ⟩
+           b ∎
+
+        β-retr : (a′ :  A′) → retraction g
+        β-retr a′ = β-retr-fun a′ , β-retr-proof a′
+
+
+        β : (A′ → is-equiv g)
+        β a′ = β-sec a′ , β-retr a′
+
+    is-equiv-equiv {A = A} {A′ = A′} {B = B} {B′ = B′} f g ._↔_.from (α , β) = sec , retr
+        where
+          -- Now we are given α : B′ → is-equiv f and β : A′ → is-equiv g,
+          -- and we must define sec : section (f ⊗ g) and retr : retraction (f ⊗ g).
+          -- This is much easier than the previous direction.
+          -- We simply construct sec (resp. retr)
+          -- by pairwise application of the section and retraction given by α (resp. β).
+          -- The proofs consist of showing equality in each component, which I do
+          -- by establishing the simple auxiliary lemma pair-ext, defined above.
+
+          α-sec : B′ → (A′ → A)
+          α-sec b′ = `sec (α b′)
+          α-sec-h : (b′ : B′) → (f ∘ α-sec b′ ∼ id)
+          α-sec-h b′ = α b′ |> fst |> snd
+          α-retr : B′ → (A′ → A)
+          α-retr b′ = `retr (α b′)
+          α-retr-h : (b′ : B′) → (α-retr b′ ∘ f ∼ id)
+          α-retr-h b′ = α b′ |> snd |> snd
+
+          β-sec : A′ → (B′ → B)
+          β-sec a′ = `sec (β a′)
+          β-sec-h : (a′ : A′) → (g ∘ β-sec a′ ∼ id)
+          β-sec-h a′ = β a′ |> fst |> snd
+          β-retr : A′ → (B′ → B)
+          β-retr a′ = `retr (β a′)
+          β-retr-h : (a′ : A′) → (β-retr a′ ∘ g ∼ id)
+          β-retr-h a′ = β a′ |> snd |> snd
+
+
+          -- section
+          sec-fun : A′ × B′ → A × B
+          sec-fun (a′ , b′) = α-sec b′ a′ , β-sec a′ b′
+          sec-proof : (λ x → (f ⊗ g) (sec-fun x)) ∼ id
+          sec-proof (a′ , b′) = pair-ext (α-sec-h b′ a′) (β-sec-h a′ b′)
+          sec = sec-fun , sec-proof
+
+          -- retraction
+          retr-fun : A′ × B′ → A × B
+          retr-fun (a′ , b′) = α-retr b′ a′ , β-retr a′ b′
+          retr-proof : (λ x → retr-fun ((f ⊗ g) x)) ∼ id
+          retr-proof (a , b) = pair-ext (α-retr-h (g b) a) (β-retr-h (f a) b)
+          retr =  retr-fun , retr-proof
