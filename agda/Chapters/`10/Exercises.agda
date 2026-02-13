@@ -22,7 +22,20 @@ module 10-1 where
 module 10-2 where 
   private
     variable
-      ℓ : Level    
+      ℓ : Level
+  open PathReasoning
+
+  retract-is-contractible : {A : Set ℓ} {B : Set ℓ} → (f : A → B) → (retraction {A = A} {B = B} f) → is-contr B → is-contr A
+  retract-is-contractible {A = A} {B = B} f (f-retr , f-retr-h) (b , eq-b) = center , contraction
+    where
+      center : A
+      center = f-retr b
+
+      contraction : (a : A) → f-retr b ≡ a
+      contraction a = begin
+        f-retr b ≡⟨ (ap f-retr $ eq-b $ f a) ⟩
+        f-retr (f a) ≡⟨ f-retr-h a ⟩
+        a ∎
 
 -------------------------------------------------------------------------------
 -- #10.3 
@@ -55,4 +68,3 @@ module 10-4 where
   fin-not-contractible : ∀ (n : ℕ) → ¬ is-contr (Fin (suc (suc n)))
   fin-not-contractible n (center , contraction) with ! (contraction fzero) ○ ((contraction (fsuc fzero))) 
   ... | ()
-      
