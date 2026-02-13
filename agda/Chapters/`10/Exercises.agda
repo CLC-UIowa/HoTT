@@ -14,6 +14,15 @@ module 10-1 where
   private
     variable
       ℓ : Level
+      A : Set ℓ
+  open PathReasoning
+  ex-10-1 : ∀ {A} (x y : A) → is-contr {ℓ = ℓ} A → is-contr (x ≡ y)
+  ex-10-1 {A = A} x y (cA , C) = center-x≡y , λ q →
+    ! ind≡ x (λ x' p → p ≡ (! (C x)) ○ C x') (! left-inv (C x)) y q
+
+    where
+      center-x≡y : x ≡ y
+      center-x≡y = (! C x) ○ C y
 
 -------------------------------------------------------------------------------
 -- #10.2 Suppose that A is a retract of B. Show that
@@ -66,7 +75,7 @@ module 10-3 where
 
   import Data.Unit
 
-  {- 
+  {-
   -- We will show that if A is contractible then (const tt) is an equivalence between A and ⊤.
   -- To do this we need to show that (const tt) has a section and that it has a retraction.
   -- A section of (const tt) is a function "f" of type (⊤ → A) that satisfies the property:
@@ -77,7 +86,7 @@ module 10-3 where
   -- Thankfully since we know that A is contractible we know that it has a center of contraction.
   -- Let's call the center "c".
   -- Define
-  -- 
+  --
   --     f := (const c)
   --
   -- The remainder of the proof is just computation i.e. refl.
@@ -86,13 +95,13 @@ module 10-3 where
   const-tt-has-section : {ℓ : Level} → {A : Set ℓ} → is-contr A → section {ℓ} {A} (const tt)
   const-tt-has-section (center , contraction) = const center , (λ x → refl)
 
-  {- 
+  {-
   -- Now let's show that (const tt) has a retraction.
   -- Remember that a retraction of (const tt) is a function h : ⊤ → A that satisfies:
   --
   --     h ∘ (const tt) ~ id    This time id is the identity on A
   --
-  -- There aren't too many functions of the type (⊤ → A) so let's try to make 
+  -- There aren't too many functions of the type (⊤ → A) so let's try to make
   -- (const c) do double duty as a retraction.
   -- Recall that "c" is A's center of contraction.
   -- This time the remainder of the proof is not "just computation".
@@ -104,27 +113,27 @@ module 10-3 where
   --
   -- We're fortunate that (c ≡ a) is the instantiation of A's contraction at element a.
   --
-  -- *Bonus*.  This definition suggests that if we're given (const tt) : ⊤ → A 
+  -- *Bonus*.  This definition suggests that if we're given (const tt) : ⊤ → A
   -- has a retraction then we can show A is contractible.
   -}
 
   const-tt-has-retraction : {ℓ : Level} → {A : Set ℓ} → is-contr A → retraction {ℓ} {A} (const tt)
   const-tt-has-retraction (center , contraction) = const center , contraction
 
-  {- 
+  {-
   -- We have all we need to show that (const tt) is an equivalence from A to ⊤.
   -}
 
   const-tt-is-equiv : {ℓ : Level} → {A : Set ℓ} → is-contr A → is-equiv {ℓ} {A} (const tt)
-  const-tt-is-equiv is-contr-A = 
+  const-tt-is-equiv is-contr-A =
     ( const-tt-has-section is-contr-A , const-tt-has-retraction is-contr-A )
 
-  {- 
+  {-
   -- Now let's show that if (const tt) is an equivalence from A to ⊤ then A is a contractible type.
   -- Since (const tt) is an equivalence we know that it has both a retraction as well as a section.
   -- To show that A is contractible it should be enough to know that (const tt) has a retraction.
   -- The existence of the section is irrelevant at the moment.
-  -- 
+  --
   -- Let's remind ourselves that a retraction of (const tt) is a function "h" : (⊤ → A) satisfying:
   --
   --     λ (a : A) → (h tt) ≡ a
@@ -144,7 +153,7 @@ module 10-3 where
   --   (iii) f is an equivalence
   -- hold, then so does the third.
 
-  {- 
+  {-
   -- Let's start by showing that (i) and (ii) together imply (iii).
   --
   -- We know that both A and B are contractible.
@@ -157,14 +166,14 @@ module 10-3 where
   -- Both the section as well as the retraction will have the type B → A.
   -- This hints that (const c_A) should be the section as well as the retraction.
   -- Let's confirm our guess by actually writing the proofs.
-  -- 
+  --
   -- To start let's prove that (const c_A) is a section of f:
   --
   --       (f (const c_A b))        |          id b
   --     ≡ (f c_A)                  |        ≡ b
   -}
 
-  
+
 
 -------------------------------------------------------------------------------
 -- #10.4 Show that Finₖ is not contractible for all k ≠ 1.
@@ -172,26 +181,25 @@ module 10-3 where
 module 10-4 where
 
   ez-proof : ∀ (n : ℕ) → ¬ is-contr (Fin (suc (suc n)))
-  ez-proof n  (center , contraction) 
+  ez-proof n  (center , contraction)
     with ! (contraction fzero) ○ ((contraction (fsuc fzero)))
   ... | ()
 
-  -- Here is how you prove disjointedness of constructors 
+  -- Here is how you prove disjointedness of constructors
   -- fzero & fsuc fzero without relying on the empty pattern.
   -- This more closely resembles (but is still not exactly)
   -- the proof Rijker would have had in mind using the book's
   -- def'n of Fin.
-  fzero≠fone : ∀ {n} → ¬ (fzero ≡ fsuc {n = suc n} fzero) 
-  fzero≠fone eq = tr I eq tt 
+  fzero≠fone : ∀ {n} → ¬ (fzero ≡ fsuc {n = suc n} fzero)
+  fzero≠fone eq = tr I eq tt
     where
       I : ∀ {n} → Fin (suc (suc n)) → Set
-      I fzero        = ⊤ 
-      I (fsuc fzero) = ⊥ 
+      I fzero        = ⊤
+      I (fsuc fzero) = ⊥
       I _            = ⊤
 
   fin-not-contractible : ∀ (n : ℕ) → ¬ is-contr (Fin (suc (suc n)))
-  fin-not-contractible n (center , contraction) = fzero≠fone bad 
+  fin-not-contractible n (center , contraction) = fzero≠fone bad
     where
-      bad : fzero ≡ fsuc fzero 
+      bad : fzero ≡ fsuc fzero
       bad = ! (contraction fzero) ○ ((contraction (fsuc fzero)))
-
