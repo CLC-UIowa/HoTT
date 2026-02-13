@@ -76,10 +76,28 @@ module 10-3 where
 -- #10.4 Show that Finₖ is not contractible for all k ≠ 1.
 
 module 10-4 where
-  private
-    variable
-      ℓ : Level
+
+  ez-proof : ∀ (n : ℕ) → ¬ is-contr (Fin (suc (suc n)))
+  ez-proof n  (center , contraction) 
+    with ! (contraction fzero) ○ ((contraction (fsuc fzero)))
+  ... | ()
+
+  -- Here is how you prove disjointedness of constructors 
+  -- fzero & fsuc fzero without relying on the empty pattern.
+  -- This more closely resembles (but is still not exactly)
+  -- the proof Rijker would have had in mind using the book's
+  -- def'n of Fin.
+  fzero≠fone : ∀ {n} → ¬ (fzero ≡ fsuc {n = suc n} fzero) 
+  fzero≠fone eq = tr I eq tt 
+    where
+      I : ∀ {n} → Fin (suc (suc n)) → Set
+      I fzero        = ⊤ 
+      I (fsuc fzero) = ⊥ 
+      I _            = ⊤
 
   fin-not-contractible : ∀ (n : ℕ) → ¬ is-contr (Fin (suc (suc n)))
-  fin-not-contractible n (center , contraction) with ! (contraction fzero) ○ ((contraction (fsuc fzero)))
-  ... | ()
+  fin-not-contractible n (center , contraction) = fzero≠fone bad 
+    where
+      bad : fzero ≡ fsuc fzero 
+      bad = ! (contraction fzero) ○ ((contraction (fsuc fzero)))
+
