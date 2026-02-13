@@ -25,6 +25,21 @@ module 10-2 where
       ℓ : Level
   open PathReasoning
 
+  -- We have that A is a retract of B, there is an f : A → B such that f is a retraction.
+  -- Since f is a retraction, we can obtain f-retr : B → A and f-retr-h : f-retr ∘ f ∼ id.
+  -- Now, as B is contractible, we have a center b : B and a contraction eq-b : ∀ (x : B) → b ≡ x.
+  -- We want to construct center : A and contraction : ∀ (x : A) → center = x.
+  --
+  -- The only way we have to construct an element of A is via f-retr, and the only element of B we have
+  -- to feed f-retr is b.
+  -- So we let center = f-retr b.
+  --
+  -- For the proof, we chain ≡ reasoning.
+  -- Fix a : A.
+  -- As b is the center of B, we have that
+  --   f-retr b ≡ f-retr (f a).
+  -- Finally, since f is a retraction with f-retr being the associated pseudo-inverse, we have
+  --   f-retr (f a) = a. ∎
   retract-is-contractible : {A : Set ℓ} {B : Set ℓ} → (f : A → B) → (retraction {A = A} {B = B} f) → is-contr B → is-contr A
   retract-is-contractible {A = A} {B = B} f (f-retr , f-retr-h) (b , eq-b) = center , contraction
     where
