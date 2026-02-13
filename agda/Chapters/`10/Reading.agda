@@ -3,7 +3,7 @@ module Chapters.`10.Reading where
 open import Prelude 
 open import Chapters.`09.Reading
 
-open HomReasoning
+-- open HomReasoning
 --------------------------------------------------------------------
 -- Chapter 10: Contractible types and contractible maps
 
@@ -41,15 +41,11 @@ noFunnyBusiness A .fst (c , cntr) = c , cntr
 noFunnyBusiness A .snd .fst = (λ { (c , cntr) → c , cntr }) , (λ _ → refl)
 noFunnyBusiness A .snd .snd = (λ { (c , cntr) → c , cntr }) , (λ _ → refl)
 
--- Example 10.1.3: The unity type is contractible
-
--- (the simplest proof, which relies on Agda's ηβ-normalization)
-⊤-contr₁ : is-contr ⊤ 
-⊤-contr₁ = tt , refl-htpy _
+-- Example 10.1.3: The unit type is contractible
 
 -- Rijke's proof, which pattern matches on x : ⊤
-⊤-contr₂ : is-contr ⊤ 
-⊤-contr₂ = tt , λ { tt → refl }  
+⊤-contr : is-contr ⊤ 
+⊤-contr = tt , λ { tt → refl }  
 
 -- Theorem 10.1.4: for any a : A, the type Σ_{x : A} (a ≡ x) is contractible.
 -- If I'm not mistaken, this is asserting that, given a point a : A, 
@@ -63,7 +59,7 @@ thm-10∙1∙4 {A = A} a = (a , refl) , C
     C (x , eq) = ind≡ a (λ y a≡y → (a , refl) ≡ (y , a≡y)) refl x eq 
 
 --------------------------------------------------------------------
--- §10.2: Contractible types
+-- §10.2: Singleton Induction
 
 -- Definition 10.2.1: Let a : A. We say that A satisfies
 -- **singleton induction** if for every family B over A,
@@ -76,21 +72,28 @@ thm-10∙1∙4 {A = A} a = (a , refl) , C
 --   - comp-singₐ : ev-pt ∘ ind-singₐ ∼ id 
 
 record SingletonInduction {ℓ} (A : Set ℓ) : Setω where 
-  constructor _,_
+  constructor SingInd
   field 
-    𝐚 : A 
+    `a : A 
 
-  ev-pt : ∀ {ℓ} {B : A → Set ℓ} → (∀ (x : A) → B x) → B 𝐚 
-  ev-pt f = f 𝐚
+  -- ev-pt is the converse of an induction principle for A
+  ev-pt : ∀ {ℓ} {B : A → Set ℓ} → (∀ (x : A) → B x) → B `a 
+  ev-pt f = f `a
 
   field 
-    ind-sing : ∀ {ℓ} {B : A → Set ℓ} → 
-                 section (ev-pt {B = B})
+    ind-sing : ∀ {ℓ} {B : A → Set ℓ} → B `a → (∀ (x : A) → B x)
+    comp-sing : ∀ {ℓ} {B : A → Set ℓ} → ev-pt {ℓ} {B} ∘ ind-sing ∼ id 
 
 -- Example 10.2.2: The unit type satisfies singleton induction
 
+-- Induction principle for unit type
+ind⊤ : ∀ {ℓ} {B : ⊤ → Set ℓ} → B tt → (∀ (x : ⊤) → B x)
+ind⊤ btt tt = btt
+
 ⊤-SI : SingletonInduction ⊤ 
-⊤-SI = tt , (λ btt tt → btt) , (refl-htpy id)
+⊤-SI = SingInd tt ind⊤ (refl-htpy _)
+  
+    
 
 -- Theorem 10.2.3: The type A is contractible iff it satisfies
 -- singleton induction.
@@ -98,6 +101,7 @@ record SingletonInduction {ℓ} (A : Set ℓ) : Setω where
 module Contr⇒SI {ℓ} {A : Set ℓ} (cntr : is-contr A) where 
   open SingletonInduction 
   open is-contr cntr renaming (center to a ; contraction to C) 
+  open PathReasoning
 
   -- "WLOG, we may assume that C comes equipped with an 
   -- identification p : C(a) ≡ refl." If it does not,
@@ -111,7 +115,18 @@ module Contr⇒SI {ℓ} {A : Set ℓ} (cntr : is-contr A) where
 
   -- Pfft 
   SI : SingletonInduction A 
-  SI = {!   !} 
+  SI .`a = a
+  SI .ind-sing {B = B} b x = tr B (C′ x) b
+  SI .comp-sing {B = B} x = begin 
+    tr B (C′ a) x ≡⟨ ap (λ o → tr B o x) p ⟩ 
+    tr B refl x ≡⟨ refl ⟩ 
+    x ∎ 
+
+-- -- The other direction
+module SI⇒Contr {ℓ} {A : Set ℓ} (SI : SingletonInduction A) where 
+  open SingletonInduction
+  Contr : is-contr A
+  Contr = SI .`a ,  SI .ind-sing {B = λ x → SI .`a ≡ x} refl 
 
 --------------------------------------------------------------------
 -- §10.3: Contractible maps 
