@@ -17,9 +17,7 @@ module 10-1 where
       A : Set ℓ
   open PathReasoning
   ex-10-1 : ∀ {A} (x y : A) → is-contr {ℓ = ℓ} A → is-contr (x ≡ y)
-  ex-10-1 {A = A} x y (cA , C) = center-x≡y , λ q →
-    ! ind≡ x (λ x' p → p ≡ (! (C x)) ○ C x') (! left-inv (C x)) y q
-
+  ex-10-1 {A = A} x y (cA , C) = center-x≡y , λ { refl → left-inv (C x)  }
     where
       center-x≡y : x ≡ y
       center-x≡y = (! C x) ○ C y
@@ -68,12 +66,15 @@ module 10-3 where
   private
     variable
       ℓ : Level
+      A B : Set ℓ
+  import Data.Unit
+  open import Chapters.`09.Exercises
 
   -------------------------------------------------------------------------------
   -- (a) Show that for any type A, the map const_* : A → 1 is an equivalence
   --     iff A is contractible.
 
-  import Data.Unit
+
 
   {-
   -- We will show that if A is contractible then (const tt) is an equivalence between A and ⊤.
@@ -92,7 +93,7 @@ module 10-3 where
   -- The remainder of the proof is just computation i.e. refl.
   -}
 
-  const-tt-has-section : {ℓ : Level} → {A : Set ℓ} → is-contr A → section {ℓ} {A} (const tt)
+  const-tt-has-section :  is-contr A → section {ℓ} {A} (const tt)
   const-tt-has-section (center , contraction) = const center , (λ x → refl)
 
   {-
@@ -117,14 +118,14 @@ module 10-3 where
   -- has a retraction then we can show A is contractible.
   -}
 
-  const-tt-has-retraction : {ℓ : Level} → {A : Set ℓ} → is-contr A → retraction {ℓ} {A} (const tt)
+  const-tt-has-retraction : is-contr A → retraction {ℓ} {A} (const tt)
   const-tt-has-retraction (center , contraction) = const center , contraction
 
   {-
   -- We have all we need to show that (const tt) is an equivalence from A to ⊤.
   -}
 
-  const-tt-is-equiv : {ℓ : Level} → {A : Set ℓ} → is-contr A → is-equiv {ℓ} {A} (const tt)
+  const-tt-is-equiv : is-contr A → is-equiv {ℓ} {A} (const tt)
   const-tt-is-equiv is-contr-A =
     ( const-tt-has-section is-contr-A , const-tt-has-retraction is-contr-A )
 
@@ -142,7 +143,7 @@ module 10-3 where
   -- Let's try that.
   -}
 
-  A-is-contractible : {ℓ : Level} → {A : Set ℓ} → is-equiv {ℓ} {A} (const tt) → is-contr A
+  A-is-contractible : is-equiv {ℓ} {A} (const tt) → is-contr A
   A-is-contractible (_ , (h , h-is-retraction)) = (h tt , h-is-retraction)
 
   -------------------------------------------------------------------------------
@@ -173,8 +174,46 @@ module 10-3 where
   --     ≡ (f c_A)                  |        ≡ b
   -}
 
+  f-section↔g-section = 9-4.9-4a.f-section↔g-section
+  f-retraction↔h-retraction = 9-4.9-4b.f-retraction↔h-retraction
+
+  ex-10-3-i-ii⇒iii : (f : A → B) →  is-contr A → is-contr B → is-equiv f
+  ex-10-3-i-ii⇒iii {A = A} {B = B} f (a , prf-cA) (b , prf-cB)  = f-sec , f-retr
+    where
+      is-equiv-const-tt-B : is-equiv {A = B} (const tt)
+      is-equiv-const-tt-B = const-tt-is-equiv (b , prf-cB)
+
+      is-equiv-const-tt-A : is-equiv {A = A} (const tt)
+      is-equiv-const-tt-A = const-tt-is-equiv (a , prf-cA)
+
+      prf-hom1 : f ∼ `retr is-equiv-const-tt-B ∘ const tt
+      prf-hom1 = sym ∘ prf-cB ∘ f
 
 
+      g-sec→f-sec = _↔_.from $ f-section↔g-section f (const tt) (`retr is-equiv-const-tt-B) prf-hom1
+                             (fst is-equiv-const-tt-A)
+
+
+      prf-hom2 : f ∼ `retr is-equiv-const-tt-B ∘ const tt
+      prf-hom2 = sym ∘ prf-cB ∘ f
+
+      h-ret→f-ret = _↔_.from $ f-retraction↔h-retraction f (const tt) (`sec is-equiv-const-tt-B) prf-hom2
+                  (const tt , refl-htpy _)
+
+      f-sec : section f
+      f-sec = g-sec→f-sec  (const tt , prf-cB)
+
+      f-retr : retraction f
+      f-retr =  h-ret→f-ret (snd is-equiv-const-tt-A)
+
+  lem : {A B : Set ℓ} → (f : A → B) → (eq-f : is-equiv f) → retraction (`sec eq-f)
+  lem f eq-f = f , (eq-f .fst .snd)
+
+  ex-10-3-i-iii⇒ii : {A B : Set ℓ}(f : A → B) →  is-contr A → is-equiv f → is-contr B
+  ex-10-3-i-iii⇒ii {A = A} {B = B} f ctr-A eq-f = 10-2.retract-is-contractible (`sec eq-f) (lem f eq-f) ctr-A
+
+  ex-10-3-ii-iii⇒i : {A B : Set ℓ}(f : A → B) →  is-contr B → is-equiv f → is-contr A
+  ex-10-3-ii-iii⇒i {A = A} {B = B} f ctr-B eq-f = 10-2.retract-is-contractible f (snd eq-f) ctr-B
 -------------------------------------------------------------------------------
 -- #10.4 Show that Finₖ is not contractible for all k ≠ 1.
 
