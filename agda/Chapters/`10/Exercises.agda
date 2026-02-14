@@ -74,8 +74,6 @@ module 10-3 where
   -- (a) Show that for any type A, the map const_* : A → 1 is an equivalence
   --     iff A is contractible.
 
-
-
   {-
   -- We will show that if A is contractible then (const tt) is an equivalence between A and ⊤.
   -- To do this we need to show that (const tt) has a section and that it has a retraction.
@@ -155,23 +153,95 @@ module 10-3 where
   -- hold, then so does the third.
 
   {-
-  -- Let's start by showing that (i) and (ii) together imply (iii).
+  -- We'll describe two proofs that (i) and (ii) together imply (iii).
+  --
+  -- First proof
+  -- ===========
+  --
+  -- This approach doesn't rely on exercise 9.4.
   --
   -- We know that both A and B are contractible.
-  -- This means that A has a center "c-A" and for any "a" : A we have a proof that c_A ≡ a.
-  -- Similarly B has a center "c-B" and for any "b" : B we have a proof that c_B ≡ b.
-  -- Because each of A and B has a center we know both types a non-empty.
+  -- This means that A has a center "a" and for all "x" : A we know that (a ≡ x)
+  -- Similarly B has a center "b" and for all "y" : B we know that (b ≡ y).
+  -- Let's take a moment to note that both A and B are non-empty.
   --
   -- We want to show that f : A → B is an equivalence.
   -- We will show that f has a section as well as a retraction.
-  -- Both the section as well as the retraction will have the type B → A.
-  -- This hints that (const c_A) should be the section as well as the retraction.
+  -- Both the section as well as the retraction are of type B → A.
+  -- (const a) which is perhaps the only function of type B → A we can construct
+  -- is very likely both a section and a retraction of f.
   -- Let's confirm our guess by actually writing the proofs.
   --
-  -- To start let's prove that (const c_A) is a section of f:
+  -- To start let's prove that (const a) is a section of f:
   --
-  --       (f (const c_A b))        |          id b
-  --     ≡ (f c_A)                  |        ≡ b
+  --       (f (const a y))        |          id y
+  --     ≡ (f a)                  |        ≡ y
+  --
+  -- The contraction for B tells us (b ≡ f a) as well as (b ≡ y).
+  -- The equality we need follows from symmetry and transitivity of ≡.
+  --
+  -- Let's prove that (const a) is also retraction of f:
+  --
+  --       const a (f x)          |         id x
+  --     ≡ a                      |       ≡ x
+  --
+  -- The contraction for A tells us (a ≡ x) -- exactly what we need.
+  --
+  -- Second proof
+  -- ============
+  --
+  -- Once again, we know that both A and B are contractible and we want to prove
+  -- that an arbitrary function f : A → B is an equivalence.
+  --
+  -- According to the statement of 9.4 (a), if we have a triangle:
+  --
+  --        w
+  --     X ---> Y    where u ~ v ∘ w (the triangle commutes),
+  --    u \   / v      and w has a section,
+  --       v v         and v has a section,
+  --        Z         then u also has a section.
+  --
+  -- Then according to the statement of 9.4 (b) for the same triangle:
+  --
+  --
+  --                   if v has a retraction,
+  --                  and w has a retraction,
+  --                 then u has a retraction.
+  --
+  --
+  -- We instantiate the triangle in a way that allows us to substitute the
+  -- argument f in place of u.
+  -- This way we'll be able to show that f has a section and f has a retraction.
+  --
+  --      ka := const tt
+  --     A ----------> ⊤
+  --      \           /      r := `retr kb
+  --     f \         / where kb := const tt
+  --        '-> B <-'
+  --
+  -- In the last part of this exercise we proved that a type X is contractible
+  -- iff (const tt) : X → ⊤ is an equivalence.
+  -- A and B are both contractible so ka = (const tt) : A → ⊤ and
+  -- kb = (const tt) : B → ⊤ are equivalences.
+  -- Let r denote (`retr kb) : ⊤ → B, the retraction used to prove that
+  -- kb : B → ⊤ is an equivalence.
+  -- Note that:
+  --
+  -- * f ~ r ∘ ka because B is contractible.
+  -- * ka has a section because it is an equivalence.
+  -- * r has a section because r is an equivalence.
+  -- r is an equivalence because it is a retraction of the equivalence kb.
+  -- See 9.4 (c) (ii) "any section and any retraction of an equivalence is again
+  -- an equivalence."
+  --
+  -- By the statement of 9.4 (a), f has a section.
+  --
+  -- To see that f has a retraction by the statement of 9.4 (b), note that:
+  --
+  -- * r has a retraction because it is an equivalence.
+  -- * ka has a retraction because it is an equivalence.
+  --
+  -- f has a section.  f has a retraction.  f is an equivalence.  Done!
   -}
 
   f-section↔g-section = 9-4.9-4a.f-section↔g-section
@@ -209,8 +279,29 @@ module 10-3 where
   lem : {A B : Set ℓ} → (f : A → B) → (eq-f : is-equiv f) → retraction (`sec eq-f)
   lem f eq-f = f , (eq-f .fst .snd)
 
+  {-
+  -- We want to show that if A is contractible and if f is a equivalence from A
+  -- to B then B is contractible as well.
+  --
+  -- Exercise 10.2 will help us here: if B is a retract of A and A is
+  -- contractible then B is contractible as well.  Recall that "B is a retract
+  -- of A" means there exists some retraction (A → B) of some B → A function.
+  --
+  -- f has a section because it is an equivalence.
+  -- B is a retract of A because f is a retraction of that section.
+  -- We already know A is contractible.
+  -- Exercise 10.2 allows us to conclude that B is contractible.
+  -}
+
   ex-10-3-i-iii⇒ii : {A B : Set ℓ}(f : A → B) →  is-contr A → is-equiv f → is-contr B
   ex-10-3-i-iii⇒ii {A = A} {B = B} f ctr-A eq-f = 10-2.retract-is-contractible (`sec eq-f) (lem f eq-f) ctr-A
+
+  {-
+  -- A is a retract of B because f : A → B is an equivalence and therefore has a
+  -- retraction.
+  -- We're given that B is contractible.
+  -- Use exercise 10.2 to conclude that A is contractible.
+  -}
 
   ex-10-3-ii-iii⇒i : {A B : Set ℓ}(f : A → B) →  is-contr B → is-equiv f → is-contr A
   ex-10-3-ii-iii⇒i {A = A} {B = B} f ctr-B eq-f = 10-2.retract-is-contractible f (snd eq-f) ctr-B
