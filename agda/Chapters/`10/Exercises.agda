@@ -333,3 +333,41 @@ module 10-4 where
     where
       bad : fzero ≡ fsuc fzero
       bad = ! (contraction fzero) ○ ((contraction (fsuc fzero)))
+
+
+module 10-5 where
+{-  Show that for any two types A and B, the following are equivalent
+  (i) Both A and B are contractible
+  (ii) The type A × B is contractible
+-}
+  private
+    variable
+      ℓ : Level
+      A B : Set ℓ
+  open PathReasoning
+
+  10-5-i⇒ii : is-contr A × is-contr B → is-contr (A × B)
+  10-5-i⇒ii ((cA , contrA) , (cB , contrB)) = (cA , cB) ,
+    λ { (x , y) → begin
+           (cA , cB) ≡⟨  ap (_, cB) (contrA x) ⟩
+           (x , cB) ≡⟨  ap (x ,_)  (contrB y)  ⟩
+           (x , y) ∎ }
+
+  10-5-ii⇒i : is-contr (A × B) → is-contr A × is-contr B
+  10-5-ii⇒i {A = A}{B = B}(cAB , contrAB) = contr-A , contr-B
+    where
+    cA : A
+    cA = fst cAB
+    cB : B
+    cB = snd cAB
+    lem : cAB ≡ (cA , cB)
+    lem = refl
+    contr-A : is-contr A
+    contr-A = cA , λ a → begin
+      cA ≡⟨ ap fst (! lem ○ contrAB (a , cB)) ⟩
+      a ∎
+
+    contr-B : is-contr B
+    contr-B = cB , λ b → begin
+      cB ≡⟨ ap snd  ( ! lem ○ contrAB (cA , b)) ⟩
+      b ∎
