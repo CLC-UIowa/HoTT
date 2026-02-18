@@ -382,14 +382,15 @@ module 10-6 where
       B : A → Set ℓ
   open PathReasoning
   open import Agda.Builtin.Sigma
+  import Relation.Binary.PropositionalEquality using (cong₂)
 
   f : (a : A) → B a → (Σ[ x ∈ A ] (B x))
   f a y = (a , y) 
 
   f-retr : (A-is-contr : is-contr A) → retraction {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr)) 
-  f-retr {A = A} {B = B} A-is-contr = (λ{ (x , p) → tr B ((! (C' x))) p}) , λ (y : (B a)) → begin 
-    ((λ { (x , p) → tr B (! C' x) p }) (f (is-contr.center A-is-contr) y)) ≡⟨ refl ⟩ 
-    ((λ { (x , p) → tr B (! C' x) p }) (a , y)) ≡⟨ refl ⟩
+  f-retr {A = A} {B = B} A-is-contr = g , λ (y : (B a)) → begin 
+    (g (f (is-contr.center A-is-contr) y)) ≡⟨ refl ⟩ 
+    (g (a , y)) ≡⟨ refl ⟩
     (tr B (! C' a) y) ≡⟨ ap (λ (h : a ≡ a) → tr B (! h) y) p ⟩ 
     (tr B (! refl) y) ≡⟨ refl ⟩
     (tr B refl y) ≡⟨ refl ⟩
@@ -404,27 +405,44 @@ module 10-6 where
       C' x = (! (C a)) ○ C x
       p : C' a ≡ refl
       p = left-inv (C a)
+      g : Σ[ x ∈ A ] (B x) → (B a)
+      g = (λ{ (x , p) → tr B ((! (C' x))) p}) 
 
   f-section : (A-is-contr : is-contr A) → section {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr)) 
-  f-section {A = A} {B = B} A-is-contr = (λ{ (x , p) → tr B ((! (C' x))) p}) , λ (x : Σ[ x ∈ A ] (B x)) → begin
-    f (is-contr.center A-is-contr) ((λ { (x , p) → tr B (! C' x) p }) x) ≡⟨ refl ⟩
-    f a ((λ { (x , p) → tr B (! C' x) p }) x) ≡⟨ refl ⟩
-    f a (tr B (! C' (fst x)) (snd x)) ≡⟨ {!   !} ⟩
-    -- (a , (tr B (! C' (fst x)) (snd x))) ≡⟨ ap (λ (h : A) → (h , (tr B (! (C' (fst x))) (snd x)))) (C' (fst x)) ⟩ 
+  f-section {A = A} {B = B} (a , C) = h , λ { ((x , y)) → helper (x , y) (C' x) }
+  -- begin
+    -- f (is-contr.center A-is-contr) (h (x , y)) ≡⟨ refl ⟩
+    -- f a (h (x , y)) ≡⟨ refl ⟩
+    -- f a (tr B (! C' x) y) ≡⟨ refl ⟩
+    -- (a , (tr B (! C' x) y)) ≡⟨ {!   !} ⟩
+    -- (x , (tr B (! C' a) y)) ≡⟨ ? ⟩  
     -- (a , (tr B (! C' a) (snd x))) ≡⟨ ? ⟩ 
     -- ((fst x) , (tr B (! C' (fst x)) (snd x))) ≡⟨ ? ⟩ 
-    id x ∎ 
+    -- id (x , y) ∎ }
     
     where
-      a : A 
-      a = is-contr.center A-is-contr
-      C : (x : A) → a ≡ x
-      C = is-contr.contraction A-is-contr
+      -- a : A 
+      -- a = is-contr.center A-is-contr
+      -- C : (x : A) → a ≡ x
+      -- C = is-contr.contraction A-is-contr
       C' : (x : A) → a ≡ x 
       C' x = (! (C a)) ○ C x
       p : C' a ≡ refl
       p = left-inv (C a)
+      h : Σ[ x ∈ A ] (B x) → (B a)
+      h = (λ{ (x , p) → tr B ((! (C' x))) p}) 
+      helper : (arb : Σ[ x ∈ A ] (B x)) → (p' : a ≡ (fst arb)) → (f a) (h arb) ≡ arb
+      helper (x , y) refl = begin
+        f x (h (x , y)) ≡⟨ refl ⟩
+        (x , h (x , y)) ≡⟨ refl ⟩
+        (x , tr B (! (C' a)) y) ≡⟨ ap (λ h → (x , tr B (! h) y)) p ⟩
+        (x , tr B (! refl) y) ≡⟨ refl ⟩ 
+        (x , tr B refl y) ≡⟨ refl ⟩ 
+        (x , y) ∎
 
+  f-equivalence : (A-is-contr : is-contr A) → is-equiv {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr))
+  f-equivalence = λ A-is-contr → f-section A-is-contr , f-retr A-is-contr
+  
 
 
 -------------------------------------------------------------------------------
