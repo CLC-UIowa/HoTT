@@ -371,3 +371,62 @@ module 10-5 where
     contr-B = cB , λ b → begin
       cB ≡⟨ ap snd  ( ! lem ○ contrAB (cA , b)) ⟩
       b ∎
+-------------------------------------------------------------------------------
+-- #10.7
+
+module 10-7 where
+  module 10-7a where
+    f : {ℓ : Level} → {A : Set ℓ} → {B : A → Set ℓ} → (a : A) → fib fst a → B a
+    f {_} {A} {B} a ((x , y), p) = tr B p y
+
+    is-equiv-f : {ℓ : Level} → {A : Set ℓ} → {B : A → Set ℓ} → (a : A) →
+                 is-equiv (f {ℓ} {A} {B} a)
+    is-equiv-f {ℓ} {A} {B} a = section-f , retraction-f
+      where
+        inv-f : (a : A) → B a → fib fst a
+        inv-f a y = ((a , y) , refl)
+
+        section-f : section (f a)
+        section-f = (inv-f a) , refl-htpy id
+
+        infix 4 _≡f_
+        _≡f_ : fib fst a → fib fst a → Set ℓ
+        _≡f_ = _≡_
+
+        {-
+        -- Proving this with just ind≡ is not fun.
+        --
+        -- inv-f∘f∼id : (inv-f a) ∘ (f a) ∼ id
+        -- inv-f∘f∼id ((x , y) , p) =
+        --     begin
+        --       (inv-f a ∘ f a) ((x , y) , p)
+        --     ≡⟨ induction ⟩
+        --       ((x , tr B (! p) (tr B p y)) , ! (! p))
+        --     ≡⟨ cong₂ (λ y' p' → (x , y') , p')
+        --              (round-trip p)
+        --              (involution p) ⟩
+        --       ((x , y) , p) ∎
+        --   where
+        --     induction : (inv-f a ∘ f a) ((x , y) , p) f≡
+        --                 ((x , tr B (! p) (tr B p y)) , ! (! p))
+        --     induction = let motive x' p' =
+        --                       (inv-f a ∘ f a) ((x , y) , p) f≡
+        --                       ((x' , tr B p' (tr B p y)) , ! p')
+        --                  in ind≡ a motive refl x (! p)
+        --
+        --     round-trip : tr B (! p) (tr B p y) ≡ y
+        --     round-trip = let motive x' p' = tr B (! p') (tr B p' y) ≡ y
+        --                   in ind≡ x motive refl a p
+        --
+        -- I have used a neater approach below.
+        -}
+
+        inv-f∘f∼id : (inv-f a) ∘ (f a) ∼ id
+        inv-f∘f∼id ((x , y) , p) = inv-f∘f∼id-lemma p
+          where inv-f∘f∼id-lemma :
+                  (p' : x ≡ a) →
+                  (inv-f a ∘ f a) ((x , y) , p') ≡f ((x , y) , p')
+                inv-f∘f∼id-lemma refl = refl
+
+        retraction-f : retraction (f a)
+        retraction-f = (inv-f a) , inv-f∘f∼id
