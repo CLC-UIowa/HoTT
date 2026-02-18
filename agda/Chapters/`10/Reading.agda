@@ -137,14 +137,26 @@ fib : (f : A → B) → (b : B) → Set _
 fib {A = A} f b = Σ[ a ∈ A ] (f a ≡ b)
 
 -- Def. 10.3.2
+-- import Chapters.`09.Reading
 
-Eq-fib : ∀ (f : A → B) (y : B) → (fib f y) → (fib f y) → Set _
-Eq-fib f y (x , p) (x′ , p′) = Σ[ α ∈ x ≡ x′ ]  p ≡ ap f α ○ p′
+Eq-fib : ∀ (f : A → B) (y : B) → fib f y → fib f y → Set _
+Eq-fib f y f1 f2 = f1 ≡Σ f2
+
+refl-fib : ∀ {f : A → B} {y : B} → ∀ (p : fib f y) → Eq-fib f y p p
+refl-fib (x , p) = refl-≡Σ _
 
 -- Prop 10.3.3: The canonical map
 --   ((x, p) ≡ (x′ , p′)) → Eq-fib f ((x, p), (x′ , p′))
 -- induced by the reflexivity of Eq-fib f is an equivalence for any
 -- (x, p), (x′, p′) : fib f y.
+module contr-maps (f : A → B) (y : B) where
+  open PathReasoning
+  co-map-fib : ∀ {fib1 fib2 : fib f y} → Eq-fib f y fib1 fib2 → fib1 ≡ fib2
+  co-map-fib {fib1 = x , p} {fib2 = x′ , p′} (refl , refl) = refl
+
+  map-fib :  ∀ {fib1 fib2 : fib f y} → (fib1 ≡Σ fib2) → Eq-fib f y fib1 fib2
+  map-fib = id
+
 
 -- Def 10.3.4: contractible maps
 -- AH> This is how the HOTT book defines is-equiv, actually.
@@ -152,6 +164,36 @@ is-contr-map : (f : A → B) → Set _
 is-contr-map {B = B} f = ∀ (b : B) → is-contr (fib f b)
 
 -- Thm 10.3.5: Any contractible map is an equivalence
+is-contr-map-equiv : ∀ (f : A → B) → is-contr-map f → is-equiv f
+is-contr-map-equiv {A = A} {B = B} f is-contr-map-f = sec-is-contr-map-f , retr-is-contr-map-f
+  where
+  import Chapters.`09.Reading
+  g̅ : B → A
+  g̅ y with is-contr-map-f y
+  ... | (a , _) , _ = a
+
+  G̅ : f ∘ g̅ ∼ id
+  G̅ y with is-contr-map-f y
+  ... | (_ , p) , _ = p
+
+  sec-is-contr-map-f : section f
+  sec-is-contr-map-f = g̅ , G̅
+
+  p : f ∘ g̅ ∘ f ∼ f
+  p = G̅ ·ᵣ f
+
+  fib-fx : ∀ {x} → fib f (f x)
+  fib-fx {x} = (g̅ ∘ f) x , (p x)
+
+  q : ∀ {x : A} → fib-fx ≡ (x , refl)
+  q {x} = is-contr.contraction (is-contr-map-f (f x)) (x , refl)
+
+  retr-f-prf : g̅ ∘ f ∼ id
+  retr-f-prf x = ap fst (q {x})
+
+  retr-is-contr-map-f : retraction f
+  retr-is-contr-map-f = g̅ , retr-f-prf
+
 
 --------------------------------------------------------------------
 -- §10.4: Contractible maps
