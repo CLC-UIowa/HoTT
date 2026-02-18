@@ -318,7 +318,7 @@ module 10-4 where
   -- Here is how you prove disjointedness of constructors
   -- fzero & fsuc fzero without relying on the empty pattern.
   -- This more closely resembles (but is still not exactly)
-  -- the proof Rijker would have had in mind using the book's
+  -- the proof Rijke would have had in mind using the book's
   -- def'n of Fin.
   fzero≠fone : ∀ {n} → ¬ (fzero ≡ fsuc {n = suc n} fzero)
   fzero≠fone eq = tr I eq tt
@@ -371,7 +371,64 @@ module 10-5 where
     contr-B = cB , λ b → begin
       cB ≡⟨ ap snd  ( ! lem ○ contrAB (cA , b)) ⟩
       b ∎
+
+-----------------------------------------------------------------------------
+
+module 10-6 where
+  private
+    variable
+      ℓ : Level
+      A : Set ℓ
+      B : A → Set ℓ
+  open PathReasoning
+  open import Agda.Builtin.Sigma
+
+  f : (a : A) → B a → (Σ[ x ∈ A ] (B x))
+  f a y = (a , y) 
+
+  f-retr : (A-is-contr : is-contr A) → retraction {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr)) 
+  f-retr {A = A} {B = B} A-is-contr = (λ{ (x , p) → tr B ((! (C' x))) p}) , λ (y : (B a)) → begin 
+    ((λ { (x , p) → tr B (! C' x) p }) (f (is-contr.center A-is-contr) y)) ≡⟨ refl ⟩ 
+    ((λ { (x , p) → tr B (! C' x) p }) (a , y)) ≡⟨ refl ⟩
+    (tr B (! C' a) y) ≡⟨ ap (λ (h : a ≡ a) → tr B (! h) y) p ⟩ 
+    (tr B (! refl) y) ≡⟨ refl ⟩
+    (tr B refl y) ≡⟨ refl ⟩
+    y ≡⟨ refl ⟩  
+    id y ∎
+    where 
+      a : A 
+      a = is-contr.center A-is-contr
+      C : (x : A) → a ≡ x
+      C = is-contr.contraction A-is-contr
+      C' : (x : A) → a ≡ x 
+      C' x = (! (C a)) ○ C x
+      p : C' a ≡ refl
+      p = left-inv (C a)
+
+  f-section : (A-is-contr : is-contr A) → section {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr)) 
+  f-section {A = A} {B = B} A-is-contr = (λ{ (x , p) → tr B ((! (C' x))) p}) , λ (x : Σ[ x ∈ A ] (B x)) → begin
+    f (is-contr.center A-is-contr) ((λ { (x , p) → tr B (! C' x) p }) x) ≡⟨ refl ⟩
+    f a ((λ { (x , p) → tr B (! C' x) p }) x) ≡⟨ refl ⟩
+    f a (tr B (! C' (fst x)) (snd x)) ≡⟨ {!   !} ⟩
+    -- (a , (tr B (! C' (fst x)) (snd x))) ≡⟨ ap (λ (h : A) → (h , (tr B (! (C' (fst x))) (snd x)))) (C' (fst x)) ⟩ 
+    -- (a , (tr B (! C' a) (snd x))) ≡⟨ ? ⟩ 
+    -- ((fst x) , (tr B (! C' (fst x)) (snd x))) ≡⟨ ? ⟩ 
+    id x ∎ 
+    
+    where
+      a : A 
+      a = is-contr.center A-is-contr
+      C : (x : A) → a ≡ x
+      C = is-contr.contraction A-is-contr
+      C' : (x : A) → a ≡ x 
+      C' x = (! (C a)) ○ C x
+      p : C' a ≡ refl
+      p = left-inv (C a)
+
+
+
 -------------------------------------------------------------------------------
+
 -- #10.7
 
 module 10-7 where
@@ -430,3 +487,4 @@ module 10-7 where
 
         retraction-f : retraction (f a)
         retraction-f = (inv-f a) , inv-f∘f∼id
+      
