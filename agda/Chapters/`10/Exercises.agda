@@ -334,6 +334,8 @@ module 10-4 where
       bad : fzero ≡ fsuc fzero
       bad = ! (contraction fzero) ○ ((contraction (fsuc fzero)))
 
+-------------------------------------------------------------------------------
+-- #10.5
 
 module 10-5 where
 {-  Show that for any two types A and B, the following are equivalent
@@ -373,6 +375,12 @@ module 10-5 where
       b ∎
 
 -----------------------------------------------------------------------------
+-- #10.6 
+
+-- Let A be a contractible type with center of contraction a : A. Furthermore,
+-- let B be a type family over A> Show that the map:
+--    y ↦ (a , y) : B(a) → Σ_{x : A} B(x)
+-- is an equivalence. 
 
 module 10-6 where
   private
@@ -446,8 +454,22 @@ module 10-6 where
 
 
 -------------------------------------------------------------------------------
-
 -- #10.7
+-- 
+-- Let B be a family of types over A, and consider the projection map
+--   prj₁ : (Σ_{x : A} B(x)) → A 
+--   (a) Show that for an a : A, the map
+--         λ((x , y), p). tr B (p , y) : fib pr₁ a → B a 
+--       is an equivalence
+--   (b) Show that the following are equivalent:
+--       (i) The projection map pr₁ is an equivalence
+--       (ii) The type B(x) is contractible for each x : A.
+--   (c) Consider a dependent function b : Π (x : A) (B (x)). Show that the following
+--       are equivalent:
+--         (i) The map
+--               λ x. (x , b(x)) : A → Σ_{x : A} B(x)
+--             is an equivalence. 
+--         (ii) The type B(x) is contractible for each x : A. 
 
 module 10-7 where
   module 10-7a where
@@ -506,3 +528,14 @@ module 10-7 where
         retraction-f : retraction (f a)
         retraction-f = (inv-f a) , inv-f∘f∼id
       
+-------------------------------------------------------------------------------
+-- #10.8 
+-- 
+-- Construct for any map f : A → B an equivalence e : A ≃ Σ_{y : B} (fib f y)
+-- and a homotopy H : f ∼ pr₁ ∘ e witnessing that  the trianglke 
+--   {see text}
+-- commutes. The projection pr₁ is sometimes also called the 
+-- *fibrant replacement* of f, because first projection maps are fibrations
+-- in the homotopy interpretation of type theory.
+
+module 10-8 where
