@@ -35,4 +35,4 @@ We are pretty certain this statement is false, and that \alpha and \beta should 
 To see that the (ii) to (i) case is impossible as written, first note that what is required is to produce functions from A' \times B' to A \times B.
 All we have at our disposable are the functions \alpha and \beta, which (as written) require a B and an A, respectively, to be of any use to us.
 But we only get to assume we have an element (a', b') : A' \times B', and from this we cannot obtain an element of type B or an element of type A, so we are stuck.
-Making the changed described above fixes the problem.
+Making the changes described above fixes the problem.
