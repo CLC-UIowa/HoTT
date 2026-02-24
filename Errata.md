@@ -1,5 +1,5 @@
 # Errata for Rijke's Introduction to Homotopy Type Theory
-These are the collected errors we (the Computational Logic Center at the University of Iowa) during our seminar on Homotopy Type Theory, following the text in order.
+These are the collected errors we (the Computational Logic Center at the University of Iowa) noticed during our seminar on Homotopy Type Theory, following the text in order.
 
 Unfortunately, we performed exercises during the first semester (Part I: Ch. 1-8) largely on the board, and did not record any errata. Exercises for Part II have been mechanized in Agda, with errata noted.
 
