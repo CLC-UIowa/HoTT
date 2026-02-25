@@ -375,12 +375,12 @@ module 10-5 where
       b ∎
 
 -----------------------------------------------------------------------------
--- #10.6 
+-- #10.6
 
 -- Let A be a contractible type with center of contraction a : A. Furthermore,
 -- let B be a type family over A> Show that the map:
 --    y ↦ (a , y) : B(a) → Σ_{x : A} B(x)
--- is an equivalence. 
+-- is an equivalence.
 
 module 10-6 where
   private
@@ -393,73 +393,73 @@ module 10-6 where
   import Relation.Binary.PropositionalEquality using (cong₂)
 
   f : (a : A) → B a → (Σ[ x ∈ A ] (B x))
-  f a y = (a , y) 
+  f a y = (a , y)
 
-  f-retr : (A-is-contr : is-contr A) → retraction {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr)) 
-  f-retr {A = A} {B = B} A-is-contr = g , λ (y : (B a)) → begin 
-    (g (f (is-contr.center A-is-contr) y)) ≡⟨ refl ⟩ 
+  f-retr : (A-is-contr : is-contr A) → retraction {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr))
+  f-retr {A = A} {B = B} A-is-contr = g , λ (y : (B a)) → begin
+    (g (f (is-contr.center A-is-contr) y)) ≡⟨ refl ⟩
     (g (a , y)) ≡⟨ refl ⟩
-    (tr B (! C' a) y) ≡⟨ ap (λ (h : a ≡ a) → tr B (! h) y) p ⟩ 
+    (tr B (! C' a) y) ≡⟨ ap (λ (h : a ≡ a) → tr B (! h) y) p ⟩
     (tr B (! refl) y) ≡⟨ refl ⟩
     (tr B refl y) ≡⟨ refl ⟩
-    y ≡⟨ refl ⟩  
+    y ≡⟨ refl ⟩
     id y ∎
-    where 
-      a : A 
+    where
+      a : A
       a = is-contr.center A-is-contr
       C : (x : A) → a ≡ x
       C = is-contr.contraction A-is-contr
-      C' : (x : A) → a ≡ x 
+      C' : (x : A) → a ≡ x
       C' x = (! (C a)) ○ C x
       p : C' a ≡ refl
       p = left-inv (C a)
       g : Σ[ x ∈ A ] (B x) → (B a)
-      g = (λ{ (x , p) → tr B ((! (C' x))) p}) 
+      g = (λ{ (x , p) → tr B ((! (C' x))) p})
 
-  f-section : (A-is-contr : is-contr A) → section {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr)) 
+  f-section : (A-is-contr : is-contr A) → section {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr))
   f-section {A = A} {B = B} (a , C) = h , λ { ((x , y)) → helper (x , y) (C' x) }
   -- begin
     -- f (is-contr.center A-is-contr) (h (x , y)) ≡⟨ refl ⟩
     -- f a (h (x , y)) ≡⟨ refl ⟩
     -- f a (tr B (! C' x) y) ≡⟨ refl ⟩
     -- (a , (tr B (! C' x) y)) ≡⟨ {!   !} ⟩
-    -- (x , (tr B (! C' a) y)) ≡⟨ ? ⟩  
-    -- (a , (tr B (! C' a) (snd x))) ≡⟨ ? ⟩ 
-    -- ((fst x) , (tr B (! C' (fst x)) (snd x))) ≡⟨ ? ⟩ 
+    -- (x , (tr B (! C' a) y)) ≡⟨ ? ⟩
+    -- (a , (tr B (! C' a) (snd x))) ≡⟨ ? ⟩
+    -- ((fst x) , (tr B (! C' (fst x)) (snd x))) ≡⟨ ? ⟩
     -- id (x , y) ∎ }
-    
+
     where
-      -- a : A 
+      -- a : A
       -- a = is-contr.center A-is-contr
       -- C : (x : A) → a ≡ x
       -- C = is-contr.contraction A-is-contr
-      C' : (x : A) → a ≡ x 
+      C' : (x : A) → a ≡ x
       C' x = (! (C a)) ○ C x
       p : C' a ≡ refl
       p = left-inv (C a)
       h : Σ[ x ∈ A ] (B x) → (B a)
-      h = (λ{ (x , p) → tr B ((! (C' x))) p}) 
+      h = (λ{ (x , p) → tr B ((! (C' x))) p})
       helper : (arb : Σ[ x ∈ A ] (B x)) → (p' : a ≡ (fst arb)) → (f a) (h arb) ≡ arb
       helper (x , y) refl = begin
         f x (h (x , y)) ≡⟨ refl ⟩
         (x , h (x , y)) ≡⟨ refl ⟩
         (x , tr B (! (C' a)) y) ≡⟨ ap (λ h → (x , tr B (! h) y)) p ⟩
-        (x , tr B (! refl) y) ≡⟨ refl ⟩ 
-        (x , tr B refl y) ≡⟨ refl ⟩ 
+        (x , tr B (! refl) y) ≡⟨ refl ⟩
+        (x , tr B refl y) ≡⟨ refl ⟩
         (x , y) ∎
 
   f-equivalence : (A-is-contr : is-contr A) → is-equiv {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr))
   f-equivalence = λ A-is-contr → f-section A-is-contr , f-retr A-is-contr
-  
+
 
 
 -------------------------------------------------------------------------------
 -- #10.7
--- 
+--
 -- Let B be a family of types over A, and consider the projection map
---   prj₁ : (Σ_{x : A} B(x)) → A 
+--   prj₁ : (Σ_{x : A} B(x)) → A
 --   (a) Show that for an a : A, the map
---         λ((x , y), p). tr B (p , y) : fib pr₁ a → B a 
+--         λ((x , y), p). tr B (p , y) : fib pr₁ a → B a
 --       is an equivalence
 --   (b) Show that the following are equivalent:
 --       (i) The projection map pr₁ is an equivalence
@@ -468,8 +468,8 @@ module 10-6 where
 --       are equivalent:
 --         (i) The map
 --               λ x. (x , b(x)) : A → Σ_{x : A} B(x)
---             is an equivalence. 
---         (ii) The type B(x) is contractible for each x : A. 
+--             is an equivalence.
+--         (ii) The type B(x) is contractible for each x : A.
 
 module 10-7 where
   module 10-7a where
@@ -527,15 +527,54 @@ module 10-7 where
 
         retraction-f : retraction (f a)
         retraction-f = (inv-f a) , inv-f∘f∼id
-      
+
 -------------------------------------------------------------------------------
--- #10.8 
--- 
+-- #10.8
+--
 -- Construct for any map f : A → B an equivalence e : A ≃ Σ_{y : B} (fib f y)
--- and a homotopy H : f ∼ pr₁ ∘ e witnessing that  the trianglke 
+-- and a homotopy H : f ∼ pr₁ ∘ e witnessing that  the trianglke
 --   {see text}
--- commutes. The projection pr₁ is sometimes also called the 
+-- commutes. The projection pr₁ is sometimes also called the
 -- *fibrant replacement* of f, because first projection maps are fibrations
 -- in the homotopy interpretation of type theory.
 
 module 10-8 where
+  private
+    variable
+      ℓ : Level
+      A B : Set ℓ
+  -- f : A → B
+  -- Want produce equivalence e : A ≃ Σ[y : B] fib f y
+  -- Also, want to produce H : f ∼ fst ∘ e
+  -- The pair (e, H) is a dependent pair of type Σ(e : Σ[y ∈ B] fib f y) f ∼ fst ∘ e
+
+  -- f : A → B
+  -- (e, e-is-equiv) : A ≃ Σ[ y ∈ B ] fib f y
+
+  domain-equiv-Σ-fib : (f : A → B)
+   → Σ[ (e , _) ∈ (A ≃ (Σ[ b ∈ B ] (fib f b))) ] (f ∼ fst ∘ e)
+  domain-equiv-Σ-fib {A = A} {B = B} f = (e , e-is-equiv) , e-commutes
+    where
+      e : A → Σ[ b ∈ B ] (fib f b)
+      e a = f a , (a , refl)
+
+      e-is-equiv : is-equiv e
+      e-is-equiv = e-sec , e-retr
+        where
+          e-sec-fun : Σ[ b ∈ B ] (fib f b) → A
+          e-sec-fun (_ , (a , _)) = a
+          e-sec-h : e ∘ e-sec-fun ∼ id
+          e-sec-h (b , (a , fa≡b)) = ind≡ (f a) (λ b' fa≡b' → (e ∘ e-sec-fun) (b' , a , fa≡b') ≡ (b' , a , fa≡b')) refl b fa≡b
+          -- e-sec-h (b , (a , refl)) = refl
+          e-sec : section e
+          e-sec = e-sec-fun , e-sec-h
+
+          e-retr-fun : Σ[ b ∈ B ] (fib f b) → A
+          e-retr-fun (_ , (a , _)) = a
+          e-retr-h : e-retr-fun ∘ e ∼ id
+          e-retr-h a = refl
+          e-retr : retraction e
+          e-retr = e-retr-fun , e-retr-h
+
+      e-commutes : f ∼ fst ∘ e
+      e-commutes = refl-htpy _
