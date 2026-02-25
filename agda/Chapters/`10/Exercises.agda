@@ -543,32 +543,57 @@ module 10-8 where
     variable
       ℓ : Level
       A B : Set ℓ
-  -- f : A → B
-  -- Want produce equivalence e : A ≃ Σ[y : B] fib f y
-  -- Also, want to produce H : f ∼ fst ∘ e
-  -- The pair (e, H) is a dependent pair of type Σ(e : Σ[y ∈ B] fib f y) f ∼ fst ∘ e
+  -- We are given
+  --   f : A → B.
+  -- We want to first define
+  --   e : A → Σ[ b ∈ B ] (fib f b).
+  -- Then we want to prove that our e is an equivalence by defining
+  --   e-is-equiv : A ≃ Σ[y ∈ B] fib f y.
+  -- Lastly, we want to define
+  --   H : f ∼ fst ∘ e
+  -- With all these defined, we will return
+  --   ((e , e-is-equiv) , H) : Σ[ (e , _) ∈ A ≃ (Σ[ b ∈ B ] (fib f b)) ] (f ∼ fst ∘ e)
 
-  -- f : A → B
-  -- (e, e-is-equiv) : A ≃ Σ[ y ∈ B ] fib f y
-
-  domain-equiv-Σ-fib : (f : A → B)
-   → Σ[ (e , _) ∈ (A ≃ (Σ[ b ∈ B ] (fib f b))) ] (f ∼ fst ∘ e)
-  domain-equiv-Σ-fib {A = A} {B = B} f = (e , e-is-equiv) , e-commutes
+  -- ERRATA: Rijke says e : A ≃ Σ[ y ∈ B ] fib f y, but then later writes "e" when he means "fst e".
+  -- TODO: Note this in Errata.md.
+  domain-≃-Σ-fib : (f : A → B) → Σ[ (e , _) ∈ A ≃ (Σ[ b ∈ B ] (fib f b)) ] (f ∼ fst ∘ e)
+  domain-≃-Σ-fib {A = A} {B = B} f = (e , e-is-equiv) , H
     where
+      -- To define e, we are given an a : A, and we want to produce
+      -- an element b : B, an element a' : A, and a proof eq : f a' ≡ b.
+      -- We let b ≔ f a, a' ≔ a, and eq ≔ refl:
+      --   e a = f a , (a , refl).
       e : A → Σ[ b ∈ B ] (fib f b)
       e a = f a , (a , refl)
 
+      -- e-sec-fun and e-retr-fun, both of type Σ[ b ∈ B ] (fib f b) → A, are easy to define.
+      -- An element of fib f b is a pair consisting of an element a : A, and a proof that f a = b.
+      -- So to define e-sec-fun and e-retr-fun, we simply return this a.
       e-is-equiv : is-equiv e
       e-is-equiv = e-sec , e-retr
         where
           e-sec-fun : Σ[ b ∈ B ] (fib f b) → A
           e-sec-fun (_ , (a , _)) = a
+
+          -- To prove that e-sec-fun is a right inverse of e,
+          -- we first assume we are given
+          --   b : B,
+          --   a : A,
+          --   fa≡b : fa ≡ b.
+          -- We must produce a proof that
+          --   (e ∘ e-sec-fun (b , a , fa≡b)) ≡ id (b , a , fa≡b).
+          -- Reducing this goal yields
+          --   (f a , (a , refl)) ≡ (b , a , fa≡b).
+          -- If only we had a way to turn b into f a, and to turn fa≡b into refl...
           e-sec-h : e ∘ e-sec-fun ∼ id
           e-sec-h (b , (a , fa≡b)) = ind≡ (f a) (λ b' fa≡b' → (e ∘ e-sec-fun) (b' , a , fa≡b') ≡ (b' , a , fa≡b')) refl b fa≡b
+          -- Or we could have just pattern matched on _≡_:
           -- e-sec-h (b , (a , refl)) = refl
+
           e-sec : section e
           e-sec = e-sec-fun , e-sec-h
 
+          -- The retraction turns out to be much easier, with the proof being refl.
           e-retr-fun : Σ[ b ∈ B ] (fib f b) → A
           e-retr-fun (_ , (a , _)) = a
           e-retr-h : e-retr-fun ∘ e ∼ id
@@ -576,5 +601,6 @@ module 10-8 where
           e-retr : retraction e
           e-retr = e-retr-fun , e-retr-h
 
-      e-commutes : f ∼ fst ∘ e
-      e-commutes = refl-htpy _
+      -- Finally, we prove commutativity, which is just refl-htpy _
+      H : f ∼ fst ∘ e
+      H = refl-htpy _
