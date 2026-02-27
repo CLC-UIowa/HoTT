@@ -489,7 +489,6 @@ module 10-7 where
         infix 4 _≡f_
         _≡f_ : fib fst a → fib fst a → Set ℓ
         _≡f_ = _≡_
-
         {-
         -- Proving this with just ind≡ is not fun.
         --
@@ -527,6 +526,44 @@ module 10-7 where
 
         retraction-f : retraction (f a)
         retraction-f = (inv-f a) , inv-f∘f∼id
+
+    private
+      variable
+        ℓ : Level
+        A : Set ℓ
+        B : A → Set ℓ
+
+    pr₁ : Σ[ x ∈ A ] (B x) → A
+    pr₁ = fst
+
+    transport-comp : ∀ { x y z } → (p : x ≡ y) → (q : y ≡ z) →
+                     tr B (p ○ q) ∼  ((tr B q) ∘ (tr B p))
+    transport-comp refl refl = refl-htpy _
+
+    open PathReasoning
+    i⇒ii : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
+    i⇒ii {B = B} ((f , f-sec-prf) , g , g-retr-prf) x
+      = cB , ctrB
+      where
+        {-
+          (g x) : B x'
+
+
+        -}
+        cB : B x
+        cB = {! (snd ∘ g ∘ pr₁ ∘ f) x!} -- tr B (g-retr-prf (x , ?)) (snd (g x))
+
+        -- lem : (b : B x) → snd (g (pr₁ {B = B} (x , b))) ≡ tr B (! g-retr-prf x) cB
+        -- lem b = begin (snd (g (pr₁ {B = B}(x , b))) ≡⟨ refl ⟩
+        --               (snd ((g ∘ (pr₁ {B = B})) (x , b)))
+        --                          ≡⟨ {!cong snd (g-retr-prf (x , b))!} ⟩
+        --               tr B (! g-retr-prf x) cB ∎)
+
+        ctrB : (b : B x) → (cB ≡ b)
+        ctrB b = {!!}
+
+
+
 
 -------------------------------------------------------------------------------
 -- #10.8
