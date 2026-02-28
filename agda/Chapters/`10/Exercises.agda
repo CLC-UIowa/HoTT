@@ -533,6 +533,9 @@ module 10-7 where
         A : Set ℓ
         B : A → Set ℓ
 
+    is-contractible-alt : (any-eq : (x : A) → (y : A) → x ≡ y) → (a : A) → is-contr A
+    is-contractible-alt any-eq a = a , λ x → any-eq a x
+
     pr₁ : Σ[ x ∈ A ] (B x) → A
     pr₁ = fst
 
@@ -540,18 +543,19 @@ module 10-7 where
                      tr B (p ○ q) ∼  ((tr B q) ∘ (tr B p))
     transport-comp refl refl = refl-htpy _
 
+    snd-inj : (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
+    snd-inj {A = A} {B = B} a b b' eq = {!ap (snd {B = B}) eq!} -- aaaahhhh this is why Larry Paulson hates dependent types
+
     open PathReasoning
     i⇒ii : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
-    i⇒ii {B = B} ((f , f-sec-prf) , g , g-retr-prf) x
-      = cB , ctrB
+    i⇒ii {A = A} {B = B} ((f , f-sec-prf) , g , g-retr-prf) x
+      = is-contractible-alt any-eq cB
       where
-        {-
-          (g x) : B x'
+        tr-h : fst (f x) ≡ x
+        tr-h = f-sec-prf x
 
-
-        -}
         cB : B x
-        cB = {! (snd ∘ g ∘ pr₁ ∘ f) x!} -- tr B (g-retr-prf (x , ?)) (snd (g x))
+        cB = tr B tr-h (snd (f x))
 
         -- lem : (b : B x) → snd (g (pr₁ {B = B} (x , b))) ≡ tr B (! g-retr-prf x) cB
         -- lem b = begin (snd (g (pr₁ {B = B}(x , b))) ≡⟨ refl ⟩
@@ -559,8 +563,14 @@ module 10-7 where
         --                          ≡⟨ {!cong snd (g-retr-prf (x , b))!} ⟩
         --               tr B (! g-retr-prf x) cB ∎)
 
-        ctrB : (b : B x) → (cB ≡ b)
-        ctrB b = {!!}
+        any-eq-helper1 : (b b' : B x) → (x , b) ≡ (x , b')
+        any-eq-helper1 b b' = ! g-retr-prf (x , b) ○ (g-retr-prf (x , b'))
+
+        any-eq-helper2 : (b b' : B x) → (x , b) ≡ (x , b') → b ≡ b'
+        any-eq-helper2 b b' = snd-inj x b b'
+
+        any-eq : (b b' : B x) → b ≡ b'
+        any-eq b b' = any-eq-helper2 b b' (any-eq-helper1 b b')
 
 
 
