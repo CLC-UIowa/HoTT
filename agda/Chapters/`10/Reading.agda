@@ -149,13 +149,13 @@ refl-fib (x , p) = refl-≡Σ _
 --   ((x, p) ≡ (x′ , p′)) → Eq-fib f ((x, p), (x′ , p′))
 -- induced by the reflexivity of Eq-fib f is an equivalence for any
 -- (x, p), (x′, p′) : fib f y.
-module contr-maps (f : A → B) (y : B) where
-  open PathReasoning
-  co-map-fib : ∀ {fib1 fib2 : fib f y} → Eq-fib f y fib1 fib2 → fib1 ≡ fib2
-  co-map-fib {fib1 = x , p} {fib2 = x′ , p′} (refl , refl) = refl
+-- module contr-maps (f : A → B) (y : B) where
+--   open PathReasoning
+co-map-fib : ∀ (f : A → B) (y : B) {fib1 fib2 : fib f y} → Eq-fib f y fib1 fib2 → fib1 ≡ fib2
+co-map-fib f y {fib1 = x , p} {fib2 = x′ , p′} (refl , refl) = refl
 
-  map-fib :  ∀ {fib1 fib2 : fib f y} → (fib1 ≡Σ fib2) → Eq-fib f y fib1 fib2
-  map-fib = id
+map-fib :  ∀ (f : A → B) (y : B) (fib1 fib2 : fib f y) → (fib1 ≡ fib2) → Eq-fib f y fib1 fib2
+map-fib f y fib1 fib2 refl = refl-fib _
 
 
 -- Def 10.3.4: contractible maps
@@ -200,12 +200,30 @@ is-contr-map-equiv {A = A} {B = B} f is-contr-map-f = sec-is-contr-map-f , retr-
 
 -- Def 10.4.1: coherently invertible
 
-record is-coh-invertible (f : A → B) : Set _ where
+record is-coh-invertible (f : A → B) : Setω where
+  field
+    g′ : B → A
+    G-hom : f ∘ g′ ∼ id
+    H-hom : g′ ∘ f ∼ id
+    K-hom : G-hom ·ᵣ f ∼ f ·ₗ H-hom -- new homotopy
 
 -- Prop 10.4.2: Any coherently invertible map has contractible fibers
 
 coh-invertible⇒is-contr-map : ∀ (f : A → B) → is-coh-invertible f → is-contr-map f
-coh-invertible⇒is-contr-map f coh = {!   !}
+coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; G-hom = G-hom ; H-hom = H-hom ; K-hom = K-hom } y =
+  ( g′ y , G-hom y) , contr
+    where
+      -- K'-hom : (x : A) → G-hom (f x) ≡ (ap f (H-hom x)) ○ refl -- G-hom f
+      -- K'-hom = concat-htpy K-hom {!concat-htpy inv-htpy (f ·ₗ H-hom)!}
+
+      K'-hom : (x : A) → tr (λ a → f a ≡ f x) (H-hom x) (G-hom (f x)) ≡ refl
+      K'-hom x = {!!} -- apd {!λ a → f a ≡ f x!} {!!}
+
+      a-dep-fun : (x : A) → (p : f x ≡ y) → Eq-fib f y (g′ y , G-hom y) (x , p)
+      a-dep-fun x refl = H-hom x ,  K'-hom x
+
+      contr : (x : fib f y) → (g′ y , G-hom y) ≡ x
+      contr (a , fa≡y) = co-map-fib f y (a-dep-fun a fa≡y)
 
 -- Def. 10.4.3: natural squares of homotopies
 

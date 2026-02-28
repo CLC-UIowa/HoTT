@@ -472,22 +472,31 @@ module 10-6 where
 --         (ii) The type B(x) is contractible for each x : A.
 
 module 10-7 where
-  module 10-7a where
-    f : {ℓ : Level} → {A : Set ℓ} → {B : A → Set ℓ} → (a : A) → fib fst a → B a
-    f {_} {A} {B} a ((x , y), p) = tr B p y
+  private
+     variable
+        ℓ : Level
+        A : Set ℓ
+        B : A → Set ℓ
 
-    is-equiv-f : {ℓ : Level} → {A : Set ℓ} → {B : A → Set ℓ} → (a : A) →
-                 is-equiv (f {ℓ} {A} {B} a)
-    is-equiv-f {ℓ} {A} {B} a = section-f , retraction-f
+  pr₁ : Σ[ x ∈ A ] (B x) → A
+  pr₁ = fst
+
+  module 10-7a where
+
+    f : (a : A) → fib pr₁ a → B a
+    f  {A = A} {B = B} a ((x , y), p) = tr B p y
+
+    is-equiv-f : (a : A) → is-equiv (f {A = A} {B = B} a)
+    is-equiv-f {A = A} a = section-f , retraction-f
       where
-        inv-f : (a : A) → B a → fib fst a
-        inv-f a y = ((a , y) , refl)
+        inv-f : (a : A) → B a → fib (pr₁ {A = A} {B = B}) a
+        inv-f {A} {B = B} a y = ((a , y) , refl)
 
         section-f : section (f a)
         section-f = (inv-f a) , refl-htpy id
 
         infix 4 _≡f_
-        _≡f_ : fib fst a → fib fst a → Set ℓ
+        _≡f_ : fib (pr₁ {A = A} {B = B}) a → fib (pr₁ {A = A} {B = B}) a → Set _
         _≡f_ = _≡_
         {-
         -- Proving this with just ind≡ is not fun.
@@ -527,24 +536,15 @@ module 10-7 where
         retraction-f : retraction (f a)
         retraction-f = (inv-f a) , inv-f∘f∼id
 
-    private
-      variable
-        ℓ : Level
-        A : Set ℓ
-        B : A → Set ℓ
-
     is-contractible-alt : (any-eq : (x : A) → (y : A) → x ≡ y) → (a : A) → is-contr A
     is-contractible-alt any-eq a = a , λ x → any-eq a x
-
-    pr₁ : Σ[ x ∈ A ] (B x) → A
-    pr₁ = fst
 
     transport-comp : ∀ { x y z } → (p : x ≡ y) → (q : y ≡ z) →
                      tr B (p ○ q) ∼  ((tr B q) ∘ (tr B p))
     transport-comp refl refl = refl-htpy _
 
     snd-inj : (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
-    snd-inj {A = A} {B = B} a b b' eq = {!ap (snd {B = B}) eq!} -- aaaahhhh this is why Larry Paulson hates dependent types
+    snd-inj {A = A} {B = B} a b b' eq = {!ap (snd {B = B}) eq!}  -- aaaahhhh this is why Larry Paulson hates dependent types
 
     open PathReasoning
     i⇒ii : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
@@ -572,8 +572,61 @@ module 10-7 where
         any-eq : (b b' : B x) → b ≡ b'
         any-eq b b' = any-eq-helper2 b b' (any-eq-helper1 b b')
 
+    -- ii⇒i : (x : A) → is-contr (B x) → (is-equiv (pr₁ {A = A} {B = B}))
+    -- ii⇒i {A = A} {B = B} x (cB , contrB) = (f̅ , f∘f̅~id) , (f̅ , f̅∘f~id )
+    --     where
+    --       f̅ : A → Σ[ x ∈ A ] (B x)
+    --       f̅ a = a , {!!}
 
+    --       f̅∘f~id : f̅ ∘ pr₁ ∼ id
+    --       f̅∘f~id (a , Ba) =
+    --         begin (f̅ ∘ (pr₁ {A = A} {B = B})) (a , Ba) ≡⟨  cong f̅ refl ⟩
+    --               f̅ a ≡⟨ {! !} ⟩
+    --               ((a , Ba)) ∎
 
+    --       f∘f̅~id : pr₁ ∘ f̅ ∼ id
+    --       f∘f̅~id x = {!!} --
+            -- begin (pr₁ ∘ f̅) x ≡⟨  cong (pr₁ {A = A} {B = B}) refl ⟩
+            --       pr₁ {A = A} {B = B} (x , {!!}) ≡⟨ refl ⟩
+            --       x ∎
+
+    module 10-7c where
+--   (c) Consider a dependent function b : Π (x : A) (B (x)). Show that the following
+--       are equivalent:
+--         (i) The map
+--               λ x. (x , b(x)) : A → Σ_{x : A} B(x)
+--             is an equivalence.
+--         (ii) The type B(x) is contractible for each x : A.
+
+       postulate b : ∀ (x : A) → B x
+       -- b = {!!}
+
+       m : A → Σ[ x ∈ A ] B x
+       m {A = A} {B = B} = λ x → (x , b {A = A} {B = B} x)
+
+       i⇒iic : is-equiv (m {A = A} {B = B}) → (x : A) → is-contr (B x)
+       i⇒iic {A = A} {B = B} ((f̅ ,  m∘f̅~id ), g̅ , g̅∘m~id) x  = (b {B = B} x) , λ x₁ → {!  !} -- b {A = A} {B = B} , λ f → {!!}
+
+       ii⇒ic : (x : A) → is-contr (B x) → is-equiv (m {A = A} {B = B})
+       ii⇒ic {A = A} {B = B} x (cB , contr) = (pr₁ , m∘pr₁∼id) , (pr₁ , pr₁∘m∼id)
+         where
+           m∘pr₁∼id : (m {A = A} {B = B} )∘ pr₁ ∼ id
+           m∘pr₁∼id (a , ba) = begin
+                    (m {A = A} {B = B} ∘ pr₁ {A = A} {B = B}) (a , ba)
+                       ≡⟨ refl ⟩
+                    m a
+                       ≡⟨ refl ⟩
+                    (a , b {A = A} {B = B} a)
+                       ≡⟨ cong (λ x → (a , x )) {! contr (ba)!}  ⟩
+                    (a , ba) ∎
+
+           pr₁∘m∼id : pr₁ ∘ (m {A = A} {B = B}) ∼ id
+           pr₁∘m∼id x = begin
+                     pr₁ (m {A = A} {B = B} x)
+                         ≡⟨ refl ⟩
+                     pr₁ {A = A} {B = B} (x , b {A = A} {B = B} x)
+                         ≡⟨ refl ⟩
+                     x ∎
 
 -------------------------------------------------------------------------------
 -- #10.8
