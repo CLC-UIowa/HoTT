@@ -549,17 +549,17 @@ module 10-7 where
                      tr B (p ○ q) ∼  ((tr B q) ∘ (tr B p))
     transport-comp refl refl = refl-htpy _
 
-    snd-cong : ∀ {ℓ} {A : Set ℓ} {B : A → Set ℓ} → (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
-    snd-cong {ℓ = ℓ} {A = A} {B = B} a b b' eq = ind≡ ((a , b)) motive inner-induction (a , b') eq refl
-      where
-       motive : (x : Σ-syntax A B) → (a , b) ≡ x → Set ℓ
-       motive = λ (a₁ , b₁) eq₁ → (a≡a₁ : a ≡ a₁) → b ≡ (b₁ |> tr B (! a≡a₁))
+    -- snd-cong : ∀ {ℓ} {A : Set ℓ} {B : A → Set ℓ} → (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
+    -- snd-cong {ℓ = ℓ} {A = A} {B = B} a b b' eq = ind≡ ((a , b)) motive inner-induction (a , b') eq refl
+    --   where
+    --    motive : (x : Σ-syntax A B) → (a , b) ≡ x → Set ℓ
+    --    motive = λ (a₁ , b₁) eq₁ → (a≡a₁ : a ≡ a₁) → b ≡ (b₁ |> tr B (! a≡a₁))
 
-       motive' : (x : A) → a ≡ x → Set ℓ
-       motive' = {!!}
+    --    motive' : (x : A) → a ≡ x → Set ℓ
+    --    motive' = {!!}
 
-       inner-induction : (e : a ≡ a) → b ≡ tr B (! e) b
-       inner-induction e = {!ind≡ a motive' refl a e!}
+    --    inner-induction : (e : a ≡ a) → b ≡ tr B (! e) b
+    --    inner-induction e = {!ind≡ a motive' refl a e!}
 
     -- snd-cong {A = A} {B = B} a b b' eq = path1 ○ path2 ○ path3
     --   where
@@ -579,15 +579,52 @@ module 10-7 where
     --     path3 = apd (snd {B = B}) eq
 
     open PathReasoning
-    i⇒ii : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
-    i⇒ii {A = A} {B = B} ((f , f-sec-prf) , g , g-retr-prf) x
-      = is-contractible-alt any-eq cB
+    i⇒ii-lemma : ∀ {ℓ : Level} {A : Set ℓ} {B : A -> Set ℓ} -> (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (fib (pr₁ {B = B}) x)
+    i⇒ii-lemma = {!   !}
+
+    i⇒ii : ∀ {ℓ : Level} {A : Set ℓ} {B : A -> Set ℓ} -> (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
+    i⇒ii {ℓ} {A} {B} ((f , f-sec-prf) , g , g-retr-prf) x with (i⇒ii-lemma ((f , f-sec-prf) , g , g-retr-prf) x)
+    ... | ((a , b) , e) , ctr = (tr B e b) , (λ z → let e = ctr (((x , z) , refl)) in test e)      
       where
-        tr-h : fst (f x) ≡ x
-        tr-h = f-sec-prf x
+        test : ∀ {a x : A} {b : B a} {z : B x} {e} ->  _≡_ {A = fib (pr₁ {B = B}) x} ((a , b) , e) ((x , z) , refl) -> tr B e b ≡ z
+        test refl = refl
+
+        lem₁ : (x : A) -> pr₁ (f x) ≡ x
+        lem₁ = f-sec-prf
+
+        lem₂ : (x : A) -> g (pr₁ {B = B} (f x)) ≡ f x
+        lem₂ x = g-retr-prf (f x)
+
+        lem₃ : (x : A) -> g (pr₁ {B = B} (f x)) ≡ g x
+        lem₃ x = ap g (lem₁ x)
+
+        lem₄ : f ∼ g
+        lem₄ x = trans (! (lem₂ x)) (lem₃ x)
+
+        
+
+        -- Idea:
+        -- pr₁ : Σ[x ∈ A] (B x) -> A
+        -- hence: (x : A) -> is-contr (fib a) === ∀ a, is-contr (Σ[s ∈ Σ[x ∈ A] (B x)] (pr₁ s ≡ a))
+
+        f-retr-prf : (λ x → f (pr₁ x)) ∼ id
+        f-retr-prf x = trans (lem₄ (pr₁ x)) (g-retr-prf x)
 
         cB : B x
-        cB = tr B tr-h (snd (f x))
+        cB = tr B (lem₁ x) (snd (f x))
+
+        lem₅ : (b b' : B x) → (x , b) ≡ (x , b')
+        lem₅ b b' = ! g-retr-prf (x , b) ○ (g-retr-prf (x , b'))
+
+        lem₇ : ∀ {ℓ} {A : Set ℓ} {B : A -> Set ℓ} {a a' : A} {b : B a} {b' : B a'} -> (e : a ≡ a') -> (_≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a' , b')) -> tr B e b ≡ b'
+        lem₇ refl e₂ = {!  !}
+
+        -- lem : (z : B x) -> _≡_ {A = Σ[ x ∈ A ] (B x)} (f x) (x , z)
+        -- lem₅ z = {!   !}
+
+        lem₆ : (z : B x) → tr B (lem₁ x) (snd (f x)) ≡ z
+        lem₆ z with pairEqv {A = A} {𝐁 = B} {s = (x , tr B (lem₁ x) (snd (f x)))} {t = (x , z)}
+        ... | (h1 , h2) , h3 , h4 = {!  !}
 
         -- lem : (b : B x) → snd (g (pr₁ {B = B} (x , b))) ≡ tr B (! g-retr-prf x) cB
         -- lem b = begin (snd (g (pr₁ {B = B}(x , b))) ≡⟨ refl ⟩
@@ -595,14 +632,13 @@ module 10-7 where
         --                          ≡⟨ {!cong snd (g-retr-prf (x , b))!} ⟩
         --               tr B (! g-retr-prf x) cB ∎)
 
-        any-eq-helper1 : (b b' : B x) → (x , b) ≡ (x , b')
-        any-eq-helper1 b b' = ! g-retr-prf (x , b) ○ (g-retr-prf (x , b'))
 
-        any-eq-helper2 : (b b' : B x) → (x , b) ≡ (x , b') → b ≡ b'
-        any-eq-helper2 b b' = {!!} -- snd-cong {A = A} {B = B} x b b'
 
-        any-eq : (b b' : B x) → b ≡ b'
-        any-eq b b' = any-eq-helper2 b b' (any-eq-helper1 b b')
+        -- any-eq-helper2 : (b b' : B x) → (x , b) ≡ (x , b') → b ≡ b'
+        -- any-eq-helper2 b b' = {!!} -- snd-cong {A = A} {B = B} x b b'
+
+        -- any-eq : (b b' : B x) → b ≡ b'
+        -- any-eq b b' = any-eq-helper2 b b' (any-eq-helper1 b b')
 
     ii⇒i : (all-is-contr : (x : A) → is-contr (B x)) → is-equiv (pr₁ {A = A} {B = B})
     ii⇒i {A = A} {B = B} all-is-contr = (sec ,  sec-h) , (retr , retr-h)
