@@ -545,8 +545,8 @@ module 10-7 where
                      tr B (p ○ q) ∼  ((tr B q) ∘ (tr B p))
     transport-comp refl refl = refl-htpy _
 
-    snd-inj : (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
-    snd-inj {A = A} {B = B} a b b' eq = {!ap (snd {B = B}) eq!}  -- aaaahhhh this is why Larry Paulson hates dependent types
+    snd-cong : (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
+    snd-cong {A = A} {B = B} a b b' eq = {!ap (snd {B = B}) eq!}  -- aaaahhhh this is why Larry Paulson hates dependent types
 
     open PathReasoning
     i⇒ii : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
@@ -569,7 +569,7 @@ module 10-7 where
         any-eq-helper1 b b' = ! g-retr-prf (x , b) ○ (g-retr-prf (x , b'))
 
         any-eq-helper2 : (b b' : B x) → (x , b) ≡ (x , b') → b ≡ b'
-        any-eq-helper2 b b' = snd-inj x b b'
+        any-eq-helper2 b b' = snd-cong x b b'
 
         any-eq : (b b' : B x) → b ≡ b'
         any-eq b b' = any-eq-helper2 b b' (any-eq-helper1 b b')
@@ -599,43 +599,55 @@ module 10-7 where
         -- ... | refl = refl
 
 
-    module 10-7c where
+  module 10-7c where
 --   (c) Consider a dependent function b : Π (x : A) (B (x)). Show that the following
 --       are equivalent:
 --         (i) The map
 --               λ x. (x , b(x)) : A → Σ_{x : A} B(x)
 --             is an equivalence.
 --         (ii) The type B(x) is contractible for each x : A.
+    postulate b : ∀ (x : A) → B x
+    -- b = {!!}
 
-       postulate b : ∀ (x : A) → B x
-       -- b = {!!}
+    m : A → Σ[ x ∈ A ] B x
+    m {A = A} {B = B} = λ x → (x , b {A = A} {B = B} x)
 
-       m : A → Σ[ x ∈ A ] B x
-       m {A = A} {B = B} = λ x → (x , b {A = A} {B = B} x)
+    open PathReasoning
+    i⇒iic : is-equiv (m {A = A} {B = B}) → (x : A) → is-contr (B x)
+    i⇒iic {A = A} {B = B} ((f , m∘f∼id ), g , g∘m∼id) x = 10-7b.is-contractible-alt contractible-h center-B
+      where
+        center-B : B x
+        center-B = b {B = B} x
 
-       i⇒iic : is-equiv (m {A = A} {B = B}) → (x : A) → is-contr (B x)
-       i⇒iic {A = A} {B = B} ((f̅ ,  m∘f̅~id ), g̅ , g̅∘m~id) x  = (b {B = B} x) , λ x₁ → {!  !} -- b {A = A} {B = B} , λ f → {!!}
+        f∼pr₁ : f ∼ pr₁
+        f∼pr₁ (x' , y') = ap pr₁ (m∘f∼id (x' , y'))
 
-       ii⇒ic : (x : A) → is-contr (B x) → is-equiv (m {A = A} {B = B})
-       ii⇒ic {A = A} {B = B} x (cB , contr) = (pr₁ , m∘pr₁∼id) , (pr₁ , pr₁∘m∼id)
-         where
-           m∘pr₁∼id : (m {A = A} {B = B} )∘ pr₁ ∼ id
-           m∘pr₁∼id (a , ba) = begin
-                    (m {A = A} {B = B} ∘ pr₁ {A = A} {B = B}) (a , ba)
-                       ≡⟨ refl ⟩
-                    m a
-                       ≡⟨ refl ⟩
-                    (a , b {A = A} {B = B} a)
-                       ≡⟨ cong (λ x → (a , x )) {! contr (ba)!}  ⟩
-                    (a , ba) ∎
+        contractible-helper : (y y' : B x) → _≡_ {A = Σ A B} (x , y) (x , y')
+        contractible-helper y y' =
+          begin
+            (x , y) ≡⟨ (! m∘f∼id (x , y)) ⟩
+            m (f (x , y)) ≡⟨  ap (λ z → (z , b {B = B} z)) (f∼pr₁ (x , y)) ⟩
+            m x ≡⟨ ap m (! f∼pr₁ (x , y')) ⟩
+            m (f (x , y')) ≡⟨ m∘f∼id (x , y') ⟩
+            (x , y') ∎
 
-           pr₁∘m∼id : pr₁ ∘ (m {A = A} {B = B}) ∼ id
-           pr₁∘m∼id x = begin
-                     pr₁ (m {A = A} {B = B} x)
-                         ≡⟨ refl ⟩
-                     pr₁ {A = A} {B = B} (x , b {A = A} {B = B} x)
-                         ≡⟨ refl ⟩
-                     x ∎
+        contractible-h : (y y' : B x) → (y ≡ y')
+        contractible-h y y' = 10-7b.snd-cong x y y' (contractible-helper y y')
+
+    ii⇒ic : (any-is-contr : (x : A) → is-contr (B x)) → is-equiv (m {A = A} {B = B})
+    ii⇒ic {A = A} {B = B} any-is-contr = (pr₁ , m∘pr₁∼id) , (pr₁ , pr₁∘m∼id)
+      where
+        center : (x : A) → (B x)
+        center x = is-contr.center (any-is-contr x)
+
+        contraction : (x : A) → (b : B x) → (center x ≡ b)
+        contraction x = is-contr.contraction (any-is-contr x)
+
+        m∘pr₁∼id : (m {A = A} {B = B} )∘ pr₁ ∼ id
+        m∘pr₁∼id (a , ba) = ap (λ z → (a , z)) ((! contraction a (b {B = B} (pr₁ {A = A} {B = B} (a , ba)))) ○ contraction a ba )
+
+        pr₁∘m∼id : pr₁ ∘ (m {A = A} {B = B}) ∼ id
+        pr₁∘m∼id x = refl
 
 -------------------------------------------------------------------------------
 -- #10.8
