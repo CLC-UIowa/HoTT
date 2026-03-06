@@ -536,6 +536,8 @@ module 10-7 where
         retraction-f : retraction (f a)
         retraction-f = (inv-f a) , inv-f∘f∼id
 
+  module 10-7b where
+
     is-contractible-alt : (any-eq : (x : A) → (y : A) → x ≡ y) → (a : A) → is-contr A
     is-contractible-alt any-eq a = a , λ x → any-eq a x
 
@@ -572,23 +574,30 @@ module 10-7 where
         any-eq : (b b' : B x) → b ≡ b'
         any-eq b b' = any-eq-helper2 b b' (any-eq-helper1 b b')
 
-    -- ii⇒i : (x : A) → is-contr (B x) → (is-equiv (pr₁ {A = A} {B = B}))
-    -- ii⇒i {A = A} {B = B} x (cB , contrB) = (f̅ , f∘f̅~id) , (f̅ , f̅∘f~id )
-    --     where
-    --       f̅ : A → Σ[ x ∈ A ] (B x)
-    --       f̅ a = a , {!!}
+    ii⇒i : (all-is-contr : (x : A) → is-contr (B x)) → is-equiv (pr₁ {A = A} {B = B})
+    ii⇒i {A = A} {B = B} all-is-contr = (sec ,  sec-h) , (retr , retr-h)
+      where
+        center-B : (a : A) → B a
+        center-B a = is-contr.center (all-is-contr a)
 
-    --       f̅∘f~id : f̅ ∘ pr₁ ∼ id
-    --       f̅∘f~id (a , Ba) =
-    --         begin (f̅ ∘ (pr₁ {A = A} {B = B})) (a , Ba) ≡⟨  cong f̅ refl ⟩
-    --               f̅ a ≡⟨ {! !} ⟩
-    --               ((a , Ba)) ∎
+        contraction-B : (a : A) → (b : B a) → (center-B a ≡ b)
+        contraction-B a = is-contr.contraction (all-is-contr a)
 
-    --       f∘f̅~id : pr₁ ∘ f̅ ∼ id
-    --       f∘f̅~id x = {!!} --
-            -- begin (pr₁ ∘ f̅) x ≡⟨  cong (pr₁ {A = A} {B = B}) refl ⟩
-            --       pr₁ {A = A} {B = B} (x , {!!}) ≡⟨ refl ⟩
-            --       x ∎
+        sec : A → Σ A B
+        sec a = a , (center-B a)
+
+        sec-h : pr₁ ∘ sec ∼ id
+        sec-h = refl-htpy _
+
+        retr : A → Σ A B
+        retr = sec
+
+        retr-h : retr ∘ pr₁ ∼ id
+        retr-h (a , b) = ind≡ (center-B a) (λ b' eq → (a , center-B a) ≡ (a , b')) refl b (contraction-B a b)
+        -- Or we can pattern match
+        -- retr-h (a , b) with (contraction-B a b)
+        -- ... | refl = refl
+
 
     module 10-7c where
 --   (c) Consider a dependent function b : Π (x : A) (B (x)). Show that the following
