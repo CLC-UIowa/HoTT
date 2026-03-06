@@ -538,6 +538,10 @@ module 10-7 where
 
   module 10-7b where
 
+--   (b) Show that the following are equivalent:
+--       (i) The projection map pr₁ is an equivalence
+--       (ii) The type B(x) is contractible for each x : A.
+
     is-contractible-alt : (any-eq : (x : A) → (y : A) → x ≡ y) → (a : A) → is-contr A
     is-contractible-alt any-eq a = a , λ x → any-eq a x
 
