@@ -637,14 +637,14 @@ module 10-7 where
     ii⇒ic : (any-is-contr : (x : A) → is-contr (B x)) → is-equiv (m {A = A} {B = B})
     ii⇒ic {A = A} {B = B} any-is-contr = (pr₁ , m∘pr₁∼id) , (pr₁ , pr₁∘m∼id)
       where
-        center : (x : A) → (B x)
-        center x = is-contr.center (any-is-contr x)
+        center-B : (x : A) → (B x)
+        center-B x = is-contr.center (any-is-contr x)
 
-        contraction : (x : A) → (b : B x) → (center x ≡ b)
-        contraction x = is-contr.contraction (any-is-contr x)
+        contraction-B : (x : A) → (b : B x) → (center-B x ≡ b)
+        contraction-B x = is-contr.contraction (any-is-contr x)
 
         m∘pr₁∼id : (m {A = A} {B = B} )∘ pr₁ ∼ id
-        m∘pr₁∼id (a , ba) = ap (λ z → (a , z)) ((! contraction a (b {B = B} (pr₁ {A = A} {B = B} (a , ba)))) ○ contraction a ba )
+        m∘pr₁∼id (a , ba) = ap (λ z → (a , z)) ((! contraction-B a (b {B = B} (pr₁ {A = A} {B = B} (a , ba)))) ○ contraction-B a ba )
 
         pr₁∘m∼id : pr₁ ∘ (m {A = A} {B = B}) ∼ id
         pr₁∘m∼id x = refl
