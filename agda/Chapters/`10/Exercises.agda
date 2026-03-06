@@ -549,8 +549,34 @@ module 10-7 where
                      tr B (p ○ q) ∼  ((tr B q) ∘ (tr B p))
     transport-comp refl refl = refl-htpy _
 
-    snd-cong : (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
-    snd-cong {A = A} {B = B} a b b' eq = {!ap (snd {B = B}) eq!}  -- aaaahhhh this is why Larry Paulson hates dependent types
+    snd-cong : ∀ {ℓ} {A : Set ℓ} {B : A → Set ℓ} → (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
+    snd-cong {ℓ = ℓ} {A = A} {B = B} a b b' eq = ind≡ ((a , b)) motive inner-induction (a , b') eq refl
+      where
+       motive : (x : Σ-syntax A B) → (a , b) ≡ x → Set ℓ
+       motive = λ (a₁ , b₁) eq₁ → (a≡a₁ : a ≡ a₁) → b ≡ (b₁ |> tr B (! a≡a₁))
+
+       motive' : (x : A) → a ≡ x → Set ℓ
+       motive' = {!!}
+
+       inner-induction : (e : a ≡ a) → b ≡ tr B (! e) b
+       inner-induction e = {!ind≡ a motive' refl a e!}
+
+    -- snd-cong {A = A} {B = B} a b b' eq = path1 ○ path2 ○ path3
+    --   where
+    --     path1 : b ≡ tr (λ _ → B a) eq b
+    --     path1 = ind≡ (a , b) (λ (a₁ , b₁) eq₁ → b ≡ tr (λ _ → B a) eq₁ b) refl (a , b') eq
+
+    --     path2a : tr (λ _ → B a) eq b' ≡ tr (λ z → B (z .fst)) eq b
+    --     path2a =  ind≡ (a , b) (λ (a₁ , b'₁) eq₁ → tr (λ _ → B a₁) eq₁ b'₁ ≡ tr (λ z → B (z .fst)) eq₁ b) refl (a , b') eq
+
+    --     path2b : tr (λ _ → B a) eq b ≡ tr (λ _ → B a) eq b'
+    --     path2b = {!!}
+
+    --     path2 : tr (λ _ → B a) eq b ≡ tr (λ z → B (z .fst)) eq b
+    --     path2 = path2b ○ path2a
+
+    --     path3 : tr (λ z → B (z .fst)) eq b ≡ b'
+    --     path3 = apd (snd {B = B}) eq
 
     open PathReasoning
     i⇒ii : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
@@ -573,7 +599,7 @@ module 10-7 where
         any-eq-helper1 b b' = ! g-retr-prf (x , b) ○ (g-retr-prf (x , b'))
 
         any-eq-helper2 : (b b' : B x) → (x , b) ≡ (x , b') → b ≡ b'
-        any-eq-helper2 b b' = snd-cong x b b'
+        any-eq-helper2 b b' = {!!} -- snd-cong {A = A} {B = B} x b b'
 
         any-eq : (b b' : B x) → b ≡ b'
         any-eq b b' = any-eq-helper2 b b' (any-eq-helper1 b b')
@@ -636,7 +662,7 @@ module 10-7 where
             (x , y') ∎
 
         contractible-h : (y y' : B x) → (y ≡ y')
-        contractible-h y y' = 10-7b.snd-cong x y y' (contractible-helper y y')
+        contractible-h y y' = {!!} -- 10-7b.snd-cong x y y' (contractible-helper y y')
 
     ii⇒ic : (any-is-contr : (x : A) → is-contr (B x)) → is-equiv (m {A = A} {B = B})
     ii⇒ic {A = A} {B = B} any-is-contr = (pr₁ , m∘pr₁∼id) , (pr₁ , pr₁∘m∼id)
