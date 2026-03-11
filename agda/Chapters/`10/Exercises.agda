@@ -584,7 +584,7 @@ module 10-7 where
 
     i⇒ii : ∀ {ℓ : Level} {A : Set ℓ} {B : A -> Set ℓ} -> (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
     i⇒ii {ℓ} {A} {B} ((f , f-sec-prf) , g , g-retr-prf) x with (i⇒ii-lemma ((f , f-sec-prf) , g , g-retr-prf) x)
-    ... | ((a , b) , e) , ctr = (tr B e b) , (λ z → let e = ctr (((x , z) , refl)) in test e)      
+    ... | ((a , b) , e) , ctr = (tr B e b) , (λ z → let e = ctr (((x , z) , refl)) in test e)
       where
         test : ∀ {a x : A} {b : B a} {z : B x} {e} ->  _≡_ {A = fib (pr₁ {B = B}) x} ((a , b) , e) ((x , z) , refl) -> tr B e b ≡ z
         test refl = refl
@@ -601,7 +601,7 @@ module 10-7 where
         lem₄ : f ∼ g
         lem₄ x = trans (! (lem₂ x)) (lem₃ x)
 
-        
+
 
         -- Idea:
         -- pr₁ : Σ[x ∈ A] (B x) -> A
@@ -742,7 +742,6 @@ module 10-8 where
   --   ((e , e-is-equiv) , H) : Σ[ (e , _) ∈ A ≃ (Σ[ b ∈ B ] (fib f b)) ] (f ∼ fst ∘ e)
 
   -- ERRATA: Rijke says e : A ≃ Σ[ y ∈ B ] fib f y, but then later writes "e" when he means "fst e".
-  -- TODO: Note this in Errata.md.
   domain-≃-Σ-fib : (f : A → B) → Σ[ (e , _) ∈ A ≃ (Σ[ b ∈ B ] (fib f b)) ] (f ∼ fst ∘ e)
   domain-≃-Σ-fib {A = A} {B = B} f = (e , e-is-equiv) , H
     where

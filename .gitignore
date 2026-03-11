@@ -29,3 +29,6 @@ sty/auto/*
 *.agdai
 
 *.DS_Store
+
+*.vscode
+*.nix
