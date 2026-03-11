@@ -10,7 +10,7 @@ Unfortunately, we performed exercises during the first semester (Part I: Ch. 1-8
 
 ### 9.3 (b)
 
-THe text for 9.3 (b) is somewhat misleading: "show that for any two homotopic equivalences e, e' : A \simeq B, their inverses are also homotopic", where the inverses of e an e' are their sections. This statement is not true! For example, consider the following two equivalences of the Boolean type.
+The text for 9.3 (b) is somewhat misleading: "show that for any two homotopic equivalences e, e' : A \simeq B, their inverses are also homotopic", where the inverses of e an e' are their sections. This statement is not true! For example, consider the following two equivalences of the Boolean type.
 
 ```agda
   𝔹⁻¹ : Bool ≃ Bool
@@ -32,3 +32,14 @@ We are pretty certain this statement is false, and that α and β should have th
 ```
 
 (The text reads that α and β have domains B and A, respectively.) If one tries to solve the exercise as written, the (i) to (ii) case goes through, but the (ii) to (i) case is impossible.  To see that the (ii) to (i) case is impossible as written, first note that what is required is to produce functions from A' × B' to A × B.  All we have are the functions α and β, which (as written) require a B and an A, respectively, to be of any use to us.  But we only get to assume we have an element (a', b') : A' × B', and from this we cannot obtain an element of type B or an element of type A, so we are stuck.  Making the changes described above fixes the problem.
+
+## Chapter 10
+
+### 10.8
+
+The text gives
+```agda
+e : A ≃ Σ[ y ∈ B ] fib f y
+```
+but later (in particular, in the commutative diagram) uses `e` as a function
+when `fst e` is probably what was intended.
