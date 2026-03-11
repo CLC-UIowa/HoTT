@@ -584,10 +584,10 @@ module 10-7 where
 
     i⇒ii : ∀ {ℓ : Level} {A : Set ℓ} {B : A -> Set ℓ} -> (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
     i⇒ii {ℓ} {A} {B} ((f , f-sec-prf) , g , g-retr-prf) x with (i⇒ii-lemma ((f , f-sec-prf) , g , g-retr-prf) x)
-    ... | ((a , b) , e) , ctr = (tr B e b) , (λ z → let e = ctr (((x , z) , refl)) in test e)
+    ... | ((a , b) , e) , ctr = tr B e b , λ b' → let fib-eq = ctr (((x , b') , refl)) in lem fib-eq
       where
-        test : ∀ {a x : A} {b : B a} {z : B x} {e} ->  _≡_ {A = fib (pr₁ {B = B}) x} ((a , b) , e) ((x , z) , refl) -> tr B e b ≡ z
-        test refl = refl
+        lem : ∀ {a x : A} {b : B a} {b' : B x} {e} ->  _≡_ {A = fib (pr₁ {B = B}) x} ((a , b) , e) ((x , b') , refl) -> tr B e b ≡ b'
+        lem refl = refl
 
         lem₁ : (x : A) -> pr₁ (f x) ≡ x
         lem₁ = f-sec-prf
