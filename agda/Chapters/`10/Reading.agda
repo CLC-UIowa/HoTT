@@ -3,7 +3,12 @@ module Chapters.`10.Reading where
 open import Prelude
 open import Chapters.`09.Reading
 
--- open HomReasoning
+{- -----------------------------------------------------------------------------
+AH> 
+
+
+-}
+
 --------------------------------------------------------------------
 -- Chapter 10: Contractible types and contractible maps
 
@@ -137,7 +142,6 @@ fib : (f : A → B) → (b : B) → Set _
 fib {A = A} f b = Σ[ a ∈ A ] (f a ≡ b)
 
 -- Def. 10.3.2
--- import Chapters.`09.Reading
 
 Eq-fib : ∀ (f : A → B) (y : B) → fib f y → fib f y → Set _
 Eq-fib f y f1 f2 = f1 ≡Σ f2
@@ -146,7 +150,7 @@ refl-fib : ∀ {f : A → B} {y : B} → ∀ (p : fib f y) → Eq-fib f y p p
 refl-fib (x , p) = refl-≡Σ _
 
 -- Prop 10.3.3: The canonical map
---   ((x, p) ≡ (x′ , p′)) → Eq-fib f ((x, p), (x′ , p′))
+--   ((x, p) ≡ (x′ , p′)) → Eq-fib f y ((x, p), (x′ , p′))
 -- induced by the reflexivity of Eq-fib f is an equivalence for any
 -- (x, p), (x′, p′) : fib f y.
 -- module contr-maps (f : A → B) (y : B) where
@@ -167,7 +171,6 @@ is-contr-map {B = B} f = ∀ (b : B) → is-contr (fib f b)
 is-contr-map-equiv : ∀ (f : A → B) → is-contr-map f → is-equiv f
 is-contr-map-equiv {A = A} {B = B} f is-contr-map-f = sec-is-contr-map-f , retr-is-contr-map-f
   where
-  import Chapters.`09.Reading
   g̅ : B → A
   g̅ y with is-contr-map-f y
   ... | (a , _) , _ = a
@@ -196,16 +199,30 @@ is-contr-map-equiv {A = A} {B = B} f is-contr-map-f = sec-is-contr-map-f , retr-
 
 
 --------------------------------------------------------------------
--- §10.4: Contractible maps
+-- §10.4: Eqivalences are contractible maps
+
 
 -- Def 10.4.1: coherently invertible
-
+------------------------------------
 record is-coh-invertible (f : A → B) : Setω where
   field
     g′ : B → A
     G-hom : f ∘ g′ ∼ id
     H-hom : g′ ∘ f ∼ id
-    K-hom : G-hom ·ᵣ f ∼ f ·ₗ H-hom -- new homotopy
+    K-hom : G-hom ·ᵣ f ∼ f ·ₗ H-hom
+
+{- 
+AH> For further reference, the HOTT book defines coherently invertible maps as 
+"half adjoint equivalences":
+  
+  Def. 4.2.1 (§4.2, pp 173): A function f : A → B is a *half adjoint equivalence*
+  if there are g : B → A and homotopies η : g ∘ f ∼ id and ϵ : f ∘ g ∼ id such that
+  there exists a homotopy 
+    τ : Π(x : A) f (η x) = ϵ (f x)
+
+See that, mapping HAEs to coh-invertibility, f maps to f, g maps to g′, η maps to
+H-hom, ϵ maps to G-hom, and τ maps to (the symmetry of) K-hom. -}
+
 
 -- Prop 10.4.2: Any coherently invertible map has contractible fibers
 
@@ -224,6 +241,43 @@ coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; G-hom = G
 
       contr : (x : fib f y) → (g′ y , G-hom y) ≡ x
       contr (a , fa≡y) = co-map-fib f y (a-dep-fun a fa≡y)
+
+{- For an alternative proof to Rijke's Prop 10.4.2, see HOTT Book's Thm 4.2.6 (pp. 176):
+
+  Theorem 4.2.6: If f : A → B is a half adjoint equivalence, then for any y : B,
+  the fiber fib f y is contractible.
+
+(Convince yourself that this statement unfolds to: 
+  ∀ (y : B) → is-contr (fib f y)
+ which is precisely the definition of is-contr-map f.)
+
+The HOTT proof goes as follows:
+
+  Let (g, η, ϵ, τ) : ishae(f), and fix y : B. That is, we have:
+    - f : A → B
+    - g : B → A 
+    - η : g ∘ f ∼ id 
+    - ϵ : f ∘ g ∼ id 
+    - τ : ∀ (x : A). f ·ₗ η ∼ ϵ ·ᵣ f 
+  As our center of contraction for fib f y, we choose (g y , ϵ ·ᵣ y).
+  Now take any (x, p) : fib f y; we want to construct a path from 
+  (g y, ϵ ·ᵣ y) to (x , p). By lemma 4.2.5, it suffices 
+  to give a path γ : g y ≡ x such that f(γ) ○ p = ϵ ·ᵣ y. We put
+    γ := g(p)⁻¹ ○ (η ·ᵣ x).
+  Then we have 
+    f(γ) ○ p = fg(p)⁻¹ ○ f(ηx) ○ p
+             = fg(p)⁻¹ ○ ϵ(fx) ○ p
+             = ϵy
+  where the second equality follows by τx and the third equality is naturality of ϵ.
+  AH> Some remarks.
+  - The notation g(p) is the action of g on path p: ap g p
+  - I'm not sure if e.g. g(p)⁻¹ means (ap g p) ⁻¹ or ap g (p ⁻¹); likewise for g(p)⁻¹
+  - Lemma 4.2.5 states that: for any f : A → B, y : B, and (x, p), (x′, p′) : fib f y, we have
+      (x, p) ≡ (x′, p′) ≃ Σ[ γ ∈ (x ≡ x′) ] (ap f γ ○ p′ ≡ p)
+    I don't know if this maps directly onto any results of Rijke's.
+ -}
+
+
 
 -- Def. 10.4.3: natural squares of homotopies
 

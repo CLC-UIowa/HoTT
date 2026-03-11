@@ -24,15 +24,11 @@ H : f ∼ g, then the sections of their equivalences are homotopic. (This statem
 
 ### 9.7 (e)
 
-We are pretty certain this statement is false, and that \alpha and \beta should have the following types:
+We are pretty certain this statement is false, and that α and β should have the following types:
 
 ```agda
 α : B′ → is-equiv f
 β : A′ → is-equiv g
 ```
 
-(The text reads that \alpha and \beta have domains B and A, respectively.) If one tries to solve the exercise as written, the (i) to (ii) case goes through, but the (ii) to (i) case is impossible.
-To see that the (ii) to (i) case is impossible as written, first note that what is required is to produce functions from A' \times B' to A \times B.
-All we have at our disposable are the functions \alpha and \beta, which (as written) require a B and an A, respectively, to be of any use to us.
-But we only get to assume we have an element (a', b') : A' \times B', and from this we cannot obtain an element of type B or an element of type A, so we are stuck.
-Making the changes described above fixes the problem.
+(The text reads that α and β have domains B and A, respectively.) If one tries to solve the exercise as written, the (i) to (ii) case goes through, but the (ii) to (i) case is impossible.  To see that the (ii) to (i) case is impossible as written, first note that what is required is to produce functions from A' × B' to A × B.  All we have are the functions α and β, which (as written) require a B and an A, respectively, to be of any use to us.  But we only get to assume we have an element (a', b') : A' × B', and from this we cannot obtain an element of type B or an element of type A, so we are stuck.  Making the changes described above fixes the problem.
