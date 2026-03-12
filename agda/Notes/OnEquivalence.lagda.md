@@ -24,7 +24,7 @@ of type equivalence.
 In chapter 9, we introduced "bi-invertible maps" as a notion of type
 equivalence:
 
-```
+```agda
 is-equiv : (f : A → B) → Set _
 is-equiv f = section f × retraction f
 ```
@@ -54,7 +54,7 @@ In the definition of bi-invertible maps, it's clear that one of h or g are
 redundant: if f has both a section and retraction, then the two are
 (homotopically) equivalent.
 
-```
+```agda
 is-equiv⇒equalSplits : ∀ {f : A → B} (p : is-equiv f) → `sec p ∼ `retr p
 is-equiv⇒equalSplits {f = f} ((g , G) , (h , H)) = begin
   g          ∼⟨ (H ·ᵣ g) ⁻¹ ⟩
@@ -73,7 +73,7 @@ and
 
   g ∘ f ∼ id.
 
-```
+```agda
 has-inverse : (A → B) → Set _
 has-inverse {A = A} {B = B} f = Σ[ g ∈ (B → A) ] (f ∘ g ∼ id) × (g ∘ f ∼ id)
 ```
@@ -116,17 +116,23 @@ The HOTT text likewise asserts that the definition `has-inverse` is ill-behaved.
 Perhaps the most elegant (yet least ergonomic) definition is of contractible
 maps: a function f witnesses an equivalence if all of its fibers are
 contractible. Put set theoretically (or, perhaps topologically?): f is
-invertible iff all of its fibers are singletons. (This sentence is a terse way
+invertible iff all of its fibers are singletons. (This is a terse way
 of saying f is both injective and surjective.)
 
-```
+```agda
 is-contr-map : (f : A → B) → Set _
 is-contr-map {B = B} f = ∀ (b : B) → is-contr (fib f b)
 ```
 
-It can be shown that:
+While elegant, inhabiting `is-contr-map f` can be less intuitive and more elaborate 
+than inhabiting the more standard `has-inverse f`. 
 
-  is-equiv f ⇔ has-inverse f ⇔ is-contr-map f
+It can be shown more broadly that:
+
+  is-equiv f ⇔ has-inverse f ⇔ is-contr-map f ⇔ is-coh-invertible f 
+
+(with `is-coh-invertible f` defined below), and hence in practice we are permitted 
+to produce a witness to `has-inverse f` instead. 
 
 
 ## Half-adjoint equivalences / coherently-invertible maps
@@ -143,7 +149,7 @@ record is-coh-invertible (f : A → B) : Setω where
     K-hom : G-hom ·ᵣ f ∼ f ·ₗ H-hom
 ```
 
-Why the extra homotopy? While I've not proven it, I suspect this additional homotopy
+Why the extra homotopy? I suspect this additional homotopy
 is what's necessary to make `is-coh-invertible f` a mere proposition. That is,
 for any two inhabitants of `is-coh-invertible f` to be propositionally equivalent. 
 Below we outline this property as a desirable condition of type equivalence.
@@ -179,10 +185,10 @@ What is it, then, we are looking for? The HOTT text (§2.4) provides a specifica
 > - Similarly, for each f we have isequiv(f) → qinv(f); thus the two are logically equivalent.
 > - For any two inhabitants e₁, e₂ : isequiv(f) we have e₁ = e₂
 
-To couch this in Rijke's parlance, we define an "equivalence" isequiv(f) to mean
+We define an "equivalence" isequiv(f) to mean
 a function logically equivalent to a quasi-inverse (i.e., of having an inverse),
 but with the additional property that isequiv(f) is a *mere proposition*: any two
-inhabitants are equal. That is,
+inhabitants are equal. That is: 
 
   ∀ f. is-prop (isequiv f).
 
@@ -196,9 +202,75 @@ half-adjoint equivalences are each pairwise equivalent *and* each mere
 propositions.  Certain sources, such as [1lab](1lab.dev), choose to define
 isequiv as a contractible map. The HOTT text chooses half-adjoint equivalences.
 
-I am not precisely sure what it's crucial that equivalence be a mere proposition
-outside of the personal experience that propositional irrelevance can be nice
-(if not crucial) to have. But at this time I can't point to a particular proof or result
-that relies on this irrelevance.
 
+The first two conditions---that isequiv(f) be logically equivalent to qinv(f)---
+are sensible, ergonomic requirements: inhabiting qinv(f) is most typical and requires
+the least mental gymnastics. Why the necessity that isequiv(f) be a mere proposition?
+The shortest answer is that this "plays nicely" with univalence. To dive deeper, we have
+to remember that, in the _univalent foundations of mathematics_, univalence is assumed
+as an _axiom_. Univalence can be postulated as follows:
+
+```agda
+postulate
+  ua : (A ≃ B) ≃ (A ≡ B) 
+
+-- left to right direction (the opposite direction is immediate)
+ua→ : A ≃ B → A ≡ B 
+ua→ eq = ua .fst eq 
+```
+
+The moral of this story might be to be careful what you "wish" for. Requiring that isequiv(f)
+be a mere proposition prevents logical conundrums to follow from univalence. The easiest example
+I can think of is the identifications of Booleans. Recall that bools have precisely two automorphisms: 
+one induced by the identity mapping and one induced by negation.
+
+```agda 
+id𝔹 not𝔹 : Bool ≃ Bool
+id𝔹 = id , ((id , refl-htpy _) , (id , refl-htpy _)) 
+not𝔹 = not , ((not , neg-bool-id) , (not , neg-bool-id))
+``` 
+
+With univalence in hand, we can produce two distinct identifications of Bool. 
+
+```agda 
+id𝔹≡ not𝔹≡ : Bool ≡ Bool 
+id𝔹≡ = ua→ id𝔹 
+not𝔹≡ = ua→ not𝔹
+```
+
+
+
+As an aside: I should expect `id𝔹≡ ≡ refl`---How to show this?
+
+```agda
+id𝔹≡refl : id𝔹≡ ≡ refl 
+id𝔹≡refl with ua {A = Bool} {Bool}
+... | f , (s , sec) , r , retr = ap f (! (retr id𝔹)) ○ {! sec refl  !} 
+``` 
+
+
+## A last remark 
+
+As another aside, I would expect that transporting along these identifications to behave more or less like the 
+automorphisms from which they were constructed. For example:
+
+```agda 
+tr-id𝔹 : tr id id𝔹≡ true ≡ true 
+tr-id𝔹 = {!   !} 
+
+tr-not𝔹≡ : tr id not𝔹≡ true ≡ false 
+tr-not𝔹≡ = {!   !} 
+``` 
+
+but transports only definitionally reduce when the equality witness is `refl`---recall the definition of `tr` below: 
+
+```agda 
+tr′ : {x y : A} (B : A → Set ℓ) → x ≡ y → B x → B y
+tr′ B refl b = b 
+``` 
+
+I'm not sure how Rijke and/or the HOTT book rectify this. To be fair, they define transport using based path induction---
+but this should incur the same problem. Typically, absent a computational interpretation like cubical agda, in which 
+univalence is a theorem (not a postulate), we must augment the computational behavior of transport by adding [rewrite rules](https://agda.readthedocs.io/en/latest/language/rewriting.html)
+to Agda. We will see how this gets resolved as we move on in the text (or perhaps where my assumptions go wrong).
 
