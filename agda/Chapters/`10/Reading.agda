@@ -8,7 +8,7 @@ open import Relation.Binary.PropositionalEquality
 
 
 {- -----------------------------------------------------------------------------
-AH> 
+AH>
 
 
 -}
@@ -148,10 +148,10 @@ fib {A = A} f b = Σ[ a ∈ A ] (f a ≡ b)
 -- Def. 10.3.2
 
 Eq-fib : ∀ (f : A → B) (y : B) → fib f y → fib f y → Set _
-Eq-fib f y f1 f2 = f1 ≡Σ f2
+Eq-fib f y (x , p) (x' , p') = Σ[ α ∈ (x ≡ x')] p ≡ (ap f α) ○ p'
 
 refl-fib : ∀ {f : A → B} {y : B} → ∀ (p : fib f y) → Eq-fib f y p p
-refl-fib (x , p) = refl-≡Σ _
+refl-fib (x , refl) = refl , refl
 
 -- Prop 10.3.3: The canonical map
 --   ((x, p) ≡ (x′ , p′)) → Eq-fib f y ((x, p), (x′ , p′))
@@ -215,13 +215,13 @@ record is-coh-invertible (f : A → B) : Setω where
     H-hom : g′ ∘ f ∼ id
     K-hom : G-hom ·ᵣ f ∼ f ·ₗ H-hom
 
-{- 
-AH> For further reference, the HOTT book defines coherently invertible maps as 
+{-
+AH> For further reference, the HOTT book defines coherently invertible maps as
 "half adjoint equivalences":
-  
+
   Def. 4.2.1 (§4.2, pp 173): A function f : A → B is a *half adjoint equivalence*
   if there are g : B → A and homotopies η : g ∘ f ∼ id and ϵ : f ∘ g ∼ id such that
-  there exists a homotopy 
+  there exists a homotopy
     τ : Π(x : A) f (η x) = ϵ (f x)
 
 See that, mapping HAEs to coh-invertibility, f maps to f, g maps to g′, η maps to
@@ -230,44 +230,29 @@ H-hom, ϵ maps to G-hom, and τ maps to (the symmetry of) K-hom. -}
 
 -- Prop 10.4.2: Any coherently invertible map has contractible fibers
 
-Eq-fib2 : ∀ (f : A → B) (y : B) → fib f y → fib f y → Set _
-Eq-fib2 f y (x , p) (x' , p') = Σ[ α ∈ (x ≡ x')] p ≡ (ap f α) ○ p'
-
-co-map-fib2 : ∀ (f : A → B) (y : B) {fib1 fib2 : fib f y} → Eq-fib2 f y fib1 fib2 → fib1 ≡ fib2
-co-map-fib2 f y {fib1 = x , p} {fib2 = x′ , p′} (refl , refl) = refl
-
 coh-invertible⇒is-contr-map : ∀ (f : A → B) → is-coh-invertible f → is-contr-map f
 coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; G-hom = G-hom ; H-hom = H-hom ; K-hom = K-hom } y =
   ( g′ y , G-hom y) , contr
    where
-      sigh : {ℓ₁ ℓ₂ : Level} {A : Set ℓ₁} {B : Set ℓ₂} {x y : A} (f : A -> B) (e : x ≡ y) -> cong f e ≡ ap f e
-      sigh f refl = refl
-
       K'-hom : (x : A) -> (G-hom (f x)) ≡ (ap f (H-hom x)) ○ refl
-      K'-hom x = (K-hom x) ○ (tr (λ q → whˡ f H-hom x ≡ q ○ refl) (sigh f (H-hom x)) (((right-unit-htpy (f ·ₗ H-hom)) ⁻¹) x))
+      K'-hom x = (K-hom x) ○ (tr (λ q → whˡ f H-hom x ≡ q ○ refl) refl (((right-unit-htpy (f ·ₗ H-hom)) ⁻¹) x))
 
-      lem₂ : (x : A) -> Eq-fib2 f (f x) (g′ (f x) , G-hom (f x)) (x , refl)
+      lem₂ : (x : A) -> Eq-fib f (f x) (g′ (f x) , G-hom (f x)) (x , refl)
       lem₂ x = H-hom x , K'-hom x
 
-      lem₁ : (x : A) → (p : f x ≡ y) → Eq-fib2 f y (g′ y , G-hom y) (x , p)
+      lem₁ : (x : A) → (p : f x ≡ y) → Eq-fib f y (g′ y , G-hom y) (x , p)
       lem₁ x refl = lem₂ x
 
       contr : (x : fib f y) → (g′ y , G-hom y) ≡ x
-      contr (a , fa≡y) = co-map-fib2 f y (lem₁ a fa≡y)
+      contr (a , fa≡y) = co-map-fib f y (lem₁ a fa≡y)
 
-
-
-
-
-      -- contr : (x : fib f y) → (g′ y , G-hom y) ≡ x
-      -- contr (a , fa≡y) = co-map-fib f y (a-dep-fun a fa≡y)
 
 {- For an alternative proof to Rijke's Prop 10.4.2, see HOTT Book's Thm 4.2.6 (pp. 176):
 
   Theorem 4.2.6: If f : A → B is a half adjoint equivalence, then for any y : B,
   the fiber fib f y is contractible.
 
-(Convince yourself that this statement unfolds to: 
+(Convince yourself that this statement unfolds to:
   ∀ (y : B) → is-contr (fib f y)
  which is precisely the definition of is-contr-map f.)
 
@@ -275,16 +260,16 @@ The HOTT proof goes as follows:
 
   Let (g, η, ϵ, τ) : ishae(f), and fix y : B. That is, we have:
     - f : A → B
-    - g : B → A 
-    - η : g ∘ f ∼ id 
-    - ϵ : f ∘ g ∼ id 
-    - τ : ∀ (x : A). f ·ₗ η ∼ ϵ ·ᵣ f 
+    - g : B → A
+    - η : g ∘ f ∼ id
+    - ϵ : f ∘ g ∼ id
+    - τ : ∀ (x : A). f ·ₗ η ∼ ϵ ·ᵣ f
   As our center of contraction for fib f y, we choose (g y , ϵ ·ᵣ y).
-  Now take any (x, p) : fib f y; we want to construct a path from 
-  (g y, ϵ ·ᵣ y) to (x , p). By lemma 4.2.5, it suffices 
+  Now take any (x, p) : fib f y; we want to construct a path from
+  (g y, ϵ ·ᵣ y) to (x , p). By lemma 4.2.5, it suffices
   to give a path γ : g y ≡ x such that f(γ) ○ p = ϵ ·ᵣ y. We put
     γ := g(p)⁻¹ ○ (η ·ᵣ x).
-  Then we have 
+  Then we have
     f(γ) ○ p = fg(p)⁻¹ ○ f(ηx) ○ p
              = fg(p)⁻¹ ○ ϵ(fx) ○ p
              = ϵy
