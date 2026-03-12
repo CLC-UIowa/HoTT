@@ -3,6 +3,10 @@ module Chapters.`10.Reading where
 open import Prelude
 open import Chapters.`09.Reading
 
+open import Relation.Binary.PropositionalEquality
+    using (trans-assoc ; trans-reflʳ ; trans-symˡ ; trans-symʳ)
+
+
 {- -----------------------------------------------------------------------------
 AH> 
 
@@ -226,21 +230,37 @@ H-hom, ϵ maps to G-hom, and τ maps to (the symmetry of) K-hom. -}
 
 -- Prop 10.4.2: Any coherently invertible map has contractible fibers
 
+Eq-fib2 : ∀ (f : A → B) (y : B) → fib f y → fib f y → Set _
+Eq-fib2 f y (x , p) (x' , p') = Σ[ α ∈ (x ≡ x')] p ≡ (ap f α) ○ p'
+
+co-map-fib2 : ∀ (f : A → B) (y : B) {fib1 fib2 : fib f y} → Eq-fib2 f y fib1 fib2 → fib1 ≡ fib2
+co-map-fib2 f y {fib1 = x , p} {fib2 = x′ , p′} (refl , refl) = refl
+
 coh-invertible⇒is-contr-map : ∀ (f : A → B) → is-coh-invertible f → is-contr-map f
 coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; G-hom = G-hom ; H-hom = H-hom ; K-hom = K-hom } y =
   ( g′ y , G-hom y) , contr
-    where
-      -- K'-hom : (x : A) → G-hom (f x) ≡ (ap f (H-hom x)) ○ refl -- G-hom f
-      -- K'-hom = concat-htpy K-hom {!concat-htpy inv-htpy (f ·ₗ H-hom)!}
+   where
+      sigh : {ℓ₁ ℓ₂ : Level} {A : Set ℓ₁} {B : Set ℓ₂} {x y : A} (f : A -> B) (e : x ≡ y) -> cong f e ≡ ap f e
+      sigh f refl = refl
 
-      K'-hom : (x : A) → tr (λ a → f a ≡ f x) (H-hom x) (G-hom (f x)) ≡ refl
-      K'-hom x = {!!} -- apd {!λ a → f a ≡ f x!} {!!}
+      K'-hom : (x : A) -> (G-hom (f x)) ≡ (ap f (H-hom x)) ○ refl
+      K'-hom x = (K-hom x) ○ (tr (λ q → whˡ f H-hom x ≡ q ○ refl) (sigh f (H-hom x)) (((right-unit-htpy (f ·ₗ H-hom)) ⁻¹) x))
 
-      a-dep-fun : (x : A) → (p : f x ≡ y) → Eq-fib f y (g′ y , G-hom y) (x , p)
-      a-dep-fun x refl = H-hom x ,  K'-hom x
+      lem₂ : (x : A) -> Eq-fib2 f (f x) (g′ (f x) , G-hom (f x)) (x , refl)
+      lem₂ x = H-hom x , K'-hom x
+
+      lem₁ : (x : A) → (p : f x ≡ y) → Eq-fib2 f y (g′ y , G-hom y) (x , p)
+      lem₁ x refl = lem₂ x
 
       contr : (x : fib f y) → (g′ y , G-hom y) ≡ x
-      contr (a , fa≡y) = co-map-fib f y (a-dep-fun a fa≡y)
+      contr (a , fa≡y) = co-map-fib2 f y (lem₁ a fa≡y)
+
+
+
+
+
+      -- contr : (x : fib f y) → (g′ y , G-hom y) ≡ x
+      -- contr (a , fa≡y) = co-map-fib f y (a-dep-fun a fa≡y)
 
 {- For an alternative proof to Rijke's Prop 10.4.2, see HOTT Book's Thm 4.2.6 (pp. 176):
 
