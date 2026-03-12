@@ -549,7 +549,9 @@ module 10-7 where
                      tr B (p ○ q) ∼  ((tr B q) ∘ (tr B p))
     transport-comp refl refl = refl-htpy _
 
+    -- (a , b) ≡ (a , b') → (b ≡ b')
     -- snd-cong : ∀ {ℓ} {A : Set ℓ} {B : A → Set ℓ} → (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
+    -- snd-cong = {!!}
     -- snd-cong {ℓ = ℓ} {A = A} {B = B} a b b' eq = ind≡ ((a , b)) motive inner-induction (a , b') eq refl
     --   where
     --    motive : (x : Σ-syntax A B) → (a , b) ≡ x → Set ℓ
@@ -580,13 +582,50 @@ module 10-7 where
 
     open PathReasoning
     i⇒ii-lemma : ∀ {ℓ : Level} {A : Set ℓ} {B : A -> Set ℓ} -> (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (fib (pr₁ {B = B}) x)
-    i⇒ii-lemma = {!   !}
+    i⇒ii-lemma {ℓ} {A} {B} ((f , f-sec-prf) , (g , g-retr-prf)) x = fib-cntr , fib-cntr-prf
+      where
+        a : A
+        a = fst (f x)
+
+        b : B a
+        b = snd (f x)
+
+        a≡x : a ≡ x
+        a≡x = f-sec-prf x
+
+        fib-cntr : fib (pr₁ {A = A} {B = B}) x
+        fib-cntr = (x , tr B a≡x b) , refl
+
+        lem : (a' : A) (b' : B a') → _≡_ {A = Σ A B} (a' , tr B (f-sec-prf a') (snd (f a'))) (a' , b')
+        lem a' b' = ! g-retr-prf (a' , tr B (f-sec-prf a') (snd (f a'))) ○ g-retr-prf (a' , b')
+
+        lem1 : (a' : A) → (pair₁ pair₂ : Σ A B) → (eq₁ : fst pair₁ ≡ a') → (pairs-eq : pair₁ ≡ pair₂)
+          → _≡_ {A = Σ (Σ A B) (λ ab → fst ab ≡ a')} (pair₁ , eq₁) (pair₂ , tr (λ pair → fst pair ≡ a') pairs-eq eq₁)
+        lem1 a' pair₁ pair₂ eq₁ refl = refl -- {!tr (λ pair → fst pair ≡ a') pairs-eq eq₁!}
+
+        fib-cntr-prf : (fiber : fib pr₁ x) → (fib-cntr ≡ fiber)
+        fib-cntr-prf ((a' , b') , refl) = lem1 a' pair₁ pair₂ refl pairs-eq ○ ap (λ q → (pair₂ , q)) tr-lem
+          where
+            pair₁ : Σ A B
+            pair₁ = (a' , tr B (f-sec-prf a') (snd (f a')))
+
+            pair₂ : Σ A B
+            pair₂ = (a' , b')
+
+            pairs-eq : pair₁ ≡ pair₂
+            pairs-eq = lem a' b'
+
+            blah : (a' , tr B (f-sec-prf a') (snd (f a'))) ≡ (a' , b')
+            blah = (trans (sym (g-retr-prf (a' , tr B (f-sec-prf a') (snd (f a'))))) (g-retr-prf (a' , b')))
+
+            tr-lem : tr (λ pair → fst pair ≡ a') blah refl ≡ refl
+            tr-lem = {!blah!}
 
     i⇒ii : ∀ {ℓ : Level} {A : Set ℓ} {B : A -> Set ℓ} -> (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
     i⇒ii {ℓ} {A} {B} ((f , f-sec-prf) , g , g-retr-prf) x with (i⇒ii-lemma ((f , f-sec-prf) , g , g-retr-prf) x)
-    ... | ((a , b) , e) , ctr = tr B e b , λ b' → let fib-eq = ctr (((x , b') , refl)) in lem fib-eq
+    ... | ((a , b) , a≡x) , ctr-prf = tr B a≡x b , λ b' → let fib-eq = ctr-prf (((x , b') , refl)) in lem fib-eq
       where
-        lem : ∀ {a x : A} {b : B a} {b' : B x} {e} ->  _≡_ {A = fib (pr₁ {B = B}) x} ((a , b) , e) ((x , b') , refl) -> tr B e b ≡ b'
+        lem : ∀ {a x : A} {b : B a} {b' : B x} {a≡x} ->  _≡_ {A = fib (pr₁ {B = B}) x} ((a , b) , a≡x) ((x , b') , refl) -> tr B a≡x b ≡ b'
         lem refl = refl
 
         lem₁ : (x : A) -> pr₁ (f x) ≡ x
