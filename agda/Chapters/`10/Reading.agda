@@ -232,10 +232,10 @@ H-hom, ϵ maps to G-hom, and τ maps to (the symmetry of) K-hom. -}
 
 coh-invertible⇒is-contr-map : ∀ (f : A → B) → is-coh-invertible f → is-contr-map f
 coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; G-hom = G-hom ; H-hom = H-hom ; K-hom = K-hom } y =
-  ( g′ y , G-hom y) , contr
+  ((g′ y) , (G-hom y)) , contr
    where
       K'-hom : (x : A) -> (G-hom (f x)) ≡ (ap f (H-hom x)) ○ refl
-      K'-hom x = (K-hom x) ○ (tr (λ q → whˡ f H-hom x ≡ q ○ refl) refl (((right-unit-htpy (f ·ₗ H-hom)) ⁻¹) x))
+      K'-hom = K-hom · (right-unit-htpy (f ·ₗ H-hom)) ⁻¹
 
       lem₂ : (x : A) -> Eq-fib f (f x) (g′ (f x) , G-hom (f x)) (x , refl)
       lem₂ x = H-hom x , K'-hom x
@@ -282,11 +282,40 @@ The HOTT proof goes as follows:
     I don't know if this maps directly onto any results of Rijke's.
  -}
 
+open import Relation.Binary.PropositionalEquality
+    using (cong-id ; trans-injectiveˡ ; trans-assoc ; trans-reflʳ ; trans-symˡ ; trans-symʳ)
 
 
 -- Def. 10.4.3: natural squares of homotopies
 
+Nat-Htpy : {x y : A} {f g : A → B} (H : f ∼ g) (p : x ≡ y) → Set _
+Nat-Htpy {x = x} {y = y} {f = f} {g = g} H p = ap f p ○ H y ≡ H x ○ ap g p
+
+nat-htpy : {x y : A} {f g : A → B} (H : f ∼ g) (p : x ≡ y) → Nat-Htpy H p
+nat-htpy H refl = ! trans-reflʳ _
+
+
 -- Def. 10.4.4: ...
+
+open PathReasoning
+
+def-10-4-4 : (x : A) {f : A → A} (H : f ∼ id) → H (f x) ≡ ap f (H x)
+def-10-4-4 x {f} H = begin
+  H (f x) ≡⟨ {! trans-injectiveˡ nh!} ⟩
+  ap f (H x) ∎ -- trans-injectiveˡ (H x) {!cong-id!}  -- ! right-unit-htpy H (f x) ○ trans-reflʳ (H (f x)) ○ {!!}
+  where
+    nh : (ap f (H (f x))) ○ (H (f x)) ≡
+      (H (f (f x))) ○ (ap id (H (f x)))
+    nh = nat-htpy H (H (f x))
+
+    nh' : ap f (H (f x)) ○ H (f x) ≡ H (f (f x)) ○ H (f x)
+    nh' = tr
+      (λ X → (ap f (H (f x))) ○ (H (f x)) ≡ (H (f (f x))) ○ (X))
+      (cong-id (H (f x)))
+      nh
+
+    nh'' : ap f (H (f x)) ≡ H (f (f x))
+    nh'' = trans-injectiveˡ (H (f x)) nh'
 
 -- Lem 10.4.5: has-inverse f → is-coh-invertible f.
 
