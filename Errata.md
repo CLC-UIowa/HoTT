@@ -16,7 +16,7 @@ The text for 9.3 (b) is somewhat misleading: "show that for any two homotopic eq
   𝔹⁻¹ : Bool ≃ Bool
   𝔹⁻¹ = not , ((not , neg-bool-id) , (not , neg-bool-id))
   𝔹 : Bool ≃ Bool
-  𝔹 = id , (id , refl-∼ _) , (id , refl-∼ _)
+  𝔹 = id , (id , refl-∼) , (id , refl-∼)
 ```
 
 We think the question should be reworded to emphasize that, if e₁ and e₂ are equivalences built from (resp.) f and g such that
@@ -34,6 +34,13 @@ We are pretty certain this statement is false, and that α and β should have th
 (The text reads that α and β have domains B and A, respectively.) If one tries to solve the exercise as written, the (i) to (ii) case goes through, but the (ii) to (i) case is impossible.  To see that the (ii) to (i) case is impossible as written, first note that what is required is to produce functions from A' × B' to A × B.  All we have are the functions α and β, which (as written) require a B and an A, respectively, to be of any use to us.  But we only get to assume we have an element (a', b') : A' × B', and from this we cannot obtain an element of type B or an element of type A, so we are stuck.  Making the changes described above fixes the problem.
 
 ## Chapter 10
+
+### 10.4
+
+Less an error and more a matter of taste, but definitions 10.4.3 and 10.4.4 are arguably lemmas, not definitions. Def 10.4.3 is a claim (and proof) that if `f ∼ g`, then f and g are naturally isomorphic. Def 10.4.4 proves that `H ∘ f ∼ ap f ∘ H` if `f ∼ id`. Proofs of each are given in [`10/Reading.agda](./agda/Chapters/`10/Reading.agda).
+
+
+Effectively the claim 
 
 ### 10.8
 

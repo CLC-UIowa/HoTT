@@ -121,22 +121,19 @@ module Homotopies where
   private
     variable
       ℓ ℓ₁ ℓ₂ ℓ₃ : Level
-      A : Set ℓ
-      B : A → Set ℓ
+      A B C D : Set ℓ
+      𝐁 𝐂 𝐃 : A → Set ℓ
+      f g h i : (x : A) → 𝐁 x
 
   -- Definition 9.1.2
   infix 4 _∼_
-  _∼_ : ((x : A) → B x) → ((x : A) → B x) → Set _
+  _∼_ : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} → ((x : A) → B x) → ((x : A) → B x) → Set _
   _∼_ {A = A} f g = (x : A) → f x ≡ g x
 
   -- Definition 9.1.5
 
-  refl-∼ : {f : (x : A) → B x} → f ∼ f
+  refl-∼ : {f : (x : A) → 𝐁 x} → f ∼ f
   refl-∼ _ = refl
-  
-  private
-    variable
-      f g h : (x : A) → B x
 
   sym-∼ : f ∼ g → g ∼ f
   sym-∼ f∼g = sym ∘ f∼g
@@ -157,8 +154,43 @@ module Homotopies where
   ∼-setoid .Setoid.isEquivalence = ∼-equiv
 
   instance 
-    HtpyGroupoid : GroupoidSyntax {A = (x : A) → B x} (_∼_)
+    HtpyGroupoid : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} → GroupoidSyntax {A = (x : A) → B x} (_∼_)
     HtpyGroupoid = record { Refl = refl-∼ ; _⁻¹ = sym-∼ ; _○_ = trans-∼ } 
+
+  -- Groupoidal structure of homotopies
+
+  assoc-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g h i : (x : A) → B x} → 
+              (H : f ∼ g) → (K : g ∼ h) → (L : h ∼ i) → 
+              (H ○ K) ○ L ∼ H ○ (K ○ L)
+  assoc-htpy H K L x = assoc (H x) (K x) (L x)
+
+  left-identity-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} → 
+                      (H : f ∼ g) → Refl ○ H ∼ H
+  left-identity-htpy _ _ = refl
+
+  right-identity-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} → 
+                        (H : f ∼ g) → H ○ refl-∼ ∼ H
+  right-identity-htpy H = right-identity ∘ H
+
+  left-inv-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} →
+                  (H : f ∼ g) → H ⁻¹ ○ H ∼ refl-∼
+  left-inv-htpy H = left-inv ∘ H
+
+  right-inv-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} →
+                  (H : f ∼ g) → H ○ H ⁻¹ ∼ refl-∼
+  right-inv-htpy H = right-inv ∘ H
+
+  -- -- Definition 9.1.7
+
+  -- Left whiskering
+  infixl 25 _○ₗ_
+  _○ₗ_ : (h : B → C) → (H : f ∼ g) → (h ∘ f) ∼ (h ∘ g)
+  h ○ₗ H = ap h ∘ H 
+
+  -- Right whiskering 
+  infixl 25 _○ᵣ_
+  _○ᵣ_ : (H : g ∼ h) → (f : A → B) → (g ∘ f) ∼ (h ∘ f)
+  H ○ᵣ f = H ∘ f 
 
 open Homotopies public
 

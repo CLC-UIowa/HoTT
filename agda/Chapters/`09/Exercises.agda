@@ -253,22 +253,22 @@ module 9-3 where
   is-equiv↔ : (f g : A → B) (H : f ∼ g) → is-equiv f ↔ is-equiv g
   is-equiv↔ f g H .to ((r , f∘r∼id) , (l , l∘f∼id)) .fst =
     r , (begin
-      g ∘ r ∼⟨ H ⁻¹ ·ᵣ r ⟩
+      g ∘ r ∼⟨ H ⁻¹ ○ᵣ r ⟩
       f ∘ r ∼⟨ f∘r∼id    ⟩
       id ∎)
   is-equiv↔ f g H .to ((r , f∘r∼id) , (l , l∘f∼id)) .snd =
     l , (begin
-      l ∘ g ∼⟨ l ·ₗ H ⁻¹ ⟩
+      l ∘ g ∼⟨ l ○ₗ H ⁻¹ ⟩
       l ∘ f ∼⟨ l∘f∼id    ⟩
       id ∎)
   is-equiv↔ f g H .from ((r , g∘r∼id) , (l , l∘g∼id)) .fst =
     r , (begin
-      f ∘ r ∼⟨ H ·ᵣ r ⟩
+      f ∘ r ∼⟨ H ○ᵣ r ⟩
       g ∘ r ∼⟨ g∘r∼id ⟩
       id ∎)
   is-equiv↔ f g H .from ((r , g∘r∼id) , (l , l∘g∼id)) .snd =
     l , (begin
-      l ∘ f ∼⟨ l ·ₗ H ⟩
+      l ∘ f ∼⟨ l ○ₗ H ⟩
       l ∘ g ∼⟨ l∘g∼id ⟩
       id ∎)
 
@@ -292,7 +292,7 @@ module 9-3 where
   𝔹⁻¹ : Bool ≃ Bool
   𝔹⁻¹ = not , ((not , neg-bool-id) , (not , neg-bool-id))
   𝔹 : Bool ≃ Bool
-  𝔹 = id , (id , refl-∼ _) , (id , refl-∼ _)
+  𝔹 = id , (id , refl-∼) , (id , refl-∼)
 
   counter-example : ¬ (`inv 𝔹 ∼ `inv 𝔹⁻¹)
   counter-example f with f true
@@ -307,12 +307,12 @@ module 9-3 where
     with is-equiv⇒equalSplits eqv-f
   ... | G =
     begin
-      f⁻¹          ∼⟨ f⁻¹ ·ₗ refl-∼ id  ⟩
-      f⁻¹ ∘ id     ∼⟨ f⁻¹ ·ₗ g∘g⁻¹∼id ⁻¹  ⟩
-      f⁻¹ ∘ g ∘ g⁻¹ ∼⟨ f⁻¹ ·ₗ H ⁻¹ ·ᵣ g⁻¹ ⟩
-      f⁻¹ ∘ f ∘ g⁻¹ ∼⟨  G ·ᵣ f ·ᵣ g⁻¹ ⟩
-      h ∘ f ∘ g⁻¹   ∼⟨  h∘f∼id ·ᵣ g⁻¹ ⟩
-      id ∘ g⁻¹      ∼⟨ refl-∼ _ ⟩
+      f⁻¹          ∼⟨ f⁻¹ ○ₗ refl-∼  ⟩
+      f⁻¹ ∘ id     ∼⟨ f⁻¹ ○ₗ g∘g⁻¹∼id ⁻¹  ⟩
+      f⁻¹ ∘ g ∘ g⁻¹ ∼⟨ f⁻¹ ○ₗ H ⁻¹ ○ᵣ g⁻¹ ⟩
+      f⁻¹ ∘ f ∘ g⁻¹ ∼⟨  G ○ᵣ f ○ᵣ g⁻¹ ⟩
+      h ∘ f ∘ g⁻¹   ∼⟨  h∘f∼id ○ᵣ g⁻¹ ⟩
+      id ∘ g⁻¹      ∼⟨ refl-∼ ⟩
       g⁻¹ ∎
 
 
@@ -360,21 +360,21 @@ module 9-4 where
     -- (i) The triangle commutes.
     I : g  ∼ f ∘ s
     I = begin
-      g         ∼⟨ refl-∼ _ ⟩
-      g ∘ id    ∼⟨ g ·ₗ S ⁻¹ ⟩
-      g ∘ h ∘ s ∼⟨ H ⁻¹ ·ᵣ s ⟩
+      g         ∼⟨ refl-∼ ⟩
+      g ∘ id    ∼⟨ g ○ₗ S ⁻¹ ⟩
+      g ∘ h ∘ s ∼⟨ H ⁻¹ ○ᵣ s ⟩
       f ∘ s ∎
 
     -- (ii) f has a section iff g has a section.
     f-section↔g-section : section f ↔ section g
     f-section↔g-section .to (f⁻¹ , F) .fst = h ∘ f⁻¹
     f-section↔g-section .to (f⁻¹ , F) .snd = begin
-      g ∘ h ∘ f⁻¹ ∼⟨ H ⁻¹ ·ᵣ f⁻¹ ⟩
+      g ∘ h ∘ f⁻¹ ∼⟨ H ⁻¹ ○ᵣ f⁻¹ ⟩
       f ∘ f⁻¹    ∼⟨ F ⟩
       id ∎
     f-section↔g-section .from (g⁻¹ , G) .fst = s ∘ g⁻¹
     f-section↔g-section .from (g⁻¹ , G) .snd = begin
-      f ∘ s ∘ g⁻¹ ∼⟨ I ⁻¹  ·ᵣ g⁻¹ ⟩
+      f ∘ s ∘ g⁻¹ ∼⟨ I ⁻¹  ○ᵣ g⁻¹ ⟩
       g ∘ g⁻¹    ∼⟨ G ⟩
       id ∎
 
@@ -397,21 +397,21 @@ module 9-4 where
     -- (i) The triangle commutes.
     I : h ∼ r ∘ f
     I = begin
-      h         ∼⟨ refl-∼ _ ⟩
-      id ∘ h    ∼⟨ R ⁻¹ ·ᵣ h ⟩
-      r ∘ g ∘ h   ∼⟨ r ·ₗ H ⁻¹ ⟩
+      h         ∼⟨ refl-∼ ⟩
+      id ∘ h    ∼⟨ R ⁻¹ ○ᵣ h ⟩
+      r ∘ g ∘ h   ∼⟨ r ○ₗ H ⁻¹ ⟩
       r ∘ f ∎
 
     -- (ii) f has a retraction iff h has a retraction.
     f-retraction↔h-retraction : retraction f ↔ retraction h
     f-retraction↔h-retraction .to (f⁻¹ , F) .fst = f⁻¹ ∘ g
     f-retraction↔h-retraction .to (f⁻¹ , F) .snd = begin
-      f⁻¹ ∘ g ∘ h  ∼⟨  f⁻¹ ·ₗ H ⁻¹  ⟩
+      f⁻¹ ∘ g ∘ h  ∼⟨  f⁻¹ ○ₗ H ⁻¹  ⟩
       f⁻¹ ∘ f    ∼⟨ F ⟩
       id ∎
     f-retraction↔h-retraction .from (h⁻¹ , H) .fst = h⁻¹ ∘ r
     f-retraction↔h-retraction .from (h⁻¹ , H) .snd = begin
-      h⁻¹ ∘ r ∘ f ∼⟨ h⁻¹ ·ₗ I ⁻¹ ⟩
+      h⁻¹ ∘ r ∘ f ∼⟨ h⁻¹ ○ₗ I ⁻¹ ⟩
       h⁻¹ ∘ h   ∼⟨ H ⟩
       id ∎
 
@@ -436,8 +436,8 @@ module 9-4 where
     fg-equiv : is-equiv f → is-equiv g → is-equiv h
     fg-equiv ((f⁻¹ , F) , retr-f) (sec-g , (r , G)) .fst = f⁻¹ ∘ g ,
       (begin
-        h ∘ f⁻¹ ∘ g    ∼⟨ I ·ᵣ f⁻¹ ·ᵣ g ⟩
-        r ∘ f ∘ f⁻¹ ∘ g ∼⟨ r ·ₗ F ·ᵣ g ⟩
+        h ∘ f⁻¹ ∘ g    ∼⟨ I ○ᵣ f⁻¹ ○ᵣ g ⟩
+        r ∘ f ∘ f⁻¹ ∘ g ∼⟨ r ○ₗ F ○ᵣ g ⟩
         r ∘ g ∼⟨ G ⟩
         id ∎)
       where
@@ -451,8 +451,8 @@ module 9-4 where
         open 9-4a f h g H sec-h
     fh-equiv (sec-f , (f⁻¹ , F)) ((h⁻¹ , H′), retr-h) .snd = h ∘ f⁻¹ ,
       (begin
-        h ∘ f⁻¹ ∘ g       ∼⟨ h ·ₗ (f⁻¹ ·ₗ I) ⟩
-        h ∘ f⁻¹ ∘ f ∘ h⁻¹ ∼⟨ h ·ₗ F ·ᵣ h⁻¹ ⟩
+        h ∘ f⁻¹ ∘ g       ∼⟨ h ○ₗ (f⁻¹ ○ₗ I) ⟩
+        h ∘ f⁻¹ ∘ f ∘ h⁻¹ ∼⟨ h ○ₗ F ○ᵣ h⁻¹ ⟩
         h ∘ h⁻¹           ∼⟨ H′ ⟩
         id ∎)
       where
@@ -472,13 +472,13 @@ module 9-4 where
 
     equivSections : (e : is-equiv f) → is-equiv (`sec e)
     equivSections e@((s , S) , (r , R)) =
-      (f , is-equiv⇒equalSplits e ·ᵣ f · R) ,
+      (f , is-equiv⇒equalSplits e ○ᵣ f ○ R) ,
       f , S
 
     equivRetractions : (e : is-equiv f) → is-equiv (`retr e)
     equivRetractions e@((s , S) , (r , R)) =
       (f , R) ,
-      f , f ·ₗ (is-equiv⇒equalSplits e) ⁻¹ · S
+      f , f ○ₗ (is-equiv⇒equalSplits e) ⁻¹ ○ S
 
 -------------------------------------------------------------------------------
 -- #9.5
@@ -615,10 +615,10 @@ module 9-6 where
 
   -- Computational laws for [_,_] stated as homotopies
   []-reduce₁ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ inj₁ ∼ f
-  []-reduce₁ = refl-∼ _
+  []-reduce₁ = refl-∼
 
   []-reduce₂ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ inj₂ ∼ g
-  []-reduce₂ = refl-∼ _
+  []-reduce₂ = refl-∼
 
   -- [ g , h ] is unique up to homotopy
   []-unique : ∀ {f : A + B → C} {g : A → C} {h : B → C} →
@@ -628,7 +628,7 @@ module 9-6 where
 
   -- η-rule for coproducts
   []-η : ∀ {f : A + B → C} → [ f ∘ inj₁ , f ∘ inj₂ ] ∼ f
-  []-η {f = f} = []-unique (refl-∼ (f ∘ inj₁)) (refl-∼ (f ∘ inj₂))
+  []-η {f = f} = []-unique refl-∼ refl-∼
 
   []-η-id : [ inj₁ {A = A} , inj₂ {B = B} ] ∼ id
   []-η-id {A = A} {B = B} = []-η {f = id}
@@ -641,7 +641,7 @@ module 9-6 where
   -- distributivity
   []-distrib : ∀ (h : C → D) (f : A → C) (g : B → C) →
                   h ∘ [ f , g ] ∼ [ h ∘ f , h ∘ g ]
-  []-distrib _ _ _ = ([]-unique (refl-∼ _) (refl-∼ _)) ⁻¹
+  []-distrib _ _ _ = ([]-unique (refl-∼) (refl-∼)) ⁻¹
 
   -- f ⊕ g is the unique arrow from (A + B) to (C + D)
   -- s.t. inj₁ ∘ f ∼ (f ⊕ g) ∘ inj₁  and inj₂ ∘ g ∼ (f ⊕ g) ∘ inj₂.
@@ -654,7 +654,7 @@ module 9-6 where
 
   ⊕-id : id {A = A} ⊕ id {A = B} ∼ id
   ⊕-id = begin
-    (id ⊕ id) ∼⟨ refl-∼ _ ⟩
+    (id ⊕ id) ∼⟨ refl-∼ ⟩
     [ inj₁ , inj₂ ] ∼⟨ []-η-id ⟩
     id ∎
 
@@ -668,12 +668,12 @@ module 9-6 where
   ∘+-distribute : ∀ {f : A → B} {g : B → C} {h : X → Y} {k : Y → Z} →
                   (g ⊕ k) ∘ (f ⊕ h) ∼ (g ∘ f) ⊕ (k ∘ h)
   ∘+-distribute {f = f} {g} {h} {k} = begin
-    (g ⊕ k) ∘ (f ⊕ h)                         ∼⟨ refl-∼ _ ⟩
+    (g ⊕ k) ∘ (f ⊕ h)                         ∼⟨ refl-∼ ⟩
     (g ⊕ k) ∘ [ inj₁ ∘ f , inj₂ ∘ h ]             ∼⟨ []-distrib (g ⊕ k) (inj₁ ∘ f) (inj₂ ∘ h) ⟩
-    [ (g ⊕ k) ∘ inj₁ ∘ f , (g ⊕ k) ∘ inj₂ ∘ h ]   ∼⟨ refl-∼ _ ⟩
+    [ (g ⊕ k) ∘ inj₁ ∘ f , (g ⊕ k) ∘ inj₂ ∘ h ]   ∼⟨ refl-∼ ⟩
     [ ([ inj₁ ∘ g , inj₂ ∘ k ] ∘ inj₁) ∘ f ,
       ([ inj₁ ∘ g , inj₂ ∘ k ] ∘ inj₂) ∘ h ]         ∼⟨ ∼[ []-reduce₁ {g = inj₂ ∘ k}  , []-reduce₂ {f = inj₁ ∘ g} ]∼ ⟩
-    [ inj₁ ∘ g ∘ f ,  inj₂ ∘ k ∘ h ]               ∼⟨ refl-∼ _ ⟩
+    [ inj₁ ∘ g ∘ f ,  inj₂ ∘ k ∘ h ]               ∼⟨ refl-∼ ⟩
      (g ∘ f) ⊕ (k ∘ h) ∎
 
 
@@ -685,7 +685,7 @@ module 9-6 where
   -- Follows simply from congruence over [_,_]
   ∼⟨_⊕_⟩∼ : ∀ {f f′ : A → C} {g g′ : B → D} → f ∼ f′ → g ∼ g′ →
                f ⊕ g ∼ f′ ⊕ g′
-  ∼⟨ H ⊕ K ⟩∼ = ∼[ inj₁ ·ₗ H , inj₂ ·ₗ K ]∼
+  ∼⟨ H ⊕ K ⟩∼ = ∼[ inj₁ ○ₗ H , inj₂ ○ₗ K ]∼
 
   -- --------------------------------------------------------------------
   -- (d) Show that if both f and g are equivalences, then so is f ⊕ g.
@@ -739,7 +739,7 @@ module 9-7 where
   -- --------------------------------------------------------------------
   -- (b) Show that id_A × id_B ∼ id_{A × B}
   id-funprod : id {A = A} ⊗ id {A = B} ∼ id {A = A × B}
-  id-funprod = refl-∼ _
+  id-funprod = refl-∼
 
   -- --------------------------------------------------------------------
   -- (c) Show that for any two pairs of composable functions
@@ -748,7 +748,7 @@ module 9-7 where
   -- there is a homotopy (f′ ∘ f) × (g′ ∘ g) ∼ (f′ × g′) ∘ (f × g)
   comp-dist : (f : A → A′) (f′ : A′ → A′′) (g : B → B′) (g′ : B′ → B′′) →
               (f′ ∘ f) ⊗ (g′ ∘ g) ∼ (f′ ⊗ g′) ∘ (f ⊗ g)
-  comp-dist f f′ g g′ = refl-∼ _
+  comp-dist f f′ g g′ = refl-∼
 
   -- --------------------------------------------------------------------
   -- (d) Show that if H : f ∼ f′ and K : g ∼ g′, then there is a homotopy

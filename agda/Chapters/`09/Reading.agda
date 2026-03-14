@@ -21,37 +21,6 @@ private variable
 neg-bool-id : not ∘ not ∼ id
 neg-bool-id = λ { false → refl ; true → refl}
 
--- Proposition 9.1.6
-
-assoc-htpy : (H : f ∼ g) → (K : g ∼ h) → (L : h ∼ i) → (H · K) · L ∼ H · (K · L)
-assoc-htpy H K L = {! trans-assoc  !} -- λ x → assoc (H x)
-
-left-unit-htpy : (H : f ∼ g) → refl-∼ f · H ∼ H
-left-unit-htpy _ _ = refl
-
-right-unit-htpy : (H : f ∼ g) → H · refl-∼ g ∼ H
-right-unit-htpy H = right-identity ∘ H
-
-left-inv-htpy : (H : f ∼ g) → H ⁻¹ · H ∼ refl-∼ g
-left-inv-htpy H = left-inv ∘ H
-
-right-inv-htpy : (H : f ∼ g) → H · H ⁻¹ ∼ refl-∼ f
-right-inv-htpy H = right-inv ∘ H
-
--- Definition 9.1.7
-
-whˡ : (h : B → C) → (H : f ∼ g) → (h ∘ f) ∼ (h ∘ g)
-whˡ h H = λ x → cong h (H x)
-
-infixl 25 whˡ
-syntax whˡ h H = h ·ₗ H
-
-whʳ : (H : g ∼ h) → (f : A → B) → (g ∘ f) ∼ (h ∘ f)
-whʳ H f = λ x → H (f x)
-
-infixl 25 whʳ
-syntax whʳ H f = H ·ᵣ f
-
 --------------------------------------------------------------------
 -- §9.2
 
@@ -99,8 +68,8 @@ has-inverse⇒is-equiv (g , (H , K)) = (g , H) , (g , K)
 -- if f has a section g and retraction h then g ∼ h.
 is-equiv⇒equalSplits : ∀ {f : A → B} (p : is-equiv f) → `sec p ∼ `retr p
 is-equiv⇒equalSplits {f = f} ((g , G) , (h , H)) = begin
-  g          ∼⟨ (H ·ᵣ g) ⁻¹ ⟩
-  h ∘ f ∘ g  ∼⟨ h ·ₗ G ⟩
+  g          ∼⟨ (H ○ᵣ g) ⁻¹ ⟩
+  h ∘ f ∘ g  ∼⟨ h ○ₗ G ⟩
   h ∎
 
 is-equiv⇒has-inverse : is-equiv f → has-inverse f
@@ -108,7 +77,7 @@ is-equiv⇒has-inverse {f = f} p@((g , G) , (h , H)) = g , G , L
   where
     L : (g ∘ f) ∼ id
     L = begin
-          g ∘ f ∼⟨ is-equiv⇒equalSplits p ·ᵣ f ⟩
+          g ∘ f ∼⟨ is-equiv⇒equalSplits p ○ᵣ f ⟩
           h ∘ f ∼⟨  H ⟩
           id ∎
 
@@ -121,7 +90,7 @@ equivalence-inverse-equivalence {f = f} p@((g , G) , (h , H)) =
   where
     L : g ∘ f ∼ id
     L = begin
-      g ∘ f ∼⟨ is-equiv⇒equalSplits p ·ᵣ f ⟩
+      g ∘ f ∼⟨ is-equiv⇒equalSplits p ○ᵣ f ⟩
       h ∘ f ∼⟨ H ⟩
       id ∎
 
@@ -183,7 +152,7 @@ open import Data.Empty
     from b = (tt , b)
 
     H : to ∘ from ∼ id
-    H = refl-∼ _
+    H = refl-∼
 
     G : from ∘ to ∼ id
     G (tt , b) = refl
