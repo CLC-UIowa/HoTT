@@ -13,6 +13,9 @@ private variable
   𝐁 𝐂 𝐃 : A → Set ℓ
   f g h i : (x : A) → 𝐁 x
 
+--------------------------------------------------------------------
+-- §9.1 
+
 -- Example 9.1.3
 
 neg-bool-id : not ∘ not ∼ id
@@ -21,19 +24,19 @@ neg-bool-id = λ { false → refl ; true → refl}
 -- Proposition 9.1.6
 
 assoc-htpy : (H : f ∼ g) → (K : g ∼ h) → (L : h ∼ i) → (H · K) · L ∼ H · (K · L)
-assoc-htpy H K L = λ x → trans-assoc (H x)
+assoc-htpy H K L = {! trans-assoc  !} -- λ x → assoc (H x)
 
-left-unit-htpy : (H : f ∼ g) → refl-htpy f · H ∼ H
-left-unit-htpy H = λ x → refl
+left-unit-htpy : (H : f ∼ g) → refl-∼ f · H ∼ H
+left-unit-htpy _ _ = refl
 
-right-unit-htpy : (H : f ∼ g) → H · refl-htpy g ∼ H
-right-unit-htpy H = trans-reflʳ ∘ H
+right-unit-htpy : (H : f ∼ g) → H · refl-∼ g ∼ H
+right-unit-htpy H = right-identity ∘ H
 
-left-inv-htpy : (H : f ∼ g) → H ⁻¹ · H ∼ refl-htpy g
-left-inv-htpy H = trans-symˡ ∘ H
+left-inv-htpy : (H : f ∼ g) → H ⁻¹ · H ∼ refl-∼ g
+left-inv-htpy H = left-inv ∘ H
 
-right-inv-htpy : (H : f ∼ g) → H · H ⁻¹ ∼ refl-htpy f
-right-inv-htpy H = trans-symʳ ∘ H
+right-inv-htpy : (H : f ∼ g) → H · H ⁻¹ ∼ refl-∼ f
+right-inv-htpy H = right-inv ∘ H
 
 -- Definition 9.1.7
 
@@ -48,6 +51,9 @@ whʳ H f = λ x → H (f x)
 
 infixl 25 whʳ
 syntax whʳ H f = H ·ᵣ f
+
+--------------------------------------------------------------------
+-- §9.2
 
 -- Definition 9.2.1
 
@@ -177,12 +183,13 @@ open import Data.Empty
     from b = (tt , b)
 
     H : to ∘ from ∼ id
-    H = refl-htpy _
+    H = refl-∼ _
 
     G : from ∘ to ∼ id
     G (tt , b) = refl
 
--- 9.3 Characterizing the identity types of Σ-types
+--------------------------------------------------------------------
+-- §9.3 Characterizing the identity types of Σ-types
 
 _≡Σ_ : Σ A 𝐁 → Σ A 𝐁 → Set _
 _≡Σ_ {A = A} {𝐁 = B} s t =

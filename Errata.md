@@ -16,7 +16,7 @@ The text for 9.3 (b) is somewhat misleading: "show that for any two homotopic eq
   𝔹⁻¹ : Bool ≃ Bool
   𝔹⁻¹ = not , ((not , neg-bool-id) , (not , neg-bool-id))
   𝔹 : Bool ≃ Bool
-  𝔹 = id , (id , refl-htpy _) , (id , refl-htpy _)
+  𝔹 = id , (id , refl-∼ _) , (id , refl-∼ _)
 ```
 
 We think the question should be reworded to emphasize that, if e₁ and e₂ are equivalences built from (resp.) f and g such that

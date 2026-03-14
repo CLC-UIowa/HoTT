@@ -268,7 +268,7 @@ module 10-3 where
       prf-hom2 = sym ∘ prf-cB ∘ f
 
       h-ret→f-ret = _↔_.from $ f-retraction↔h-retraction f (const tt) (`sec is-equiv-const-tt-B) prf-hom2
-                  (const tt , refl-htpy _)
+                  (const tt , refl-∼ _)
 
       f-sec : section f
       f-sec = g-sec→f-sec  (const tt , prf-cB)
@@ -493,7 +493,7 @@ module 10-7 where
         inv-f {A} {B = B} a y = ((a , y) , refl)
 
         section-f : section (f a)
-        section-f = (inv-f a) , refl-htpy id
+        section-f = (inv-f a) , refl-∼ id
 
         infix 4 _≡f_
         _≡f_ : fib (pr₁ {A = A} {B = B}) a → fib (pr₁ {A = A} {B = B}) a → Set _
@@ -547,7 +547,7 @@ module 10-7 where
 
     transport-comp : ∀ { x y z } → (p : x ≡ y) → (q : y ≡ z) →
                      tr B (p ○ q) ∼  ((tr B q) ∘ (tr B p))
-    transport-comp refl refl = refl-htpy _
+    transport-comp refl refl = refl-∼ _
 
     -- (a , b) ≡ (a , b') → (b ≡ b')
     -- snd-cong : ∀ {ℓ} {A : Set ℓ} {B : A → Set ℓ} → (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
@@ -692,7 +692,7 @@ module 10-7 where
         sec a = a , (center-B a)
 
         sec-h : pr₁ ∘ sec ∼ id
-        sec-h = refl-htpy _
+        sec-h = refl-∼ _
 
         retr : A → Σ A B
         retr = sec
@@ -826,6 +826,6 @@ module 10-8 where
           e-retr : retraction e
           e-retr = e-retr-fun , e-retr-h
 
-      -- Finally, we prove commutativity, which is just refl-htpy _
+      -- Finally, we prove commutativity, which is just refl-∼ _
       H : f ∼ fst ∘ e
-      H = refl-htpy _
+      H = refl-∼ _

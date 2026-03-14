@@ -7,12 +7,6 @@ open import Relation.Binary.PropositionalEquality
     using (trans-assoc ; trans-reflʳ ; trans-symˡ ; trans-symʳ)
 
 
-{- -----------------------------------------------------------------------------
-AH>
-
-
--}
-
 --------------------------------------------------------------------
 -- Chapter 10: Contractible types and contractible maps
 
@@ -100,7 +94,7 @@ ind⊤ : ∀ {ℓ} {B : ⊤ → Set ℓ} → B tt → (∀ (x : ⊤) → B x)
 ind⊤ btt tt = btt
 
 ⊤-SI : SingletonInduction ⊤
-⊤-SI = SingInd tt ind⊤ (refl-htpy _)
+⊤-SI = SingInd tt ind⊤ (refl-∼ _)
 
 
 

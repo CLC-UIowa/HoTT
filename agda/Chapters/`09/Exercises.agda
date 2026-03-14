@@ -292,7 +292,7 @@ module 9-3 where
   𝔹⁻¹ : Bool ≃ Bool
   𝔹⁻¹ = not , ((not , neg-bool-id) , (not , neg-bool-id))
   𝔹 : Bool ≃ Bool
-  𝔹 = id , (id , refl-htpy _) , (id , refl-htpy _)
+  𝔹 = id , (id , refl-∼ _) , (id , refl-∼ _)
 
   counter-example : ¬ (`inv 𝔹 ∼ `inv 𝔹⁻¹)
   counter-example f with f true
@@ -307,12 +307,12 @@ module 9-3 where
     with is-equiv⇒equalSplits eqv-f
   ... | G =
     begin
-      f⁻¹          ∼⟨ f⁻¹ ·ₗ refl-htpy id  ⟩
+      f⁻¹          ∼⟨ f⁻¹ ·ₗ refl-∼ id  ⟩
       f⁻¹ ∘ id     ∼⟨ f⁻¹ ·ₗ g∘g⁻¹∼id ⁻¹  ⟩
       f⁻¹ ∘ g ∘ g⁻¹ ∼⟨ f⁻¹ ·ₗ H ⁻¹ ·ᵣ g⁻¹ ⟩
       f⁻¹ ∘ f ∘ g⁻¹ ∼⟨  G ·ᵣ f ·ᵣ g⁻¹ ⟩
       h ∘ f ∘ g⁻¹   ∼⟨  h∘f∼id ·ᵣ g⁻¹ ⟩
-      id ∘ g⁻¹      ∼⟨ refl-htpy _ ⟩
+      id ∘ g⁻¹      ∼⟨ refl-∼ _ ⟩
       g⁻¹ ∎
 
 
@@ -360,7 +360,7 @@ module 9-4 where
     -- (i) The triangle commutes.
     I : g  ∼ f ∘ s
     I = begin
-      g         ∼⟨ refl-htpy _ ⟩
+      g         ∼⟨ refl-∼ _ ⟩
       g ∘ id    ∼⟨ g ·ₗ S ⁻¹ ⟩
       g ∘ h ∘ s ∼⟨ H ⁻¹ ·ᵣ s ⟩
       f ∘ s ∎
@@ -397,7 +397,7 @@ module 9-4 where
     -- (i) The triangle commutes.
     I : h ∼ r ∘ f
     I = begin
-      h         ∼⟨ refl-htpy _ ⟩
+      h         ∼⟨ refl-∼ _ ⟩
       id ∘ h    ∼⟨ R ⁻¹ ·ᵣ h ⟩
       r ∘ g ∘ h   ∼⟨ r ·ₗ H ⁻¹ ⟩
       r ∘ f ∎
@@ -615,10 +615,10 @@ module 9-6 where
 
   -- Computational laws for [_,_] stated as homotopies
   []-reduce₁ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ inj₁ ∼ f
-  []-reduce₁ = refl-htpy _
+  []-reduce₁ = refl-∼ _
 
   []-reduce₂ : ∀ {f : A → C} {g : B → C} → [ f , g ] ∘ inj₂ ∼ g
-  []-reduce₂ = refl-htpy _
+  []-reduce₂ = refl-∼ _
 
   -- [ g , h ] is unique up to homotopy
   []-unique : ∀ {f : A + B → C} {g : A → C} {h : B → C} →
@@ -628,7 +628,7 @@ module 9-6 where
 
   -- η-rule for coproducts
   []-η : ∀ {f : A + B → C} → [ f ∘ inj₁ , f ∘ inj₂ ] ∼ f
-  []-η {f = f} = []-unique (refl-htpy (f ∘ inj₁)) (refl-htpy (f ∘ inj₂))
+  []-η {f = f} = []-unique (refl-∼ (f ∘ inj₁)) (refl-∼ (f ∘ inj₂))
 
   []-η-id : [ inj₁ {A = A} , inj₂ {B = B} ] ∼ id
   []-η-id {A = A} {B = B} = []-η {f = id}
@@ -641,7 +641,7 @@ module 9-6 where
   -- distributivity
   []-distrib : ∀ (h : C → D) (f : A → C) (g : B → C) →
                   h ∘ [ f , g ] ∼ [ h ∘ f , h ∘ g ]
-  []-distrib _ _ _ = ([]-unique (refl-htpy _) (refl-htpy _)) ⁻¹
+  []-distrib _ _ _ = ([]-unique (refl-∼ _) (refl-∼ _)) ⁻¹
 
   -- f ⊕ g is the unique arrow from (A + B) to (C + D)
   -- s.t. inj₁ ∘ f ∼ (f ⊕ g) ∘ inj₁  and inj₂ ∘ g ∼ (f ⊕ g) ∘ inj₂.
@@ -654,7 +654,7 @@ module 9-6 where
 
   ⊕-id : id {A = A} ⊕ id {A = B} ∼ id
   ⊕-id = begin
-    (id ⊕ id) ∼⟨ refl-htpy _ ⟩
+    (id ⊕ id) ∼⟨ refl-∼ _ ⟩
     [ inj₁ , inj₂ ] ∼⟨ []-η-id ⟩
     id ∎
 
@@ -668,12 +668,12 @@ module 9-6 where
   ∘+-distribute : ∀ {f : A → B} {g : B → C} {h : X → Y} {k : Y → Z} →
                   (g ⊕ k) ∘ (f ⊕ h) ∼ (g ∘ f) ⊕ (k ∘ h)
   ∘+-distribute {f = f} {g} {h} {k} = begin
-    (g ⊕ k) ∘ (f ⊕ h)                         ∼⟨ refl-htpy _ ⟩
+    (g ⊕ k) ∘ (f ⊕ h)                         ∼⟨ refl-∼ _ ⟩
     (g ⊕ k) ∘ [ inj₁ ∘ f , inj₂ ∘ h ]             ∼⟨ []-distrib (g ⊕ k) (inj₁ ∘ f) (inj₂ ∘ h) ⟩
-    [ (g ⊕ k) ∘ inj₁ ∘ f , (g ⊕ k) ∘ inj₂ ∘ h ]   ∼⟨ refl-htpy _ ⟩
+    [ (g ⊕ k) ∘ inj₁ ∘ f , (g ⊕ k) ∘ inj₂ ∘ h ]   ∼⟨ refl-∼ _ ⟩
     [ ([ inj₁ ∘ g , inj₂ ∘ k ] ∘ inj₁) ∘ f ,
       ([ inj₁ ∘ g , inj₂ ∘ k ] ∘ inj₂) ∘ h ]         ∼⟨ ∼[ []-reduce₁ {g = inj₂ ∘ k}  , []-reduce₂ {f = inj₁ ∘ g} ]∼ ⟩
-    [ inj₁ ∘ g ∘ f ,  inj₂ ∘ k ∘ h ]               ∼⟨ refl-htpy _ ⟩
+    [ inj₁ ∘ g ∘ f ,  inj₂ ∘ k ∘ h ]               ∼⟨ refl-∼ _ ⟩
      (g ∘ f) ⊕ (k ∘ h) ∎
 
 
@@ -739,7 +739,7 @@ module 9-7 where
   -- --------------------------------------------------------------------
   -- (b) Show that id_A × id_B ∼ id_{A × B}
   id-funprod : id {A = A} ⊗ id {A = B} ∼ id {A = A × B}
-  id-funprod = refl-htpy _
+  id-funprod = refl-∼ _
 
   -- --------------------------------------------------------------------
   -- (c) Show that for any two pairs of composable functions
@@ -748,7 +748,7 @@ module 9-7 where
   -- there is a homotopy (f′ ∘ f) × (g′ ∘ g) ∼ (f′ × g′) ∘ (f × g)
   comp-dist : (f : A → A′) (f′ : A′ → A′′) (g : B → B′) (g′ : B′ → B′′) →
               (f′ ∘ f) ⊗ (g′ ∘ g) ∼ (f′ ⊗ g′) ∘ (f ⊗ g)
-  comp-dist f f′ g g′ = refl-htpy _
+  comp-dist f f′ g g′ = refl-∼ _
 
   -- --------------------------------------------------------------------
   -- (d) Show that if H : f ∼ f′ and K : g ∼ g′, then there is a homotopy
