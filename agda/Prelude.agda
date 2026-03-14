@@ -158,7 +158,6 @@ module Homotopies where
     HtpyGroupoid = record { Refl = refl-∼ ; _⁻¹ = sym-∼ ; _○_ = trans-∼ } 
 
   -- Groupoidal structure of homotopies
-
   assoc-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g h i : (x : A) → B x} → 
               (H : f ∼ g) → (K : g ∼ h) → (L : h ∼ i) → 
               (H ○ K) ○ L ∼ H ○ (K ○ L)
@@ -179,6 +178,10 @@ module Homotopies where
   right-inv-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} →
                   (H : f ∼ g) → H ○ H ⁻¹ ∼ refl-∼
   right-inv-htpy H = right-inv ∘ H
+
+  transport-fusion : ∀ {ℓ₁ ℓ₂} { A : Set ℓ₁} {B : A → Set ℓ₂} {x y z : A} → (p : x ≡ y) → (q : y ≡ z) →
+                     tr B (p ○ q) ∼ (tr B q) ∘ (tr B p)
+  transport-fusion refl refl = refl-∼
 
   -- -- Definition 9.1.7
 
