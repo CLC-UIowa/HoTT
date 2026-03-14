@@ -276,10 +276,6 @@ The HOTT proof goes as follows:
     I don't know if this maps directly onto any results of Rijke's.
  -}
 
-open import Relation.Binary.PropositionalEquality
-    using (cong-id ; trans-injectiveˡ ; trans-assoc ; trans-reflʳ ; trans-symˡ ; trans-symʳ)
-
-
 -- Def. 10.4.3: naturality squares of homotopies 
 -- (or: homotopic functions are naturally isomorphic functors)
 
