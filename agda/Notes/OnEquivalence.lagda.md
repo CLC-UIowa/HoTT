@@ -226,7 +226,7 @@ one induced by the identity mapping and one induced by negation.
 
 ```agda 
 id𝔹 not𝔹 : Bool ≃ Bool
-id𝔹 = id , ((id , refl-htpy _) , (id , refl-htpy _)) 
+id𝔹 = id , ((id , refl-∼) , (id , refl-∼)) 
 not𝔹 = not , ((not , neg-bool-id) , (not , neg-bool-id))
 ``` 
 

@@ -13,41 +13,16 @@ private variable
   𝐁 𝐂 𝐃 : A → Set ℓ
   f g h i : (x : A) → 𝐁 x
 
+--------------------------------------------------------------------
+-- §9.1 
+
 -- Example 9.1.3
 
 neg-bool-id : not ∘ not ∼ id
 neg-bool-id = λ { false → refl ; true → refl}
 
--- Proposition 9.1.6
-
-assoc-htpy : (H : f ∼ g) → (K : g ∼ h) → (L : h ∼ i) → (H · K) · L ∼ H · (K · L)
-assoc-htpy H K L = λ x → trans-assoc (H x)
-
-left-unit-htpy : (H : f ∼ g) → refl-htpy f · H ∼ H
-left-unit-htpy H = λ x → refl
-
-right-unit-htpy : (H : f ∼ g) → H · refl-htpy g ∼ H
-right-unit-htpy H = trans-reflʳ ∘ H
-
-left-inv-htpy : (H : f ∼ g) → H ⁻¹ · H ∼ refl-htpy g
-left-inv-htpy H = trans-symˡ ∘ H
-
-right-inv-htpy : (H : f ∼ g) → H · H ⁻¹ ∼ refl-htpy f
-right-inv-htpy H = trans-symʳ ∘ H
-
--- Definition 9.1.7
-
-whˡ : (h : B → C) → (H : f ∼ g) → (h ∘ f) ∼ (h ∘ g)
-whˡ h H = λ x → cong h (H x)
-
-infixl 25 whˡ
-syntax whˡ h H = h ·ₗ H
-
-whʳ : (H : g ∼ h) → (f : A → B) → (g ∘ f) ∼ (h ∘ f)
-whʳ H f = λ x → H (f x)
-
-infixl 25 whʳ
-syntax whʳ H f = H ·ᵣ f
+--------------------------------------------------------------------
+-- §9.2
 
 -- Definition 9.2.1
 
@@ -93,8 +68,8 @@ has-inverse⇒is-equiv (g , (H , K)) = (g , H) , (g , K)
 -- if f has a section g and retraction h then g ∼ h.
 is-equiv⇒equalSplits : ∀ {f : A → B} (p : is-equiv f) → `sec p ∼ `retr p
 is-equiv⇒equalSplits {f = f} ((g , G) , (h , H)) = begin
-  g          ∼⟨ (H ·ᵣ g) ⁻¹ ⟩
-  h ∘ f ∘ g  ∼⟨ h ·ₗ G ⟩
+  g          ∼⟨ (H ○ᵣ g) ⁻¹ ⟩
+  h ∘ f ∘ g  ∼⟨ h ○ₗ G ⟩
   h ∎
 
 is-equiv⇒has-inverse : is-equiv f → has-inverse f
@@ -102,7 +77,7 @@ is-equiv⇒has-inverse {f = f} p@((g , G) , (h , H)) = g , G , L
   where
     L : (g ∘ f) ∼ id
     L = begin
-          g ∘ f ∼⟨ is-equiv⇒equalSplits p ·ᵣ f ⟩
+          g ∘ f ∼⟨ is-equiv⇒equalSplits p ○ᵣ f ⟩
           h ∘ f ∼⟨  H ⟩
           id ∎
 
@@ -115,7 +90,7 @@ equivalence-inverse-equivalence {f = f} p@((g , G) , (h , H)) =
   where
     L : g ∘ f ∼ id
     L = begin
-      g ∘ f ∼⟨ is-equiv⇒equalSplits p ·ᵣ f ⟩
+      g ∘ f ∼⟨ is-equiv⇒equalSplits p ○ᵣ f ⟩
       h ∘ f ∼⟨ H ⟩
       id ∎
 
@@ -177,12 +152,13 @@ open import Data.Empty
     from b = (tt , b)
 
     H : to ∘ from ∼ id
-    H = refl-htpy _
+    H = refl-∼
 
     G : from ∘ to ∼ id
     G (tt , b) = refl
 
--- 9.3 Characterizing the identity types of Σ-types
+--------------------------------------------------------------------
+-- §9.3 Characterizing the identity types of Σ-types
 
 _≡Σ_ : Σ A 𝐁 → Σ A 𝐁 → Set _
 _≡Σ_ {A = A} {𝐁 = B} s t =

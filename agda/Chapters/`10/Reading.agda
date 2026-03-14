@@ -7,12 +7,6 @@ open import Relation.Binary.PropositionalEquality
     using (trans-assoc ; trans-reflʳ ; trans-symˡ ; trans-symʳ)
 
 
-{- -----------------------------------------------------------------------------
-AH>
-
-
--}
-
 --------------------------------------------------------------------
 -- Chapter 10: Contractible types and contractible maps
 
@@ -100,7 +94,7 @@ ind⊤ : ∀ {ℓ} {B : ⊤ → Set ℓ} → B tt → (∀ (x : ⊤) → B x)
 ind⊤ btt tt = btt
 
 ⊤-SI : SingletonInduction ⊤
-⊤-SI = SingInd tt ind⊤ (refl-htpy _)
+⊤-SI = SingInd tt ind⊤ (refl-∼)
 
 
 
@@ -117,7 +111,7 @@ module Contr⇒SI {ℓ} {A : Set ℓ} (cntr : is-contr A) where
   -- we can construct a new contraction C′ s.t.
   -- C′(a) ≡ refl:
   C′ : (x : A) → a ≡ x
-  C′ x = (! (C a)) ○ C x
+  C′ x = (C a) ⁻¹ ○ C x
 
   p : C′ a ≡ refl
   p = left-inv (C a)
@@ -187,7 +181,7 @@ is-contr-map-equiv {A = A} {B = B} f is-contr-map-f = sec-is-contr-map-f , retr-
   sec-is-contr-map-f = g̅ , G̅
 
   p : f ∘ g̅ ∘ f ∼ f
-  p = G̅ ·ᵣ f
+  p = G̅ ○ᵣ f
 
   fib-fx : ∀ {x} → fib f (f x)
   fib-fx {x} = (g̅ ∘ f) x , (p x)
@@ -213,7 +207,7 @@ record is-coh-invertible (f : A → B) : Setω where
     g′ : B → A
     G-hom : f ∘ g′ ∼ id
     H-hom : g′ ∘ f ∼ id
-    K-hom : G-hom ·ᵣ f ∼ f ·ₗ H-hom
+    K-hom : G-hom ○ᵣ f ∼ f ○ₗ H-hom
 
 {-
 AH> For further reference, the HOTT book defines coherently invertible maps as
@@ -235,7 +229,7 @@ coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; G-hom = G
   ((g′ y) , (G-hom y)) , contr
    where
       K'-hom : (x : A) -> (G-hom (f x)) ≡ (ap f (H-hom x)) ○ refl
-      K'-hom = K-hom · (right-unit-htpy (f ·ₗ H-hom)) ⁻¹
+      K'-hom = K-hom ○ (right-identity-htpy (f ○ₗ H-hom)) ⁻¹
 
       lem₂ : (x : A) -> Eq-fib f (f x) (g′ (f x) , G-hom (f x)) (x , refl)
       lem₂ x = H-hom x , K'-hom x
@@ -263,12 +257,12 @@ The HOTT proof goes as follows:
     - g : B → A
     - η : g ∘ f ∼ id
     - ϵ : f ∘ g ∼ id
-    - τ : ∀ (x : A). f ·ₗ η ∼ ϵ ·ᵣ f
-  As our center of contraction for fib f y, we choose (g y , ϵ ·ᵣ y).
+    - τ : ∀ (x : A). f ○ₗ η ∼ ϵ ○ᵣ f
+  As our center of contraction for fib f y, we choose (g y , ϵ ○ᵣ y).
   Now take any (x, p) : fib f y; we want to construct a path from
-  (g y, ϵ ·ᵣ y) to (x , p). By lemma 4.2.5, it suffices
-  to give a path γ : g y ≡ x such that f(γ) ○ p = ϵ ·ᵣ y. We put
-    γ := g(p)⁻¹ ○ (η ·ᵣ x).
+  (g y, ϵ ○ᵣ y) to (x , p). By lemma 4.2.5, it suffices
+  to give a path γ : g y ≡ x such that f(γ) ○ p = ϵ ○ᵣ y. We put
+    γ := g(p)⁻¹ ○ (η ○ᵣ x).
   Then we have
     f(γ) ○ p = fg(p)⁻¹ ○ f(ηx) ○ p
              = fg(p)⁻¹ ○ ϵ(fx) ○ p
@@ -282,41 +276,32 @@ The HOTT proof goes as follows:
     I don't know if this maps directly onto any results of Rijke's.
  -}
 
-open import Relation.Binary.PropositionalEquality
-    using (cong-id ; trans-injectiveˡ ; trans-assoc ; trans-reflʳ ; trans-symˡ ; trans-symʳ)
-
-
--- Def. 10.4.3: natural squares of homotopies
+-- Def. 10.4.3: naturality squares of homotopies 
+-- (or: homotopic functions are naturally isomorphic functors)
 
 Nat-Htpy : {x y : A} {f g : A → B} (H : f ∼ g) (p : x ≡ y) → Set _
 Nat-Htpy {x = x} {y = y} {f = f} {g = g} H p = ap f p ○ H y ≡ H x ○ ap g p
 
 nat-htpy : {x y : A} {f g : A → B} (H : f ∼ g) (p : x ≡ y) → Nat-Htpy H p
-nat-htpy H refl = ! trans-reflʳ _
+nat-htpy H refl = right-identity (H _) ⁻¹
 
 
--- Def. 10.4.4: ...
+-- Def. 10.4.4
 
-open PathReasoning
+module _ where 
+  open PathReasoning
 
-def-10-4-4 : (x : A) {f : A → A} (H : f ∼ id) → H (f x) ≡ ap f (H x)
-def-10-4-4 x {f} H = begin
-  H (f x) ≡⟨ {! trans-injectiveˡ nh!} ⟩
-  ap f (H x) ∎ -- trans-injectiveˡ (H x) {!cong-id!}  -- ! right-unit-htpy H (f x) ○ trans-reflʳ (H (f x)) ○ {!!}
-  where
-    nh : (ap f (H (f x))) ○ (H (f x)) ≡
-      (H (f (f x))) ○ (ap id (H (f x)))
-    nh = nat-htpy H (H (f x))
-
-    nh' : ap f (H (f x)) ○ H (f x) ≡ H (f (f x)) ○ H (f x)
-    nh' = tr
-      (λ X → (ap f (H (f x))) ○ (H (f x)) ≡ (H (f (f x))) ○ (X))
-      (cong-id (H (f x)))
-      nh
-
-    nh'' : ap f (H (f x)) ≡ H (f (f x))
-    nh'' = trans-injectiveˡ (H (f x)) nh'
-
+  def-10-4-4 : {f : A → A} (H : f ∼ id) → H ∘ f ∼ ap f ∘ H
+  def-10-4-4 {f = f} H x = begin 
+    H (f x)                                 ≡⟨ (right-identity (H (f x))) ⁻¹ ⟩ 
+    H (f x)    ○ refl                       ≡⟨ (ap (H (f x) ○_) (right-inv (H x))) ⁻¹ ⟩ 
+    H (f x)    ○ ((H x)        ○ (H x) ⁻¹)  ≡⟨ (assoc (H ( f x)) (H x) ((H x) ⁻¹)) ⁻¹ ⟩ 
+    H (f x)    ○ H x           ○ (H x) ⁻¹   ≡⟨ ap (λ X → H (f x) ○ X ○ (H x) ⁻¹) (ap-id (H x)) ⟩ 
+    H (f x)    ○ (ap id (H x)) ○ (H x) ⁻¹   ≡⟨ ap (λ X → X ○ (H x) ⁻¹) (nat-htpy H (H x)) ⁻¹ ⟩ 
+    ap f (H x) ○ H x           ○ (H x) ⁻¹   ≡⟨ assoc (ap f (H x)) (H x) ((H x) ⁻¹) ⟩ 
+    ap f (H x) ○ (H x          ○ (H x) ⁻¹)  ≡⟨ ap (ap f (H x) ○_) (right-inv (H x)) ⟩ 
+    ap f (H x) ○ refl                       ≡⟨ right-identity _ ⟩  
+    ap f (H x) ∎ 
 -- Lem 10.4.5: has-inverse f → is-coh-invertible f.
 
 -- Thm 10.4.6: Any equivalence is a contractible map.

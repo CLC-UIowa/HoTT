@@ -20,7 +20,7 @@ module 10-1 where
   ex-10-1 {A = A} x y (cA , C) = center-x≡y , λ { refl → left-inv (C x)  }
     where
       center-x≡y : x ≡ y
-      center-x≡y = (! C x) ○ C y
+      center-x≡y = (C x) ⁻¹ ○ C y
 
 -------------------------------------------------------------------------------
 -- #10.2 Suppose that A is a retract of B. Show that
@@ -268,7 +268,7 @@ module 10-3 where
       prf-hom2 = sym ∘ prf-cB ∘ f
 
       h-ret→f-ret = _↔_.from $ f-retraction↔h-retraction f (const tt) (`sec is-equiv-const-tt-B) prf-hom2
-                  (const tt , refl-htpy _)
+                  (const tt , refl-∼)
 
       f-sec : section f
       f-sec = g-sec→f-sec  (const tt , prf-cB)
@@ -312,7 +312,7 @@ module 10-4 where
 
   ez-proof : ∀ (n : ℕ) → ¬ is-contr (Fin (suc (suc n)))
   ez-proof n  (center , contraction)
-    with ! (contraction fzero) ○ ((contraction (fsuc fzero)))
+    with (contraction fzero) ⁻¹ ○ ((contraction (fsuc fzero)))
   ... | ()
 
   -- Here is how you prove disjointedness of constructors
@@ -332,7 +332,7 @@ module 10-4 where
   fin-not-contractible n (center , contraction) = fzero≠fone bad
     where
       bad : fzero ≡ fsuc fzero
-      bad = ! (contraction fzero) ○ ((contraction (fsuc fzero)))
+      bad = (contraction fzero) ⁻¹ ○ ((contraction (fsuc fzero)))
 
 -------------------------------------------------------------------------------
 -- #10.5
@@ -366,12 +366,12 @@ module 10-5 where
     lem = refl
     contr-A : is-contr A
     contr-A = cA , λ a → begin
-      cA ≡⟨ ap fst (! lem ○ contrAB (a , cB)) ⟩
+      cA ≡⟨ ap fst (lem ⁻¹ ○ contrAB (a , cB)) ⟩
       a ∎
 
     contr-B : is-contr B
     contr-B = cB , λ b → begin
-      cB ≡⟨ ap snd  ( ! lem ○ contrAB (cA , b)) ⟩
+      cB ≡⟨ ap snd  (lem ⁻¹ ○ contrAB (cA , b)) ⟩
       b ∎
 
 -----------------------------------------------------------------------------
@@ -399,8 +399,8 @@ module 10-6 where
   f-retr {A = A} {B = B} A-is-contr = g , λ (y : (B a)) → begin
     (g (f (is-contr.center A-is-contr) y)) ≡⟨ refl ⟩
     (g (a , y)) ≡⟨ refl ⟩
-    (tr B (! C' a) y) ≡⟨ ap (λ (h : a ≡ a) → tr B (! h) y) p ⟩
-    (tr B (! refl) y) ≡⟨ refl ⟩
+    (tr B ((C' a) ⁻¹) y) ≡⟨ ap (λ (h : a ≡ a) → tr B (h ⁻¹) y) p ⟩
+    (tr B (refl ⁻¹) y) ≡⟨ refl ⟩
     (tr B refl y) ≡⟨ refl ⟩
     y ≡⟨ refl ⟩
     id y ∎
@@ -410,11 +410,11 @@ module 10-6 where
       C : (x : A) → a ≡ x
       C = is-contr.contraction A-is-contr
       C' : (x : A) → a ≡ x
-      C' x = (! (C a)) ○ C x
+      C' x = ((C a) ⁻¹) ○ C x
       p : C' a ≡ refl
       p = left-inv (C a)
       g : Σ[ x ∈ A ] (B x) → (B a)
-      g = (λ{ (x , p) → tr B ((! (C' x))) p})
+      g = (λ{ (x , p) → tr B (((C' x) ⁻¹)) p})
 
   f-section : (A-is-contr : is-contr A) → section {A = B (is-contr.center A-is-contr)} {B = Σ[ x ∈ A ] (B x) } (f (is-contr.center A-is-contr))
   f-section {A = A} {B = B} (a , C) = h , λ { ((x , y)) → helper (x , y) (C' x) }
@@ -434,17 +434,17 @@ module 10-6 where
       -- C : (x : A) → a ≡ x
       -- C = is-contr.contraction A-is-contr
       C' : (x : A) → a ≡ x
-      C' x = (! (C a)) ○ C x
+      C' x = ((C a) ⁻¹) ○ C x
       p : C' a ≡ refl
       p = left-inv (C a)
       h : Σ[ x ∈ A ] (B x) → (B a)
-      h = (λ{ (x , p) → tr B ((! (C' x))) p})
+      h = (λ{ (x , p) → tr B (((C' x) ⁻¹)) p})
       helper : (arb : Σ[ x ∈ A ] (B x)) → (p' : a ≡ (fst arb)) → (f a) (h arb) ≡ arb
       helper (x , y) refl = begin
         f x (h (x , y)) ≡⟨ refl ⟩
         (x , h (x , y)) ≡⟨ refl ⟩
-        (x , tr B (! (C' a)) y) ≡⟨ ap (λ h → (x , tr B (! h) y)) p ⟩
-        (x , tr B (! refl) y) ≡⟨ refl ⟩
+        (x , tr B ((C' a) ⁻¹) y) ≡⟨ ap (λ h → (x , tr B (h ⁻¹) y)) p ⟩
+        (x , tr B (refl ⁻¹) y) ≡⟨ refl ⟩
         (x , tr B refl y) ≡⟨ refl ⟩
         (x , y) ∎
 
@@ -493,7 +493,7 @@ module 10-7 where
         inv-f {A} {B = B} a y = ((a , y) , refl)
 
         section-f : section (f a)
-        section-f = (inv-f a) , refl-htpy id
+        section-f = (inv-f a) , refl-∼
 
         infix 4 _≡f_
         _≡f_ : fib (pr₁ {A = A} {B = B}) a → fib (pr₁ {A = A} {B = B}) a → Set _
@@ -545,9 +545,10 @@ module 10-7 where
     is-contractible-alt : (any-eq : (x : A) → (y : A) → x ≡ y) → (a : A) → is-contr A
     is-contractible-alt any-eq a = a , λ x → any-eq a x
 
-    transport-comp : ∀ { x y z } → (p : x ≡ y) → (q : y ≡ z) →
+    -- AH> I extracted this into the Prelude (and renamed to transport-fusion)
+    transport-comp : ∀ {ℓ₁ ℓ₂} { A : Set ℓ₁} {B : A → Set ℓ₂} { x y z : A} → (p : x ≡ y) → (q : y ≡ z) →
                      tr B (p ○ q) ∼  ((tr B q) ∘ (tr B p))
-    transport-comp refl refl = refl-htpy _
+    transport-comp refl refl = transport-fusion
 
     -- (a , b) ≡ (a , b') → (b ≡ b')
     -- snd-cong : ∀ {ℓ} {A : Set ℓ} {B : A → Set ℓ} → (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
@@ -597,7 +598,7 @@ module 10-7 where
         fib-cntr = (x , tr B a≡x b) , refl
 
         lem : (a' : A) (b' : B a') → _≡_ {A = Σ A B} (a' , tr B (f-sec-prf a') (snd (f a'))) (a' , b')
-        lem a' b' = ! g-retr-prf (a' , tr B (f-sec-prf a') (snd (f a'))) ○ g-retr-prf (a' , b')
+        lem a' b' = (g-retr-prf (a' , tr B (f-sec-prf a') (snd (f a')))) ⁻¹ ○ g-retr-prf (a' , b')
 
         lem1 : (a' : A) → (pair₁ pair₂ : Σ A B) → (eq₁ : fst pair₁ ≡ a') → (pairs-eq : pair₁ ≡ pair₂)
           → _≡_ {A = Σ (Σ A B) (λ ab → fst ab ≡ a')} (pair₁ , eq₁) (pair₂ , tr (λ pair → fst pair ≡ a') pairs-eq eq₁)
@@ -638,7 +639,7 @@ module 10-7 where
         lem₃ x = ap g (lem₁ x)
 
         lem₄ : f ∼ g
-        lem₄ x = trans (! (lem₂ x)) (lem₃ x)
+        lem₄ x = trans ((lem₂ x) ⁻¹) (lem₃ x)
 
 
 
@@ -653,7 +654,7 @@ module 10-7 where
         cB = tr B (lem₁ x) (snd (f x))
 
         lem₅ : (b b' : B x) → (x , b) ≡ (x , b')
-        lem₅ b b' = ! g-retr-prf (x , b) ○ (g-retr-prf (x , b'))
+        lem₅ b b' = (g-retr-prf (x , b)) ⁻¹ ○ (g-retr-prf (x , b'))
 
         lem₇ : ∀ {ℓ} {A : Set ℓ} {B : A -> Set ℓ} {a a' : A} {b : B a} {b' : B a'} -> (e : a ≡ a') -> (_≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a' , b')) -> tr B e b ≡ b'
         lem₇ refl e₂ = {!  !}
@@ -692,7 +693,7 @@ module 10-7 where
         sec a = a , (center-B a)
 
         sec-h : pr₁ ∘ sec ∼ id
-        sec-h = refl-htpy _
+        sec-h = refl-∼
 
         retr : A → Σ A B
         retr = sec
@@ -730,9 +731,9 @@ module 10-7 where
         contractible-helper : (y y' : B x) → _≡_ {A = Σ A B} (x , y) (x , y')
         contractible-helper y y' =
           begin
-            (x , y) ≡⟨ (! m∘f∼id (x , y)) ⟩
+            (x , y) ≡⟨ (m∘f∼id (x , y)) ⁻¹ ⟩
             m (f (x , y)) ≡⟨  ap (λ z → (z , b {B = B} z)) (f∼pr₁ (x , y)) ⟩
-            m x ≡⟨ ap m (! f∼pr₁ (x , y')) ⟩
+            m x ≡⟨ ap m (f∼pr₁ (x , y')) ⁻¹ ⟩
             m (f (x , y')) ≡⟨ m∘f∼id (x , y') ⟩
             (x , y') ∎
 
@@ -749,7 +750,7 @@ module 10-7 where
         contraction-B x = is-contr.contraction (any-is-contr x)
 
         m∘pr₁∼id : (m {A = A} {B = B} )∘ pr₁ ∼ id
-        m∘pr₁∼id (a , ba) = ap (λ z → (a , z)) ((! contraction-B a (b {B = B} (pr₁ {A = A} {B = B} (a , ba)))) ○ contraction-B a ba )
+        m∘pr₁∼id (a , ba) = ap (λ z → (a , z)) ((contraction-B a (b {B = B} (pr₁ {A = A} {B = B} (a , ba)))) ⁻¹ ○ contraction-B a ba )
 
         pr₁∘m∼id : pr₁ ∘ (m {A = A} {B = B}) ∼ id
         pr₁∘m∼id x = refl
@@ -826,6 +827,6 @@ module 10-8 where
           e-retr : retraction e
           e-retr = e-retr-fun , e-retr-h
 
-      -- Finally, we prove commutativity, which is just refl-htpy _
+      -- Finally, we prove commutativity, which is just refl-∼
       H : f ∼ fst ∘ e
-      H = refl-htpy _
+      H = refl-∼
