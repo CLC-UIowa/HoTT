@@ -181,7 +181,7 @@ is-contr-map-equiv {A = A} {B = B} f is-contr-map-f = sec-is-contr-map-f , retr-
   sec-is-contr-map-f = g̅ , G̅
 
   p : f ∘ g̅ ∘ f ∼ f
-  p = G̅ ○ᵣ f
+  p = G̅ ·ᵣ f
 
   fib-fx : ∀ {x} → fib f (f x)
   fib-fx {x} = (g̅ ∘ f) x , (p x)
@@ -207,7 +207,7 @@ record is-coh-invertible (f : A → B) : Setω where
     g′ : B → A
     G-hom : f ∘ g′ ∼ id
     H-hom : g′ ∘ f ∼ id
-    K-hom : G-hom ○ᵣ f ∼ f ○ₗ H-hom
+    K-hom : G-hom ·ᵣ f ∼ f ·ₗ H-hom
 
 {-
 AH> For further reference, the HOTT book defines coherently invertible maps as
@@ -229,7 +229,7 @@ coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; G-hom = G
   ((g′ y) , (G-hom y)) , contr
    where
       K'-hom : (x : A) -> (G-hom (f x)) ≡ (ap f (H-hom x)) ○ refl
-      K'-hom = K-hom ○ (right-identity-htpy (f ○ₗ H-hom)) ⁻¹
+      K'-hom = K-hom ○ (right-identity-htpy (f ·ₗ H-hom)) ⁻¹
 
       lem₂ : (x : A) -> Eq-fib f (f x) (g′ (f x) , G-hom (f x)) (x , refl)
       lem₂ x = H-hom x , K'-hom x
@@ -257,12 +257,12 @@ The HOTT proof goes as follows:
     - g : B → A
     - η : g ∘ f ∼ id
     - ϵ : f ∘ g ∼ id
-    - τ : ∀ (x : A). f ○ₗ η ∼ ϵ ○ᵣ f
-  As our center of contraction for fib f y, we choose (g y , ϵ ○ᵣ y).
+    - τ : ∀ (x : A). f ·ₗ η ∼ ϵ ·ᵣ f
+  As our center of contraction for fib f y, we choose (g y , ϵ ·ᵣ y).
   Now take any (x, p) : fib f y; we want to construct a path from
-  (g y, ϵ ○ᵣ y) to (x , p). By lemma 4.2.5, it suffices
-  to give a path γ : g y ≡ x such that f(γ) ○ p = ϵ ○ᵣ y. We put
-    γ := g(p)⁻¹ ○ (η ○ᵣ x).
+  (g y, ϵ ·ᵣ y) to (x , p). By lemma 4.2.5, it suffices
+  to give a path γ : g y ≡ x such that f(γ) ○ p = ϵ ·ᵣ y. We put
+    γ := g(p)⁻¹ ○ (η ·ᵣ x).
   Then we have
     f(γ) ○ p = fg(p)⁻¹ ○ f(ηx) ○ p
              = fg(p)⁻¹ ○ ϵ(fx) ○ p

@@ -253,22 +253,22 @@ module 9-3 where
   is-equiv↔ : (f g : A → B) (H : f ∼ g) → is-equiv f ↔ is-equiv g
   is-equiv↔ f g H .to ((r , f∘r∼id) , (l , l∘f∼id)) .fst =
     r , (begin
-      g ∘ r ∼⟨ H ⁻¹ ○ᵣ r ⟩
+      g ∘ r ∼⟨ H ⁻¹ ·ᵣ r ⟩
       f ∘ r ∼⟨ f∘r∼id    ⟩
       id ∎)
   is-equiv↔ f g H .to ((r , f∘r∼id) , (l , l∘f∼id)) .snd =
     l , (begin
-      l ∘ g ∼⟨ l ○ₗ H ⁻¹ ⟩
+      l ∘ g ∼⟨ l ·ₗ H ⁻¹ ⟩
       l ∘ f ∼⟨ l∘f∼id    ⟩
       id ∎)
   is-equiv↔ f g H .from ((r , g∘r∼id) , (l , l∘g∼id)) .fst =
     r , (begin
-      f ∘ r ∼⟨ H ○ᵣ r ⟩
+      f ∘ r ∼⟨ H ·ᵣ r ⟩
       g ∘ r ∼⟨ g∘r∼id ⟩
       id ∎)
   is-equiv↔ f g H .from ((r , g∘r∼id) , (l , l∘g∼id)) .snd =
     l , (begin
-      l ∘ f ∼⟨ l ○ₗ H ⟩
+      l ∘ f ∼⟨ l ·ₗ H ⟩
       l ∘ g ∼⟨ l∘g∼id ⟩
       id ∎)
 
@@ -307,11 +307,11 @@ module 9-3 where
     with is-equiv⇒equalSplits eqv-f
   ... | G =
     begin
-      f⁻¹          ∼⟨ f⁻¹ ○ₗ refl-∼  ⟩
-      f⁻¹ ∘ id     ∼⟨ f⁻¹ ○ₗ g∘g⁻¹∼id ⁻¹  ⟩
-      f⁻¹ ∘ g ∘ g⁻¹ ∼⟨ f⁻¹ ○ₗ H ⁻¹ ○ᵣ g⁻¹ ⟩
-      f⁻¹ ∘ f ∘ g⁻¹ ∼⟨  G ○ᵣ f ○ᵣ g⁻¹ ⟩
-      h ∘ f ∘ g⁻¹   ∼⟨  h∘f∼id ○ᵣ g⁻¹ ⟩
+      f⁻¹          ∼⟨ f⁻¹ ·ₗ refl-∼  ⟩
+      f⁻¹ ∘ id     ∼⟨ f⁻¹ ·ₗ g∘g⁻¹∼id ⁻¹  ⟩
+      f⁻¹ ∘ g ∘ g⁻¹ ∼⟨ f⁻¹ ·ₗ H ⁻¹ ·ᵣ g⁻¹ ⟩
+      f⁻¹ ∘ f ∘ g⁻¹ ∼⟨  G ·ᵣ f ·ᵣ g⁻¹ ⟩
+      h ∘ f ∘ g⁻¹   ∼⟨  h∘f∼id ·ᵣ g⁻¹ ⟩
       id ∘ g⁻¹      ∼⟨ refl-∼ ⟩
       g⁻¹ ∎
 
@@ -361,20 +361,20 @@ module 9-4 where
     I : g  ∼ f ∘ s
     I = begin
       g         ∼⟨ refl-∼ ⟩
-      g ∘ id    ∼⟨ g ○ₗ S ⁻¹ ⟩
-      g ∘ h ∘ s ∼⟨ H ⁻¹ ○ᵣ s ⟩
+      g ∘ id    ∼⟨ g ·ₗ S ⁻¹ ⟩
+      g ∘ h ∘ s ∼⟨ H ⁻¹ ·ᵣ s ⟩
       f ∘ s ∎
 
     -- (ii) f has a section iff g has a section.
     f-section↔g-section : section f ↔ section g
     f-section↔g-section .to (f⁻¹ , F) .fst = h ∘ f⁻¹
     f-section↔g-section .to (f⁻¹ , F) .snd = begin
-      g ∘ h ∘ f⁻¹ ∼⟨ H ⁻¹ ○ᵣ f⁻¹ ⟩
+      g ∘ h ∘ f⁻¹ ∼⟨ H ⁻¹ ·ᵣ f⁻¹ ⟩
       f ∘ f⁻¹    ∼⟨ F ⟩
       id ∎
     f-section↔g-section .from (g⁻¹ , G) .fst = s ∘ g⁻¹
     f-section↔g-section .from (g⁻¹ , G) .snd = begin
-      f ∘ s ∘ g⁻¹ ∼⟨ I ⁻¹  ○ᵣ g⁻¹ ⟩
+      f ∘ s ∘ g⁻¹ ∼⟨ I ⁻¹  ·ᵣ g⁻¹ ⟩
       g ∘ g⁻¹    ∼⟨ G ⟩
       id ∎
 
@@ -398,20 +398,20 @@ module 9-4 where
     I : h ∼ r ∘ f
     I = begin
       h         ∼⟨ refl-∼ ⟩
-      id ∘ h    ∼⟨ R ⁻¹ ○ᵣ h ⟩
-      r ∘ g ∘ h   ∼⟨ r ○ₗ H ⁻¹ ⟩
+      id ∘ h    ∼⟨ R ⁻¹ ·ᵣ h ⟩
+      r ∘ g ∘ h   ∼⟨ r ·ₗ H ⁻¹ ⟩
       r ∘ f ∎
 
     -- (ii) f has a retraction iff h has a retraction.
     f-retraction↔h-retraction : retraction f ↔ retraction h
     f-retraction↔h-retraction .to (f⁻¹ , F) .fst = f⁻¹ ∘ g
     f-retraction↔h-retraction .to (f⁻¹ , F) .snd = begin
-      f⁻¹ ∘ g ∘ h  ∼⟨  f⁻¹ ○ₗ H ⁻¹  ⟩
+      f⁻¹ ∘ g ∘ h  ∼⟨  f⁻¹ ·ₗ H ⁻¹  ⟩
       f⁻¹ ∘ f    ∼⟨ F ⟩
       id ∎
     f-retraction↔h-retraction .from (h⁻¹ , H) .fst = h⁻¹ ∘ r
     f-retraction↔h-retraction .from (h⁻¹ , H) .snd = begin
-      h⁻¹ ∘ r ∘ f ∼⟨ h⁻¹ ○ₗ I ⁻¹ ⟩
+      h⁻¹ ∘ r ∘ f ∼⟨ h⁻¹ ·ₗ I ⁻¹ ⟩
       h⁻¹ ∘ h   ∼⟨ H ⟩
       id ∎
 
@@ -436,8 +436,8 @@ module 9-4 where
     fg-equiv : is-equiv f → is-equiv g → is-equiv h
     fg-equiv ((f⁻¹ , F) , retr-f) (sec-g , (r , G)) .fst = f⁻¹ ∘ g ,
       (begin
-        h ∘ f⁻¹ ∘ g    ∼⟨ I ○ᵣ f⁻¹ ○ᵣ g ⟩
-        r ∘ f ∘ f⁻¹ ∘ g ∼⟨ r ○ₗ F ○ᵣ g ⟩
+        h ∘ f⁻¹ ∘ g    ∼⟨ I ·ᵣ f⁻¹ ·ᵣ g ⟩
+        r ∘ f ∘ f⁻¹ ∘ g ∼⟨ r ·ₗ F ·ᵣ g ⟩
         r ∘ g ∼⟨ G ⟩
         id ∎)
       where
@@ -451,8 +451,8 @@ module 9-4 where
         open 9-4a f h g H sec-h
     fh-equiv (sec-f , (f⁻¹ , F)) ((h⁻¹ , H′), retr-h) .snd = h ∘ f⁻¹ ,
       (begin
-        h ∘ f⁻¹ ∘ g       ∼⟨ h ○ₗ (f⁻¹ ○ₗ I) ⟩
-        h ∘ f⁻¹ ∘ f ∘ h⁻¹ ∼⟨ h ○ₗ F ○ᵣ h⁻¹ ⟩
+        h ∘ f⁻¹ ∘ g       ∼⟨ h ·ₗ (f⁻¹ ·ₗ I) ⟩
+        h ∘ f⁻¹ ∘ f ∘ h⁻¹ ∼⟨ h ·ₗ F ·ᵣ h⁻¹ ⟩
         h ∘ h⁻¹           ∼⟨ H′ ⟩
         id ∎)
       where
@@ -472,13 +472,13 @@ module 9-4 where
 
     equivSections : (e : is-equiv f) → is-equiv (`sec e)
     equivSections e@((s , S) , (r , R)) =
-      (f , is-equiv⇒equalSplits e ○ᵣ f ○ R) ,
+      (f , is-equiv⇒equalSplits e ·ᵣ f ○ R) ,
       f , S
 
     equivRetractions : (e : is-equiv f) → is-equiv (`retr e)
     equivRetractions e@((s , S) , (r , R)) =
       (f , R) ,
-      f , f ○ₗ (is-equiv⇒equalSplits e) ⁻¹ ○ S
+      f , f ·ₗ (is-equiv⇒equalSplits e) ⁻¹ ○ S
 
 -------------------------------------------------------------------------------
 -- #9.5
@@ -685,7 +685,7 @@ module 9-6 where
   -- Follows simply from congruence over [_,_]
   ∼⟨_⊕_⟩∼ : ∀ {f f′ : A → C} {g g′ : B → D} → f ∼ f′ → g ∼ g′ →
                f ⊕ g ∼ f′ ⊕ g′
-  ∼⟨ H ⊕ K ⟩∼ = ∼[ inj₁ ○ₗ H , inj₂ ○ₗ K ]∼
+  ∼⟨ H ⊕ K ⟩∼ = ∼[ inj₁ ·ₗ H , inj₂ ·ₗ K ]∼
 
   -- --------------------------------------------------------------------
   -- (d) Show that if both f and g are equivalences, then so is f ⊕ g.

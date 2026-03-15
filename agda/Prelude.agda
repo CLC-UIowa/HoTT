@@ -184,16 +184,16 @@ module Homotopies where
   transport-fusion refl refl = refl-∼
 
   -- -- Definition 9.1.7
-
+·ₗ
   -- Left whiskering
-  infixl 25 _○ₗ_
-  _○ₗ_ : (h : B → C) → (H : f ∼ g) → (h ∘ f) ∼ (h ∘ g)
-  h ○ₗ H = ap h ∘ H 
+  infixl 25 _·ₗ_  
+  _·ₗ_ : (h : B → C) → (H : f ∼ g) → (h ∘ f) ∼ (h ∘ g)
+  h ·ₗ H = ap h ∘ H 
 
   -- Right whiskering 
-  infixl 25 _○ᵣ_
-  _○ᵣ_ : (H : g ∼ h) → (f : A → B) → (g ∘ f) ∼ (h ∘ f)
-  H ○ᵣ f = H ∘ f 
+  infixl 25 _·ᵣ_
+  _·ᵣ_ : (H : g ∼ h) → (f : A → B) → (g ∘ f) ∼ (h ∘ f)
+  H ·ᵣ f = H ∘ f 
 
 open Homotopies public
 

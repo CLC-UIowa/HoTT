@@ -68,8 +68,8 @@ has-inverse⇒is-equiv (g , (H , K)) = (g , H) , (g , K)
 -- if f has a section g and retraction h then g ∼ h.
 is-equiv⇒equalSplits : ∀ {f : A → B} (p : is-equiv f) → `sec p ∼ `retr p
 is-equiv⇒equalSplits {f = f} ((g , G) , (h , H)) = begin
-  g          ∼⟨ (H ○ᵣ g) ⁻¹ ⟩
-  h ∘ f ∘ g  ∼⟨ h ○ₗ G ⟩
+  g          ∼⟨ (H ·ᵣ g) ⁻¹ ⟩
+  h ∘ f ∘ g  ∼⟨ h ·ₗ G ⟩
   h ∎
 
 is-equiv⇒has-inverse : is-equiv f → has-inverse f
@@ -77,7 +77,7 @@ is-equiv⇒has-inverse {f = f} p@((g , G) , (h , H)) = g , G , L
   where
     L : (g ∘ f) ∼ id
     L = begin
-          g ∘ f ∼⟨ is-equiv⇒equalSplits p ○ᵣ f ⟩
+          g ∘ f ∼⟨ is-equiv⇒equalSplits p ·ᵣ f ⟩
           h ∘ f ∼⟨  H ⟩
           id ∎
 
@@ -90,7 +90,7 @@ equivalence-inverse-equivalence {f = f} p@((g , G) , (h , H)) =
   where
     L : g ∘ f ∼ id
     L = begin
-      g ∘ f ∼⟨ is-equiv⇒equalSplits p ○ᵣ f ⟩
+      g ∘ f ∼⟨ is-equiv⇒equalSplits p ·ᵣ f ⟩
       h ∘ f ∼⟨ H ⟩
       id ∎
 
