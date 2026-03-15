@@ -229,7 +229,7 @@ coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; G-hom = G
   ((g′ y) , (G-hom y)) , contr
    where
       K'-hom : (x : A) -> (G-hom (f x)) ≡ (ap f (H-hom x)) ○ refl
-      K'-hom = K-hom ○ (right-identity-htpy (f ·ₗ H-hom)) ⁻¹
+      K'-hom = K-hom ○ (right-identity (f ·ₗ H-hom)) ⁻¹
 
       lem₂ : (x : A) -> Eq-fib f (f x) (g′ (f x) , G-hom (f x)) (x , refl)
       lem₂ x = H-hom x , K'-hom x
@@ -294,14 +294,15 @@ module _ where
   def-10-4-4 : {f : A → A} (H : f ∼ id) → H ∘ f ∼ ap f ∘ H
   def-10-4-4 {f = f} H x = begin 
     H (f x)                                 ≡⟨ (right-identity (H (f x))) ⁻¹ ⟩ 
-    H (f x)    ○ refl                       ≡⟨ (ap (H (f x) ○_) (right-inv (H x))) ⁻¹ ⟩ 
+    H (f x)    ○ refl                       ≡⟨ (H (f x) ⋆ᵣ ((right-inv (H x)) ⁻¹)) ⟩ 
     H (f x)    ○ ((H x)        ○ (H x) ⁻¹)  ≡⟨ (assoc (H ( f x)) (H x) ((H x) ⁻¹)) ⁻¹ ⟩ 
-    H (f x)    ○ H x           ○ (H x) ⁻¹   ≡⟨ ap (λ X → H (f x) ○ X ○ (H x) ⁻¹) (ap-id (H x)) ⟩ 
-    H (f x)    ○ (ap id (H x)) ○ (H x) ⁻¹   ≡⟨ ap (λ X → X ○ (H x) ⁻¹) (nat-htpy H (H x)) ⁻¹ ⟩ 
+    H (f x)    ○ H x           ○ (H x) ⁻¹   ≡⟨ (((H (f x)) ⋆ᵣ (ap-id (H x))) ⋆ₗ (H x ⁻¹)) ⟩ 
+    H (f x)    ○ (ap id (H x)) ○ (H x) ⁻¹   ≡⟨ (((nat-htpy H (H x)) ⁻¹) ⋆ₗ ((H x) ⁻¹))  ⟩ 
     ap f (H x) ○ H x           ○ (H x) ⁻¹   ≡⟨ assoc (ap f (H x)) (H x) ((H x) ⁻¹) ⟩ 
-    ap f (H x) ○ (H x          ○ (H x) ⁻¹)  ≡⟨ ap (ap f (H x) ○_) (right-inv (H x)) ⟩ 
-    ap f (H x) ○ refl                       ≡⟨ right-identity _ ⟩  
+    ap f (H x) ○ (H x          ○ (H x) ⁻¹)  ≡⟨ ap f (H x) ⋆ᵣ (right-inv (H x)) ⟩ 
+    ap f (H x) ○ refl                       ≡⟨ right-identity {{PathGroupoid}} _ ⟩  
     ap f (H x) ∎ 
+    
 -- Lem 10.4.5: has-inverse f → is-coh-invertible f.
 
 -- Thm 10.4.6: Any equivalence is a contractible map.

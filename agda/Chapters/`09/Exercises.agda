@@ -514,11 +514,11 @@ module 9-5 where
   -- to (y, (x, z)).
   -}
 
-  eqv : {A B : Set} →
+  eqv′ : {A B : Set} →
         {C : A → B → Set} →
         (Σ[ x ∈ A ] (Σ[ y ∈ B ] (C x y))) →
         (Σ[ y ∈ B ] (Σ[ x ∈ A ] (C x y)))
-  eqv x = (fst $ snd x) , (fst x , (snd $ snd x))
+  eqv′ x = (fst $ snd x) , (fst x , (snd $ snd x))
 
   {-
   -- Our intuition might tell us `eqv` ought to be its own left inverse and
@@ -528,7 +528,7 @@ module 9-5 where
 
   eqv-is-involution : {A B : Set} → {C : A → B → Set} →
                         (y : Σ[ y ∈ B ] (Σ[ x ∈ A ] (C x y))) →
-                        (eqv (eqv y)) ≡ y
+                        (eqv′ (eqv′ y)) ≡ y
   eqv-is-involution y = refl
 
   {-
@@ -541,9 +541,9 @@ module 9-5 where
                {C : A → B → Set} →
                (Σ[ x ∈ A ] (Σ[ y ∈ B ] (C x y))) ≃
                (Σ[ y ∈ B ] (Σ[ x ∈ A ] (C x y)))
-  9-5-a-goal = let eqv-has-section = eqv , eqv-is-involution
-                   eqv-has-retraction = eqv , eqv-is-involution
-               in  eqv , (eqv-has-section , eqv-has-retraction)
+  9-5-a-goal = let eqv-has-section = eqv′ , eqv-is-involution
+                   eqv-has-retraction = eqv′ , eqv-is-involution
+               in  eqv′ , (eqv-has-section , eqv-has-retraction)
 
   -- --------------------------------------------------------------------
   -- (b) Let A be a type and let B and C be type families over A.

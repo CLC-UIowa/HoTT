@@ -18,8 +18,10 @@ open import Data.Nat using (ℕ ; suc ; zero) public
 
 open import Function hiding (_↔_) public
 
+open import Relation.Binary using (IsEquivalence)
 open import Relation.Binary.PropositionalEquality
     using (_≡_ ; trans ; sym ; refl ; module ≡-Reasoning ; cong) public
+open import Relation.Binary.PropositionalEquality.Properties using (isEquivalence)    
 open import Relation.Nullary using (¬_) public
 
 open import Data.String using (String)
@@ -46,7 +48,40 @@ record GroupoidSyntax {ℓ} {A : Set ℓ} (_≈_ : A → A → Set ℓ)  : Set (
     Refl : {x : A} →  x ≈ x 
     _⁻¹ : {x y : A} → x ≈ y → y ≈ x 
     _○_ : {x y z : A} → x ≈ y → y ≈ z → x ≈ z
-  -- todo: add properties
+    
+    -- The type of paths between paths. This abstraction is 
+    -- unfortunately necessary if we want to also 
+    -- abstract over groupoid properties. 
+    _~_ : ∀ {x y : A} → x ≈ y → x ≈ y → Set ℓ 
+    eqv : ∀ {x y} → IsEquivalence (_~_ {x} {y})
+
+    -- Congruence 
+    _⋆_ : ∀ {x y z : A} {p h : x ≈ y} {q k : y ≈ z} → 
+          (H : p ~ h) → (K : q ~ k) →
+          p ○ q ~ h ○ k
+
+    -- properties
+    left-inv : ∀ {x y : A} (p : x ≈ y) → p ⁻¹ ○ p ~ Refl
+    right-inv : ∀ {x y : A} (p : x ≈ y) → p ○ p ⁻¹ ~ Refl
+    involution : ∀ {x y : A} (p : x ≈ y) → (p ⁻¹) ⁻¹ ~ p
+    left-identity : {x y : A} (p : x ≈ y) → Refl ○ p ~ p
+    right-identity : {x y : A} (p : x ≈ y) → p ○ Refl ~ p
+    assoc : {x y z w : A} → (p : x ≈ y) → (q : y ≈ z) → (r : z ≈ w) → (p ○ q) ○ r ~ p ○ (q ○ r)
+
+  -- -- left congruence 
+  _⋆ₗ_ : ∀ {x y z : A} {p h : x ≈ y} → 
+          (H : p ~ h) (q : y ≈ z) → 
+          p ○ q ~ h ○ q
+  H ⋆ₗ q = H ⋆ refl-~
+    where 
+      open IsEquivalence eqv renaming (refl to refl-~)
+
+  _⋆ᵣ_ : ∀ {x y z : A} {q h : y ≈ z} → 
+          (p : x ≈ y) (H : q ~ h)  → 
+          p ○ q ~ p ○ h
+  p ⋆ᵣ H = refl-~ ⋆ H
+    where 
+      open IsEquivalence eqv renaming (refl to refl-~)
 
 open GroupoidSyntax {{...}} public
 
@@ -74,10 +109,6 @@ module Paths where
         C x y p
   J C pf x = ind≡ x (C x) (pf x)
 
-  instance 
-    PathGroupoid : GroupoidSyntax {A = A} (_≡_)
-    PathGroupoid = record { Refl = refl ; _⁻¹ = sym ; _○_ = trans } 
-
   ap : (f : A → B) → x ≡ y → f x ≡ f y
   ap f refl = refl 
 
@@ -92,24 +123,39 @@ module Paths where
 
   -------------------------------------------------------------------------------
   -- The groupoidal structure of types
+  instance 
+    PathGroupoid : GroupoidSyntax {A = A} (_≡_)
+    PathGroupoid = record 
+      { Refl = refl ; 
+        _⁻¹ = sym ; 
+        _○_ = trans ; 
+        _~_ = _≡_ ; 
+        _⋆_ = λ { refl refl → refl } ; 
+        eqv = isEquivalence ; 
+        left-inv = λ { refl → refl } ; 
+        right-inv = λ { refl → refl } ; 
+        involution = λ { refl → refl } ; 
+        left-identity = λ { refl → refl } ; 
+        right-identity = λ { refl → refl } ; 
+        assoc = λ { refl refl refl → refl } } 
 
-  left-inv : {A : Set ℓ} {x y : A} (p : x ≡ y) → p ⁻¹ ○ p ≡ refl
-  left-inv {x = x} {y} refl = refl
+  -- left-inv : {A : Set ℓ} {x y : A} (p : x ≡ y) → p ⁻¹ ○ p ≡ refl
+  -- left-inv {x = x} {y} refl = refl
 
-  right-inv : {A : Set ℓ} {x y : A} (p : x ≡ y) → p ○ p ⁻¹ ≡ refl
-  right-inv {x = x} {y} refl = refl
+  -- right-inv : {A : Set ℓ} {x y : A} (p : x ≡ y) → p ○ p ⁻¹ ≡ refl
+  -- right-inv {x = x} {y} refl = refl
 
-  involution : {A : Set ℓ} {x y : A} (p : x ≡ y) → (p ⁻¹) ⁻¹ ≡ p
-  involution {x = x} {y} refl = refl
+  -- involution : {A : Set ℓ} {x y : A} (p : x ≡ y) → (p ⁻¹) ⁻¹ ≡ p
+  -- involution {x = x} {y} refl = refl
 
-  left-identity : {A : Set ℓ} {x y : A} (p : x ≡ y) → refl ○ p ≡ p
-  left-identity {x = x} {y}  refl = refl
+  -- left-identity : {A : Set ℓ} {x y : A} (p : x ≡ y) → refl ○ p ≡ p
+  -- left-identity {x = x} {y}  refl = refl
 
-  right-identity : {A : Set ℓ} {x y : A} (p : x ≡ y) → p ○ refl ≡ p
-  right-identity {x = x} {y} refl = refl
+  -- right-identity : {A : Set ℓ} {x y : A} (p : x ≡ y) → p ○ refl ≡ p
+  -- right-identity {x = x} {y} refl = refl
 
-  assoc : {A : Set ℓ} {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → (p ○ q) ○ r ≡ p ○ (q ○ r)
-  assoc refl refl refl = refl
+  -- assoc : {A : Set ℓ} {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → (p ○ q) ○ r ≡ p ○ (q ○ r)
+  -- assoc refl refl refl = refl
 
 open Paths public
 
@@ -155,36 +201,27 @@ module Homotopies where
 
   instance 
     HtpyGroupoid : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} → GroupoidSyntax {A = (x : A) → B x} (_∼_)
-    HtpyGroupoid = record { Refl = refl-∼ ; _⁻¹ = sym-∼ ; _○_ = trans-∼ } 
-
-  -- Groupoidal structure of homotopies
-  assoc-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g h i : (x : A) → B x} → 
-              (H : f ∼ g) → (K : g ∼ h) → (L : h ∼ i) → 
-              (H ○ K) ○ L ∼ H ○ (K ○ L)
-  assoc-htpy H K L x = assoc (H x) (K x) (L x)
-
-  left-identity-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} → 
-                      (H : f ∼ g) → Refl ○ H ∼ H
-  left-identity-htpy _ _ = refl
-
-  right-identity-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} → 
-                        (H : f ∼ g) → H ○ refl-∼ ∼ H
-  right-identity-htpy H = right-identity ∘ H
-
-  left-inv-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} →
-                  (H : f ∼ g) → H ⁻¹ ○ H ∼ refl-∼
-  left-inv-htpy H = left-inv ∘ H
-
-  right-inv-htpy : {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} →
-                  (H : f ∼ g) → H ○ H ⁻¹ ∼ refl-∼
-  right-inv-htpy H = right-inv ∘ H
+    HtpyGroupoid = record { 
+      Refl = refl-∼ ; 
+      _⁻¹ = sym-∼ ; 
+      _○_ = trans-∼ ; 
+      _~_ = _∼_ ; 
+      eqv = ∼-equiv ; 
+      _⋆_ = λ p∼h q∼k x → _⋆_ {{PathGroupoid}} (p∼h x) (q∼k x) ;
+      left-inv = λ H → left-inv {{PathGroupoid}} ∘ H ; 
+      right-inv = λ H → right-inv {{PathGroupoid}} ∘ H ; 
+      involution = λ p x → involution {{PathGroupoid}} (p x) ; 
+      left-identity = λ _ _ → refl  ; 
+      right-identity = λ H → right-identity {{PathGroupoid}} ∘ H ; 
+      assoc = λ { H K L x → assoc {{PathGroupoid}} (H x) (K x) (L x) }
+      } 
 
   transport-fusion : ∀ {ℓ₁ ℓ₂} { A : Set ℓ₁} {B : A → Set ℓ₂} {x y z : A} → (p : x ≡ y) → (q : y ≡ z) →
                      tr B (p ○ q) ∼ (tr B q) ∘ (tr B p)
   transport-fusion refl refl = refl-∼
 
   -- -- Definition 9.1.7
-·ₗ
+
   -- Left whiskering
   infixl 25 _·ₗ_  
   _·ₗ_ : (h : B → C) → (H : f ∼ g) → (h ∘ f) ∼ (h ∘ g)

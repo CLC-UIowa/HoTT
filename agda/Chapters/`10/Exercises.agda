@@ -545,11 +545,6 @@ module 10-7 where
     is-contractible-alt : (any-eq : (x : A) → (y : A) → x ≡ y) → (a : A) → is-contr A
     is-contractible-alt any-eq a = a , λ x → any-eq a x
 
-    -- AH> I extracted this into the Prelude (and renamed to transport-fusion)
-    transport-comp : ∀ {ℓ₁ ℓ₂} { A : Set ℓ₁} {B : A → Set ℓ₂} { x y z : A} → (p : x ≡ y) → (q : y ≡ z) →
-                     tr B (p ○ q) ∼  ((tr B q) ∘ (tr B p))
-    transport-comp refl refl = transport-fusion
-
     -- (a , b) ≡ (a , b') → (b ≡ b')
     -- snd-cong : ∀ {ℓ} {A : Set ℓ} {B : A → Set ℓ} → (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
     -- snd-cong = {!!}
