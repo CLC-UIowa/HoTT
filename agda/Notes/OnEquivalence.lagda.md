@@ -239,10 +239,17 @@ id𝔹≡ = equivToId id𝔹
 not𝔹≡ = equivToId not𝔹
 ```
 
+These are the *only* two distinct identifications of Bool. Permitting isequiv(f) 
+to not be a mere proposition can become hazardous. Suppose, for example,
+that we had two distinct proofs `p q : is-equiv not` that `not` forms an equivalence on `Bool`. 
+But then we would have extra distinct identifications: one for `equivToId (not , p)` and 
+another for `equivToId (not , q)`. This is precisely the scenario we would land in if
+we had chosen to define isequiv(f) as the predicate `has-inverse f`, as 
+idₛ¹ : S¹ → S¹ on the circle is an example of a map for which `has-inverse idₛ¹ ≃ ℤ`.
 
 
-As an aside: I should expect `id𝔹≡ ≡ refl`. But this can't be shown as is, 
-as the postulation of univalence adds a certain irreversible opacity to definitions. 
+As an aside: I should expect `id𝔹≡ ≡ refl`. But this can't be shown quite yet, as 
+postulating univalence adds a certain irreversible opacity to definitions.
 
 ```agda
 id𝔹≡refl : id𝔹≡ ≡ refl 
@@ -255,8 +262,7 @@ If we instead define `id𝔹` using the other direction of univalence, it follow
 
 ```agda 
 idToEquiv : {A B : Set ℓ} → A ≡ B → A ≃ B
-idToEquiv {A = A} {B} refl with ua {A = A} {B} 
-... | f , (s , sec) , r , retr = s  refl 
+idToEquiv {A = A} {B} refl = `sec (ua {A = A} {B} .snd) refl
 
 id𝔹′ : Bool ≃ Bool 
 id𝔹′ = idToEquiv refl 
@@ -265,19 +271,45 @@ id𝔹≡refl′ : equivToId id𝔹′ ≡ refl
 id𝔹≡refl′ = ua .snd .fst .snd refl 
 ```
 
-The above is quite trivial if we pick it apart: we simply define `id𝔹′` using the section of `equivToId` and it
-so follows that `equivToId (idToEquiv refl) ≡ refl`. This is a bit unsatisfying, but we can use this insight,
-along with an assertion that `id𝔹` really ought be the same as `id𝔹′`, to finish the deal.  
+Picking the above apart, we simply define `id𝔹′` using the section of `equivToId` and it
+trivially follows that `equivToId (idToEquiv refl) ≡ refl`. This is a bit unsatisfying, but we can use this insight,
+along with an assertion that `id𝔹` really ought be the same as `idToEquiv`, to finish the deal. The proof relies crucially on `is-equiv f` truly being a mere proposition, which we haven't yet shown, and so I'll postulate it for now. 
 
+```agda 
+is-prop : ∀ {ℓ} → (A : Set ℓ) → Set _ 
+is-prop A = ∀ (x y : A) → x ≡ y
+
+postulate 
+  equiv-prop : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : Set ℓ₂} → 
+                 (f : A → B) → is-prop (is-equiv f)
+```
+
+It follows that, to show two equivalences are equal, it is sufficient to look just at
+their first projections.
 
 ```agda
-ua-is-idToEquiv-section : `sec (ua .snd) ≡ idToEquiv
-ua-is-idToEquiv-section = refl
+eq-equiv-prop : ∀ {A B : Set ℓ} → (e1 e2 : A ≃ B) → e1 .fst ≡ e2 .fst → e1 ≡ e2 
+eq-equiv-prop (f , eq₁) (f , eq₂) refl with equiv-prop f eq₁ eq₂ 
+... | refl = refl 
+``` 
+
+Now we may show the identity equivalence from univalence is the same as our manual id𝔹. 
+(_Or can we? Feel like I'm missing some computational rule necessary for ua..._)
+
+```agda
+idToEquiv-refl-is-id𝔹 : idToEquiv {A = Bool} refl ≡ id𝔹
+idToEquiv-refl-is-id𝔹 = eq-equiv-prop (idToEquiv {A = Bool} refl) id𝔹 {!   !}
+  -- eq-equiv-prop (λ f → is-prop-is-equiv f) refl 
+```
+
+```agda
+ua-is-idToEquiv-section : ∀ {A B : Set ℓ}  → `sec (ua {A = A} {B} .snd) ∼ idToEquiv
+ua-is-idToEquiv-section refl = refl
 
 open PathReasoning 
 
 id𝔹≡refl′′ : equivToId id𝔹 ≡ refl
-id𝔹≡refl′′ = {!   !}
+id𝔹≡refl′′ = {! ua-is-idToEquiv-section  !}
   -- begin
   --   equivToId id𝔹
   -- ≡⟨ refl ⟩ -- by definition of idToEquiv refl
