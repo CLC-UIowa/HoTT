@@ -4,7 +4,6 @@ module Notes.OnEquivalence where
 open import Chapters.`09.Reading hiding (is-equiv; has-inverse ; is-equiv⇒equalSplits)
 open import Chapters.`10.Reading hiding (is-contr-map; is-coh-invertible)
 open import Prelude
-open HomReasoning
 
 private variable
   ℓ : Level
@@ -55,11 +54,13 @@ redundant: if f has both a section and retraction, then the two are
 (homotopically) equivalent.
 
 ```agda
-is-equiv⇒equalSplits : ∀ {f : A → B} (p : is-equiv f) → `sec p ∼ `retr p
-is-equiv⇒equalSplits {f = f} ((g , G) , (h , H)) = begin
-  g          ∼⟨ (H ·ᵣ g) ⁻¹ ⟩
-  h ∘ f ∘ g  ∼⟨ h ·ₗ G ⟩
-  h ∎
+module _ where 
+  open HomReasoning
+  is-equiv⇒equalSplits : ∀ {f : A → B} (p : is-equiv f) → `sec p ∼ `retr p
+  is-equiv⇒equalSplits {f = f} ((g , G) , (h , H)) = begin
+    g          ∼⟨ (H ·ᵣ g) ⁻¹ ⟩
+    h ∘ f ∘ g  ∼⟨ h ·ₗ G ⟩
+    h ∎
 ```
 
 
@@ -215,8 +216,8 @@ postulate
   ua : (A ≃ B) ≃ (A ≡ B) 
 
 -- left to right direction (the opposite direction is immediate)
-ua→ : A ≃ B → A ≡ B 
-ua→ eq = ua .fst eq 
+equivToId : A ≃ B → A ≡ B 
+equivToId eq = ua .fst eq 
 ```
 
 The moral of this story might be to be careful what you "wish" for. Requiring that isequiv(f)
@@ -234,20 +235,56 @@ With univalence in hand, we can produce two distinct identifications of Bool.
 
 ```agda 
 id𝔹≡ not𝔹≡ : Bool ≡ Bool 
-id𝔹≡ = ua→ id𝔹 
-not𝔹≡ = ua→ not𝔹
+id𝔹≡ = equivToId id𝔹 
+not𝔹≡ = equivToId not𝔹
 ```
 
 
 
-As an aside: I should expect `id𝔹≡ ≡ refl`---How to show this?
+As an aside: I should expect `id𝔹≡ ≡ refl`. But this can't be shown as is, 
+as the postulation of univalence adds a certain irreversible opacity to definitions. 
 
 ```agda
 id𝔹≡refl : id𝔹≡ ≡ refl 
-id𝔹≡refl with ua {A = Bool} {Bool}
-... | f , (s , sec) , r , retr = ap f (! (retr id𝔹)) ○ {! sec refl  !} 
+id𝔹≡refl with ua {A = Bool} {Bool} | is-equiv⇒equalSplits (ua {A = Bool} {Bool} .snd)
+... | f , (s , sec) , r , retr | e = {!   !} 
 ``` 
 
+If we instead define `id𝔹` using the other direction of univalence, it follows immediately
+(as univalence is invertible) that `equivToId id𝔹′ ≡ refl`.
+
+```agda 
+idToEquiv : {A B : Set ℓ} → A ≡ B → A ≃ B
+idToEquiv {A = A} {B} refl with ua {A = A} {B} 
+... | f , (s , sec) , r , retr = s  refl 
+
+id𝔹′ : Bool ≃ Bool 
+id𝔹′ = idToEquiv refl 
+
+id𝔹≡refl′ : equivToId id𝔹′ ≡ refl
+id𝔹≡refl′ = ua .snd .fst .snd refl 
+```
+
+The above is quite trivial if we pick it apart: we simply define `id𝔹′` using the section of `equivToId` and it
+so follows that `equivToId (idToEquiv refl) ≡ refl`. This is a bit unsatisfying, but we can use this insight,
+along with an assertion that `id𝔹` really ought be the same as `id𝔹′`, to finish the deal.  
+
+
+```agda
+ua-is-idToEquiv-section : `sec (ua .snd) ≡ idToEquiv
+ua-is-idToEquiv-section = refl
+
+open PathReasoning 
+
+id𝔹≡refl′′ : equivToId id𝔹 ≡ refl
+id𝔹≡refl′′ = {!   !}
+  -- begin
+  --   equivToId id𝔹
+  -- ≡⟨ refl ⟩ -- by definition of idToEquiv refl
+  --   equivToId (idToEquiv refl)
+  -- ≡⟨ {!  ua .snd .fst .snd refl !} ⟩ -- (λ i → (ua .snd .fst .snd) refl i) ⟩ -- using the 'f ∘ g ∼ id' homotopy
+  --   refl ∎
+```
 
 ## A last remark 
 
