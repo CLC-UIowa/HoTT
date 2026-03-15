@@ -35,12 +35,10 @@ We are pretty certain this statement is false, and that α and β should have th
 
 ## Chapter 10
 
-### 10.4
+### 10.4.3 & 10.4.4
 
 Less an error and more a matter of taste, but definitions 10.4.3 and 10.4.4 are arguably lemmas, not definitions. Def 10.4.3 is a claim (and proof) that if `f ∼ g`, then f and g are naturally isomorphic. Def 10.4.4 proves that `H ∘ f ∼ ap f ∘ H` if `f ∼ id`. Proofs of each are given in [`10/Reading.agda](./agda/Chapters/`10/Reading.agda).
 
-
-Effectively the claim 
 
 ### 10.8
 
