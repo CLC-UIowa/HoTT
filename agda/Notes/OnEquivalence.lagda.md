@@ -241,15 +241,42 @@ not𝔹≡ = equivToId not𝔹
 
 These are the *only* two distinct identifications of Bool. Permitting isequiv(f) 
 to not be a mere proposition can become hazardous. Suppose, for example,
-that we had two distinct proofs `p q : is-equiv not` that `not` forms an equivalence on `Bool`. 
-But then we would have extra distinct identifications: one for `equivToId (not , p)` and 
-another for `equivToId (not , q)`. This is precisely the scenario we would land in if
-we had chosen to define isequiv(f) as the predicate `has-inverse f`, as 
-idₛ¹ : S¹ → S¹ on the circle is an example of a map for which `has-inverse idₛ¹ ≃ ℤ`.
+that we have two distinct proofs that `not` forms an equivalence on `Bool`. 
+```agda
+postulate
+  not-equiv₁ not-equiv₂ : is-equiv not
+``` 
 
+
+Now two distinct equivalences can be formed from the same map `not`. 
+
+```agda 
+not𝔹₁ not𝔹₂ : Bool ≃ Bool
+not𝔹₁ = not , not-equiv₁ 
+not𝔹₂ = not , not-equiv₂ 
+``` 
+
+Likewise, we have extra distinct identifications:
+
+```agda 
+not𝔹₁≡ not𝔹₂≡ : Bool ≡ Bool 
+not𝔹₁≡ = equivToId not𝔹₁
+not𝔹₂≡ = equivToId not𝔹₂
+``` 
+
+Of course, that `is-equiv not` is a mere proposition means `not-equiv₁` and `not-equiv₂` are equal, and hence the identifications `not𝔹₁≡` and `not𝔹₂≡` collapse together. This property explains why we do not choose `has-inverse f` as a suitable definition of equivalence, as `has-inverse f` is not a mere proposition. 
+
+Had we chosen to define isequiv(f) as the predicate `has-inverse f` lands us in the uncomfortable scenario described above, as e.g. 
+`idₛ¹ : S¹ → S¹` on the circle is an example of a map for which `has-inverse idₛ¹ ≃ ℤ`.
+I can't speak immediately to the hazards of this scenario (that is, what goes catastrophically wrong as a result), 
+other than the hazard of being incorrect. 
+
+
+### The computational content of univalence
 
 As an aside: I should expect `id𝔹≡ ≡ refl`. But this can't be shown quite yet, as 
-postulating univalence adds a certain irreversible opacity to definitions.
+postulating univalence in the fashion we have has added a certain irreversible opacity to definitions. Below 
+I tinker but get nowhere. 
 
 ```agda
 id𝔹≡refl : id𝔹≡ ≡ refl 
@@ -257,78 +284,42 @@ id𝔹≡refl with ua {A = Bool} {Bool} | is-equiv⇒equalSplits (ua {A = Bool} 
 ... | f , (s , sec) , r , retr | e = {!   !} 
 ``` 
 
-If we instead define `id𝔹` using the other direction of univalence, it follows immediately
-(as univalence is invertible) that `equivToId id𝔹′ ≡ refl`.
+Our problem is that the postulate `ua` has a section `s : A ≡ B → A ≃ B`. But this direction is totally definable! So the cart and horse are backwards. It is more fruitful to define univalence by first defining the identity-to-equivalence direction and then postulating it is an equivalence. This leaves the axiomatic direction (that equivalences yield identifications) opaque, but lends computational content to the trivial direction. 
 
 ```agda 
-idToEquiv : {A B : Set ℓ} → A ≡ B → A ≃ B
-idToEquiv {A = A} {B} refl = `sec (ua {A = A} {B} .snd) refl
-
-id𝔹′ : Bool ≃ Bool 
-id𝔹′ = idToEquiv refl 
-
-id𝔹≡refl′ : equivToId id𝔹′ ≡ refl
-id𝔹≡refl′ = ua .snd .fst .snd refl 
-```
-
-Picking the above apart, we simply define `id𝔹′` using the section of `equivToId` and it
-trivially follows that `equivToId (idToEquiv refl) ≡ refl`. This is a bit unsatisfying, but we can use this insight,
-along with an assertion that `id𝔹` really ought be the same as `idToEquiv`, to finish the deal. The proof relies crucially on `is-equiv f` truly being a mere proposition, which we haven't yet shown, and so I'll postulate it for now. 
-
-```agda 
-is-prop : ∀ {ℓ} → (A : Set ℓ) → Set _ 
-is-prop A = ∀ (x y : A) → x ≡ y
+idToEquiv : A ≡ B → A ≃ B 
+idToEquiv refl = id , (id , refl-∼) , (id , refl-∼) 
 
 postulate 
-  equiv-prop : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : Set ℓ₂} → 
-                 (f : A → B) → is-prop (is-equiv f)
-```
+  univalence : is-equiv (idToEquiv {A = A} {B})
 
-It follows that, to show two equivalences are equal, it is sufficient to look just at
-their first projections.
+ua′ : (A ≡ B) ≃ (A ≃ B) 
+ua′ = idToEquiv , univalence 
 
-```agda
-eq-equiv-prop : ∀ {A B : Set ℓ} → (e1 e2 : A ≃ B) → e1 .fst ≡ e2 .fst → e1 ≡ e2 
-eq-equiv-prop (f , eq₁) (f , eq₂) refl with equiv-prop f eq₁ eq₂ 
-... | refl = refl 
+equivToId′ : A ≃ B → A ≡ B 
+equivToId′ e = `sec univalence e
 ``` 
 
-Now we may show the identity equivalence from univalence is the same as our manual id𝔹. 
-(_Or can we? Feel like I'm missing some computational rule necessary for ua..._)
+Now it follows definitionally that `id𝔹 ≡ idToEquiv refl`. (N.b., as `is-equiv` is a mere proposition, 
+this statement holds for *any* definition of `id𝔹` in which the first component is `id`. In other words, we are not simply relying
+on the inhabitants of `is-equiv id` lining up by coincidence.)
 
 ```agda
-idToEquiv-refl-is-id𝔹 : idToEquiv {A = Bool} refl ≡ id𝔹
-idToEquiv-refl-is-id𝔹 = eq-equiv-prop (idToEquiv {A = Bool} refl) id𝔹 {!   !}
-  -- eq-equiv-prop (λ f → is-prop-is-equiv f) refl 
-```
+_ : id𝔹 ≡ idToEquiv refl 
+_ = refl 
+``` 
 
-```agda
-ua-is-idToEquiv-section : ∀ {A B : Set ℓ}  → `sec (ua {A = A} {B} .snd) ∼ idToEquiv
-ua-is-idToEquiv-section refl = refl
 
-open PathReasoning 
+## The computational content of transport (A last remark)
 
-id𝔹≡refl′′ : equivToId id𝔹 ≡ refl
-id𝔹≡refl′′ = {! ua-is-idToEquiv-section  !}
-  -- begin
-  --   equivToId id𝔹
-  -- ≡⟨ refl ⟩ -- by definition of idToEquiv refl
-  --   equivToId (idToEquiv refl)
-  -- ≡⟨ {!  ua .snd .fst .snd refl !} ⟩ -- (λ i → (ua .snd .fst .snd) refl i) ⟩ -- using the 'f ∘ g ∼ id' homotopy
-  --   refl ∎
-```
-
-## A last remark 
-
-As another aside, I would expect that transporting along these identifications to behave more or less like the 
-automorphisms from which they were constructed. For example:
+As another aside, I would expect that transporting along these identifications to behave more or less like the automorphisms from which they were constructed. For example:
 
 ```agda 
-tr-id𝔹 : tr id id𝔹≡ true ≡ true 
-tr-id𝔹 = {!   !} 
+tr-id𝔹₀ : tr id (equivToId′ id𝔹) true ≡ true 
+tr-id𝔹₀ = {!   !} 
 
-tr-not𝔹≡ : tr id not𝔹≡ true ≡ false 
-tr-not𝔹≡ = {!   !} 
+tr-not𝔹₀ : tr id (equivToId′ not𝔹) true ≡ false 
+tr-not𝔹₀ = {!   !} 
 ``` 
 
 but transports only definitionally reduce when the equality witness is `refl`---recall the definition of `tr` below: 
@@ -338,8 +329,28 @@ tr′ : {x y : A} (B : A → Set ℓ) → x ≡ y → B x → B y
 tr′ B refl b = b 
 ``` 
 
-I'm not sure how Rijke and/or the HOTT book rectify this. To be fair, they define transport using based path induction---
-but this should incur the same problem. Typically, absent a computational interpretation like cubical agda, in which 
-univalence is a theorem (not a postulate), we must augment the computational behavior of transport by adding [rewrite rules](https://agda.readthedocs.io/en/latest/language/rewriting.html)
-to Agda. We will see how this gets resolved as we move on in the text (or perhaps where my assumptions go wrong).
+One attempt to lend computational content to these transports is *cubical Agda* (stemming from *cubical type theory* more broadly, e.g., [Cohen, et al](https://www.cse.chalmers.se/~coquand/cubicaltt.pdf)). While it *is* the case that univalence is a *theorem* in cubical type theory, not an axiom, great lengths must be taken in order to ensure that transports reduce properly. In particular, I recall that the computational behavior of `transport` depends on the _type_ of the inputs. The machinery involved (something called glue?) gets intricate quite quickly, and there are other (frankly inhospitable) aspects to cubical agda---for example, identities are literal paths out of the unit interval, and so inhabiting paths between paths requires solving a system of "edge condition" equations. Thinking in this manner is taxing and unintuitive. (If, despite this, you remain interested, I recommend [1lab.dev](https://1lab.dev/1Lab.Path.html#path) and [cubical agda](https://agda.readthedocs.io/en/latest/language/cubical.html) as further reading.)
 
+The other route, which I anticipate we will see in Rijke, is to simply postulate the computational behavior of transports along univalently constructed identities. As so: 
+
+```agda 
+transport : A ≡ B → A → B 
+transport = tr id 
+
+postulate 
+  ua-β : (e : A ≃ B) (x : A) → transport (equivToId′ e) x ≡ e .fst x 
+```
+
+The postulate `ua-β` quite literally asserts that transporting along an identity constructed by an equivalence is the application of that equivalence.
+Returning to our goals above: 
+
+```agda
+tr-id𝔹 : tr id (equivToId′ id𝔹) true ≡ true 
+tr-id𝔹 = ua-β id𝔹 true 
+
+tr-not𝔹≡ : tr id (equivToId′ not𝔹) true ≡ false 
+tr-not𝔹≡ = ua-β not𝔹 true 
+``` 
+
+To conclude with one final remark: The definitions of `is-equiv` and `_≃_` as nested Σ-types becomes 
+cumbersome very quickly; I would recommend we replace these (that is, the definitions `is-equiv`, `_≃_`, `section`, and `retraction`) with records for easier bookkeeping. 
