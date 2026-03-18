@@ -202,12 +202,12 @@ is-contr-map-equiv {A = A} {B = B} f is-contr-map-f = sec-is-contr-map-f , retr-
 
 -- Def 10.4.1: coherently invertible
 ------------------------------------
-record is-coh-invertible (f : A → B) : Setω where
+record is-coh-invertible {A : Set ℓ₁} {B : Set ℓ₂} (f : A → B) : Set (ℓ₁ ⊔ ℓ₂) where
   field
     g′ : B → A
-    G-hom : f ∘ g′ ∼ id
-    H-hom : g′ ∘ f ∼ id
-    K-hom : G-hom ·ᵣ f ∼ f ·ₗ H-hom
+    𝔾 : f ∘ g′ ∼ id
+    ℍ : g′ ∘ f ∼ id
+    𝕂 : 𝔾 ·ᵣ f ∼ f ·ₗ ℍ
 
 {-
 AH> For further reference, the HOTT book defines coherently invertible maps as
@@ -219,25 +219,25 @@ AH> For further reference, the HOTT book defines coherently invertible maps as
     τ : Π(x : A) f (η x) = ϵ (f x)
 
 See that, mapping HAEs to coh-invertibility, f maps to f, g maps to g′, η maps to
-H-hom, ϵ maps to G-hom, and τ maps to (the symmetry of) K-hom. -}
+ℍ, ϵ maps to 𝔾, and τ maps to (the symmetry of) 𝕂. -}
 
 
 -- Prop 10.4.2: Any coherently invertible map has contractible fibers
 
 coh-invertible⇒is-contr-map : ∀ (f : A → B) → is-coh-invertible f → is-contr-map f
-coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; G-hom = G-hom ; H-hom = H-hom ; K-hom = K-hom } y =
-  ((g′ y) , (G-hom y)) , contr
+coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; 𝔾 = 𝔾 ; ℍ = ℍ ; 𝕂 = 𝕂 } y =
+  ((g′ y) , (𝔾 y)) , contr
    where
-      K'-hom : (x : A) -> (G-hom (f x)) ≡ (ap f (H-hom x)) ○ refl
-      K'-hom = K-hom ○ (right-identity (f ·ₗ H-hom)) ⁻¹
+      𝕂' : (x : A) -> (𝔾 (f x)) ≡ (ap f (ℍ x)) ○ refl
+      𝕂' = 𝕂 ○ (right-identity (f ·ₗ ℍ)) ⁻¹
 
-      lem₂ : (x : A) -> Eq-fib f (f x) (g′ (f x) , G-hom (f x)) (x , refl)
-      lem₂ x = H-hom x , K'-hom x
+      lem₂ : (x : A) -> Eq-fib f (f x) (g′ (f x) , 𝔾 (f x)) (x , refl)
+      lem₂ x = ℍ x , 𝕂' x
 
-      lem₁ : (x : A) → (p : f x ≡ y) → Eq-fib f y (g′ y , G-hom y) (x , p)
+      lem₁ : (x : A) → (p : f x ≡ y) → Eq-fib f y (g′ y , 𝔾 y) (x , p)
       lem₁ x refl = lem₂ x
 
-      contr : (x : fib f y) → (g′ y , G-hom y) ≡ x
+      contr : (x : fib f y) → (g′ y , 𝔾 y) ≡ x
       contr (a , fa≡y) = co-map-fib f y (lem₁ a fa≡y)
 
 
@@ -276,7 +276,7 @@ The HOTT proof goes as follows:
     I don't know if this maps directly onto any results of Rijke's.
  -}
 
--- Def. 10.4.3: naturality squares of homotopies 
+-- Def. 10.4.3: naturality squares of homotopies
 -- (or: homotopic functions are naturally isomorphic functors)
 
 Nat-Htpy : {x y : A} {f g : A → B} (H : f ∼ g) (p : x ≡ y) → Set _
@@ -288,24 +288,70 @@ nat-htpy H refl = right-identity (H _) ⁻¹
 
 -- Def. 10.4.4
 
-module _ where 
+module 10-4-4 (f : A → A) (H : f ∼ id) where
   open PathReasoning
 
-  def-10-4-4 : {f : A → A} (H : f ∼ id) → H ∘ f ∼ ap f ∘ H
-  def-10-4-4 {f = f} H x = begin 
-    H (f x)                                 ≡⟨ (right-identity (H (f x))) ⁻¹ ⟩ 
-    H (f x)    ○ refl                       ≡⟨ (H (f x) ⋆ᵣ ((right-inv (H x)) ⁻¹)) ⟩ 
-    H (f x)    ○ ((H x)        ○ (H x) ⁻¹)  ≡⟨ (assoc (H ( f x)) (H x) ((H x) ⁻¹)) ⁻¹ ⟩ 
-    H (f x)    ○ H x           ○ (H x) ⁻¹   ≡⟨ (((H (f x)) ⋆ᵣ (ap-id (H x))) ⋆ₗ (H x ⁻¹)) ⟩ 
-    H (f x)    ○ (ap id (H x)) ○ (H x) ⁻¹   ≡⟨ (((nat-htpy H (H x)) ⁻¹) ⋆ₗ ((H x) ⁻¹))  ⟩ 
-    ap f (H x) ○ H x           ○ (H x) ⁻¹   ≡⟨ assoc (ap f (H x)) (H x) ((H x) ⁻¹) ⟩ 
-    ap f (H x) ○ (H x          ○ (H x) ⁻¹)  ≡⟨ ap f (H x) ⋆ᵣ (right-inv (H x)) ⟩ 
-    ap f (H x) ○ refl                       ≡⟨ right-identity {{PathGroupoid}} _ ⟩  
-    ap f (H x) ∎ 
-    
+  def : H ∘ f ∼ ap f ∘ H
+  def x = begin
+    H (f x)                                 ≡⟨ (right-identity (H (f x))) ⁻¹ ⟩
+    H (f x)    ○ refl                       ≡⟨ (H (f x) ⋆ᵣ ((right-inv (H x)) ⁻¹)) ⟩
+    H (f x)    ○ ((H x)        ○ (H x) ⁻¹)  ≡⟨ (assoc (H ( f x)) (H x) ((H x) ⁻¹)) ⁻¹ ⟩
+    H (f x)    ○ H x           ○ (H x) ⁻¹   ≡⟨ (((H (f x)) ⋆ᵣ (ap-id (H x))) ⋆ₗ (H x ⁻¹)) ⟩
+    H (f x)    ○ (ap id (H x)) ○ (H x) ⁻¹   ≡⟨ (((nat-htpy H (H x)) ⁻¹) ⋆ₗ ((H x) ⁻¹))  ⟩
+    ap f (H x) ○ H x           ○ (H x) ⁻¹   ≡⟨ assoc (ap f (H x)) (H x) ((H x) ⁻¹) ⟩
+    ap f (H x) ○ (H x          ○ (H x) ⁻¹)  ≡⟨ ap f (H x) ⋆ᵣ (right-inv (H x)) ⟩
+    ap f (H x) ○ refl                       ≡⟨ right-identity {{PathGroupoid}} _ ⟩
+    ap f (H x) ∎
+
 -- Lem 10.4.5: has-inverse f → is-coh-invertible f.
 
--- Thm 10.4.6: Any equivalence is a contractible map.
+lem-10-4-5 : (f : A → B) → has-inverse f → is-coh-invertible f
+lem-10-4-5 f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾′ ; ℍ = H ; 𝕂 =  K ⁻¹ }
+  where
+    open PathReasoning
+    𝔾′  : f ∘ g ∼ id
+    𝔾′  y = begin
+        f (g y)         ≡⟨ G (f (g y))⁻¹ ⟩
+        f (g (f (g y))) ≡⟨ ap f (H (g y)) ⟩
+        f (g y)         ≡⟨ G y ⟩
+        y ∎
 
--- Cor 10.4.7: for any a : A, the type Σ_{x : A} (a ≡ x) is contractible
+    lem₀ : H ∘ (g ∘ f) ∼ (ap (g ∘ f)) ∘ H
+    lem₀ = 10-4-4.def (g ∘ f) H
+
+    lem₁ : f ∘ g ∘ f ∘ g ∘ f ∼ f
+    lem₁ x = {!!}
+
+
+    K : f ·ₗ H ∼ 𝔾′ ·ᵣ f
+    K x = begin {!!}
+
+
+-- Thm 10.4.6: Any equivalence is a contractible map.
+thm•10•4•6 : (f : A → B) →  is-equiv f → is-contr-map f
+thm•10•4•6 f = lem3 ∘ lem2 ∘ lem1
+  where
+    lem1 : is-equiv f → has-inverse f -- Proposition 9.2.7
+    lem1 = is-equiv⇒has-inverse {f = f}
+
+    lem2 : has-inverse f → is-coh-invertible f -- lemma 10.4.5
+    lem2 = lem-10-4-5 f
+
+    lem3 : is-coh-invertible f → is-contr-map f -- proposition 10.4.2
+    lem3 = coh-invertible⇒is-contr-map f
+
+ex•9•2•3 : is-equiv {A = A} {B = A} id
+ex•9•2•3 = (id , (λ x → refl)) , (id , (λ x → refl))
+
+
+-- Cor 10.4.7: for any a : A, the type Σ_{x : A} (x ≡ a) is contractible
 -- AH> We already proved this in thm-10∙1∙4.
+-- AI> NB in thm-10∙1∙4 we had shown Σ_{x : A} (a ≡ x)
+cor•10•4•7 : (a : A) → is-contr (Σ[ x ∈ A ] (x ≡ a))
+cor•10•4•7 a = lem2 a
+  where
+   lem : is-equiv {A = A} {B = A} id → is-contr-map id
+   lem = thm•10•4•6 id
+
+   lem2 : is-contr-map {A = A} {B = A} id
+   lem2 = lem ex•9•2•3
