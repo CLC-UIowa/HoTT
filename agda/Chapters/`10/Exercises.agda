@@ -542,83 +542,12 @@ module 10-7 where
 --       (i) The projection map pr₁ is an equivalence
 --       (ii) The type B(x) is contractible for each x : A.
 
-    is-contractible-alt : (any-eq : (x : A) → (y : A) → x ≡ y) → (a : A) → is-contr A
-    is-contractible-alt any-eq a = a , λ x → any-eq a x
-
-    -- (a , b) ≡ (a , b') → (b ≡ b')
-    -- snd-cong : ∀ {ℓ} {A : Set ℓ} {B : A → Set ℓ} → (a : A) → (b : B a) → (b' : B a) → (eq : _≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a , b')) → b ≡ b'
-    -- snd-cong = {!!}
-    -- snd-cong {ℓ = ℓ} {A = A} {B = B} a b b' eq = ind≡ ((a , b)) motive inner-induction (a , b') eq refl
-    --   where
-    --    motive : (x : Σ-syntax A B) → (a , b) ≡ x → Set ℓ
-    --    motive = λ (a₁ , b₁) eq₁ → (a≡a₁ : a ≡ a₁) → b ≡ (b₁ |> tr B (! a≡a₁))
-
-    --    motive' : (x : A) → a ≡ x → Set ℓ
-    --    motive' = {!!}
-
-    --    inner-induction : (e : a ≡ a) → b ≡ tr B (! e) b
-    --    inner-induction e = {!ind≡ a motive' refl a e!}
-
-    -- snd-cong {A = A} {B = B} a b b' eq = path1 ○ path2 ○ path3
-    --   where
-    --     path1 : b ≡ tr (λ _ → B a) eq b
-    --     path1 = ind≡ (a , b) (λ (a₁ , b₁) eq₁ → b ≡ tr (λ _ → B a) eq₁ b) refl (a , b') eq
-
-    --     path2a : tr (λ _ → B a) eq b' ≡ tr (λ z → B (z .fst)) eq b
-    --     path2a =  ind≡ (a , b) (λ (a₁ , b'₁) eq₁ → tr (λ _ → B a₁) eq₁ b'₁ ≡ tr (λ z → B (z .fst)) eq₁ b) refl (a , b') eq
-
-    --     path2b : tr (λ _ → B a) eq b ≡ tr (λ _ → B a) eq b'
-    --     path2b = {!!}
-
-    --     path2 : tr (λ _ → B a) eq b ≡ tr (λ z → B (z .fst)) eq b
-    --     path2 = path2b ○ path2a
-
-    --     path3 : tr (λ z → B (z .fst)) eq b ≡ b'
-    --     path3 = apd (snd {B = B}) eq
-
     open PathReasoning
-    i⇒ii-lemma : ∀ {ℓ : Level} {A : Set ℓ} {B : A -> Set ℓ} -> (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (fib (pr₁ {B = B}) x)
-    i⇒ii-lemma {ℓ} {A} {B} ((f , f-sec-prf) , (g , g-retr-prf)) x = fib-cntr , fib-cntr-prf
-      where
-        a : A
-        a = fst (f x)
+    i⇒ii-lemma : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (fib (pr₁ {B = B}) x)
+    i⇒ii-lemma {A = A} {B = B} pr-equiv x = thm•10•4•6 (pr₁ {A = A} {B = B}) pr-equiv x
 
-        b : B a
-        b = snd (f x)
-
-        a≡x : a ≡ x
-        a≡x = f-sec-prf x
-
-        fib-cntr : fib (pr₁ {A = A} {B = B}) x
-        fib-cntr = (x , tr B a≡x b) , refl
-
-        lem : (a' : A) (b' : B a') → _≡_ {A = Σ A B} (a' , tr B (f-sec-prf a') (snd (f a'))) (a' , b')
-        lem a' b' = (g-retr-prf (a' , tr B (f-sec-prf a') (snd (f a')))) ⁻¹ ○ g-retr-prf (a' , b')
-
-        lem1 : (a' : A) → (pair₁ pair₂ : Σ A B) → (eq₁ : fst pair₁ ≡ a') → (pairs-eq : pair₁ ≡ pair₂)
-          → _≡_ {A = Σ (Σ A B) (λ ab → fst ab ≡ a')} (pair₁ , eq₁) (pair₂ , tr (λ pair → fst pair ≡ a') pairs-eq eq₁)
-        lem1 a' pair₁ pair₂ eq₁ refl = refl -- {!tr (λ pair → fst pair ≡ a') pairs-eq eq₁!}
-
-        fib-cntr-prf : (fiber : fib pr₁ x) → (fib-cntr ≡ fiber)
-        fib-cntr-prf ((a' , b') , refl) = lem1 a' pair₁ pair₂ refl pairs-eq ○ ap (λ q → (pair₂ , q)) tr-lem
-          where
-            pair₁ : Σ A B
-            pair₁ = (a' , tr B (f-sec-prf a') (snd (f a')))
-
-            pair₂ : Σ A B
-            pair₂ = (a' , b')
-
-            pairs-eq : pair₁ ≡ pair₂
-            pairs-eq = lem a' b'
-
-            blah : (a' , tr B (f-sec-prf a') (snd (f a'))) ≡ (a' , b')
-            blah = (trans (sym (g-retr-prf (a' , tr B (f-sec-prf a') (snd (f a'))))) (g-retr-prf (a' , b')))
-
-            tr-lem : tr (λ pair → fst pair ≡ a') blah refl ≡ refl
-            tr-lem = {!blah!}
-
-    i⇒ii : ∀ {ℓ : Level} {A : Set ℓ} {B : A -> Set ℓ} -> (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
-    i⇒ii {ℓ} {A} {B} ((f , f-sec-prf) , g , g-retr-prf) x with (i⇒ii-lemma ((f , f-sec-prf) , g , g-retr-prf) x)
+    i⇒ii : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
+    i⇒ii {A = A} {B = B} ((f , f-sec-prf) , g , g-retr-prf) x with (i⇒ii-lemma ((f , f-sec-prf) , g , g-retr-prf) x)
     ... | ((a , b) , a≡x) , ctr-prf = tr B a≡x b , λ b' → let fib-eq = ctr-prf (((x , b') , refl)) in lem fib-eq
       where
         lem : ∀ {a x : A} {b : B a} {b' : B x} {a≡x} ->  _≡_ {A = fib (pr₁ {B = B}) x} ((a , b) , a≡x) ((x , b') , refl) -> tr B a≡x b ≡ b'
@@ -651,29 +580,6 @@ module 10-7 where
         lem₅ : (b b' : B x) → (x , b) ≡ (x , b')
         lem₅ b b' = (g-retr-prf (x , b)) ⁻¹ ○ (g-retr-prf (x , b'))
 
-        lem₇ : ∀ {ℓ} {A : Set ℓ} {B : A -> Set ℓ} {a a' : A} {b : B a} {b' : B a'} -> (e : a ≡ a') -> (_≡_ {A = Σ[ x ∈ A ] (B x)} (a , b) (a' , b')) -> tr B e b ≡ b'
-        lem₇ refl e₂ = {!  !}
-
-        -- lem : (z : B x) -> _≡_ {A = Σ[ x ∈ A ] (B x)} (f x) (x , z)
-        -- lem₅ z = {!   !}
-
-        lem₆ : (z : B x) → tr B (lem₁ x) (snd (f x)) ≡ z
-        lem₆ z with pairEqv {A = A} {𝐁 = B} {s = (x , tr B (lem₁ x) (snd (f x)))} {t = (x , z)}
-        ... | (h1 , h2) , h3 , h4 = {!  !}
-
-        -- lem : (b : B x) → snd (g (pr₁ {B = B} (x , b))) ≡ tr B (! g-retr-prf x) cB
-        -- lem b = begin (snd (g (pr₁ {B = B}(x , b))) ≡⟨ refl ⟩
-        --               (snd ((g ∘ (pr₁ {B = B})) (x , b)))
-        --                          ≡⟨ {!cong snd (g-retr-prf (x , b))!} ⟩
-        --               tr B (! g-retr-prf x) cB ∎)
-
-
-
-        -- any-eq-helper2 : (b b' : B x) → (x , b) ≡ (x , b') → b ≡ b'
-        -- any-eq-helper2 b b' = {!!} -- snd-cong {A = A} {B = B} x b b'
-
-        -- any-eq : (b b' : B x) → b ≡ b'
-        -- any-eq b b' = any-eq-helper2 b b' (any-eq-helper1 b b')
 
     ii⇒i : (all-is-contr : (x : A) → is-contr (B x)) → is-equiv (pr₁ {A = A} {B = B})
     ii⇒i {A = A} {B = B} all-is-contr = (sec ,  sec-h) , (retr , retr-h)
@@ -708,14 +614,16 @@ module 10-7 where
 --             is an equivalence.
 --         (ii) The type B(x) is contractible for each x : A.
     postulate b : ∀ (x : A) → B x
-    -- b = {!!}
 
     m : A → Σ[ x ∈ A ] B x
     m {A = A} {B = B} = λ x → (x , b {A = A} {B = B} x)
 
+    is-contractible-alt : (any-eq : (x : A) → (y : A) → x ≡ y) → (a : A) → is-contr A
+    is-contractible-alt any-eq a = a , λ x → any-eq a x
+
     open PathReasoning
     i⇒iic : is-equiv (m {A = A} {B = B}) → (x : A) → is-contr (B x)
-    i⇒iic {A = A} {B = B} ((f , m∘f∼id ), g , g∘m∼id) x = 10-7b.is-contractible-alt contractible-h center-B
+    i⇒iic {A = A} {B = B} ((f , m∘f∼id ), g , g∘m∼id) x = is-contractible-alt contractible-h center-B
       where
         center-B : B x
         center-B = b {B = B} x

@@ -306,25 +306,44 @@ module 10-4-4 (f : A → A) (H : f ∼ id) where
 -- Lem 10.4.5: has-inverse f → is-coh-invertible f.
 
 lem-10-4-5 : (f : A → B) → has-inverse f → is-coh-invertible f
-lem-10-4-5 f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾′ ; ℍ = H ; 𝕂 =  K ⁻¹ }
+lem-10-4-5 {A = A} {B = B} f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾′ ; ℍ = H ; 𝕂 =  K }
   where
     open PathReasoning
     𝔾′  : f ∘ g ∼ id
-    𝔾′  y = begin
-        f (g y)         ≡⟨ G (f (g y))⁻¹ ⟩
-        f (g (f (g y))) ≡⟨ ap f (H (g y)) ⟩
-        f (g y)         ≡⟨ G y ⟩
-        y ∎
+    𝔾′ y = ((G ∘ f ∘ g) y)⁻¹ ○  ap f ((H ∘ g) y) ○  G y
 
     lem₀ : H ∘ (g ∘ f) ∼ (ap (g ∘ f)) ∘ H
     lem₀ = 10-4-4.def (g ∘ f) H
 
+    lem₂ : f ∘ g ∘ f ∼ f
+    lem₂ x = (G ∘ f) x
+
     lem₁ : f ∘ g ∘ f ∘ g ∘ f ∼ f
-    lem₁ x = {!!}
+    lem₁ x = begin
+         (f ∘ g ∘ f ∘ g ∘ f) x ≡⟨  (G ∘ f ∘ g ∘ f) x  ⟩
+         (f ∘ g ∘ f) x ≡⟨  lem₂ x ⟩
+         f x ∎
+
+    -- lem₃ : {x y : A} (p : x ≡ y) → Nat-Htpy {A = A} {B = B} {x = x} {y = y} {f = f ∘ g ∘ f} {g = f} ? p
+    lem₃ = λ (x : A) (y : A) → λ (p : x ≡ y) → nat-htpy {x = x} {y = y} lem₂ p
 
 
-    K : f ·ₗ H ∼ 𝔾′ ·ᵣ f
-    K x = begin {!!}
+    K : 𝔾′ ·ᵣ f ∼ f ·ₗ H
+    K x = begin
+      (𝔾′ ·ᵣ f) x ≡⟨ {!(𝔾′ ·ᵣ f) x ≡ (f ·ₗ H) x!} ⟩
+      (f ·ₗ H) x
+     ∎
+
+      -- begin
+      -- ((G (f (g (f x))))⁻¹) ○ ((ap f (H (g (f x)))) ○ ((G (f x)) ○ refl))  ≡⟨ ap (λ Y → trans ((G (f (g (f x))))⁻¹) (trans (ap f (H (g (f x)))) Y)) (trans-reflʳ (G (f x)))  ⟩
+      -- ((G (f (g (f x))))⁻¹) ○ ((ap f ((H ∘ g ∘ f) x)) ○ ((G (f x))))         ≡⟨ {!!} ⟩
+      -- ((G (f (g (f x))))⁻¹) ○ ((ap f ((ap (g ∘ f) ∘ H) x)) ○ ((G (f x))))         ≡⟨ {!!} ⟩
+      -- ((G (f (g (f x))))⁻¹) ○ ((((ap (f ∘ g ∘ f) ∘ H) x)) ○ ((G (f x))))         ≡⟨ {!!} ⟩
+      --                      --- ap  f      p         ○ H y
+      --                      --- H x  ○ ap g p
+
+      -- ap f (H x)
+
 
 
 -- Thm 10.4.6: Any equivalence is a contractible map.
