@@ -24,8 +24,6 @@ private
 tot : (∀ (x : A) → 𝐁 x → 𝐂 x) → Σ A 𝐁 → Σ A 𝐂
 tot f (x , y) = x , f x y
 
--- Lemma 11.1.2
-
 
 -- Lemma 11.1.2 For any family of maps 𝑓 : Π_(𝑥:𝐴) 𝐵 𝑥 → 𝐶 𝑥 and any
 -- 𝑡 : Σ_(𝑥:𝐴) 𝐶 𝑥, there is an equivalence

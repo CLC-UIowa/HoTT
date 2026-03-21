@@ -553,19 +553,17 @@ module 10-7 where
         lem : ∀ {a x : A} {b : B a} {b' : B x} {a≡x} ->  _≡_ {A = fib (pr₁ {B = B}) x} ((a , b) , a≡x) ((x , b') , refl) -> tr B a≡x b ≡ b'
         lem refl = refl
 
-        lem₁ : (x : A) -> pr₁ (f x) ≡ x
+        lem₁ : (x : A) → pr₁ (f x) ≡ x
         lem₁ = f-sec-prf
 
-        lem₂ : (x : A) -> g (pr₁ {B = B} (f x)) ≡ f x
+        lem₂ : (x : A) → g (pr₁ {B = B} (f x)) ≡ f x
         lem₂ x = g-retr-prf (f x)
 
-        lem₃ : (x : A) -> g (pr₁ {B = B} (f x)) ≡ g x
+        lem₃ : (x : A) → g (pr₁ {B = B} (f x)) ≡ g x
         lem₃ x = ap g (lem₁ x)
 
         lem₄ : f ∼ g
         lem₄ x = trans ((lem₂ x) ⁻¹) (lem₃ x)
-
-
 
         -- Idea:
         -- pr₁ : Σ[x ∈ A] (B x) -> A
@@ -618,30 +616,22 @@ module 10-7 where
     m : A → Σ[ x ∈ A ] B x
     m {A = A} {B = B} = λ x → (x , b {A = A} {B = B} x)
 
-    is-contractible-alt : (any-eq : (x : A) → (y : A) → x ≡ y) → (a : A) → is-contr A
-    is-contractible-alt any-eq a = a , λ x → any-eq a x
+    -- observe that m̅ and pr₁ should are extentionally the same
+    -- so if m is equivalent, so does pr₁
+    lem : is-equiv (m {A = A} {B = B}) → is-equiv (pr₁ {A = A} {B = B})
+    lem {A = A} {B = B} ((m̅ , m∘m̅~id) , m̅' , m̅'∘m~id ) = (m , λ x → refl) , (m , ret )
+      where
+        m̅~pr₁ : m̅ ∼ pr₁
+        m̅~pr₁ (x , y) =  ap pr₁ (m∘m̅~id (x , y))
+
+        ret : (x : Σ A B) → m (pr₁ x) ≡ id x
+        ret x = sym (ap (λ p → m p) (m̅~pr₁ x)) ○ (m∘m̅~id x)
 
     open PathReasoning
+    -- let the previous exercise do the heavy lifting
     i⇒iic : is-equiv (m {A = A} {B = B}) → (x : A) → is-contr (B x)
-    i⇒iic {A = A} {B = B} ((f , m∘f∼id ), g , g∘m∼id) x = is-contractible-alt contractible-h center-B
-      where
-        center-B : B x
-        center-B = b {B = B} x
+    i⇒iic {A = A} {B = B} is-equiv-m x = (10-7b.i⇒ii ∘ lem) is-equiv-m x
 
-        f∼pr₁ : f ∼ pr₁
-        f∼pr₁ (x' , y') = ap pr₁ (m∘f∼id (x' , y'))
-
-        contractible-helper : (y y' : B x) → _≡_ {A = Σ A B} (x , y) (x , y')
-        contractible-helper y y' =
-          begin
-            (x , y) ≡⟨ (m∘f∼id (x , y)) ⁻¹ ⟩
-            m (f (x , y)) ≡⟨  ap (λ z → (z , b {B = B} z)) (f∼pr₁ (x , y)) ⟩
-            m x ≡⟨ ap m (f∼pr₁ (x , y')) ⁻¹ ⟩
-            m (f (x , y')) ≡⟨ m∘f∼id (x , y') ⟩
-            (x , y') ∎
-
-        contractible-h : (y y' : B x) → (y ≡ y')
-        contractible-h y y' = {!!} -- 10-7b.snd-cong x y y' (contractible-helper y y')
 
     ii⇒ic : (any-is-contr : (x : A) → is-contr (B x)) → is-equiv (m {A = A} {B = B})
     ii⇒ic {A = A} {B = B} any-is-contr = (pr₁ , m∘pr₁∼id) , (pr₁ , pr₁∘m∼id)
