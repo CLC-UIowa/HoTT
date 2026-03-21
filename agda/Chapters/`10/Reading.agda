@@ -228,10 +228,10 @@ coh-invertible⇒is-contr-map : ∀ (f : A → B) → is-coh-invertible f → is
 coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; 𝔾 = 𝔾 ; ℍ = ℍ ; 𝕂 = 𝕂 } y =
   ((g′ y) , (𝔾 y)) , contr
    where
-      𝕂' : (x : A) -> (𝔾 (f x)) ≡ (ap f (ℍ x)) ○ refl
+      𝕂' : (x : A) → (𝔾 (f x)) ≡ (ap f (ℍ x)) ○ refl
       𝕂' = 𝕂 ○ (right-identity (f ·ₗ ℍ)) ⁻¹
 
-      lem₂ : (x : A) -> Eq-fib f (f x) (g′ (f x) , 𝔾 (f x)) (x , refl)
+      lem₂ : (x : A) → Eq-fib f (f x) (g′ (f x) , 𝔾 (f x)) (x , refl)
       lem₂ x = ℍ x , 𝕂' x
 
       lem₁ : (x : A) → (p : f x ≡ y) → Eq-fib f y (g′ y , 𝔾 y) (x , p)
@@ -304,45 +304,61 @@ module 10-4-4 (f : A → A) (H : f ∼ id) where
     ap f (H x) ∎
 
 -- Lem 10.4.5: has-inverse f → is-coh-invertible f.
-
-lem-10-4-5 : (f : A → B) → has-inverse f → is-coh-invertible f
-lem-10-4-5 {A = A} {B = B} f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾′ ; ℍ = H ; 𝕂 =  K }
+lem•10•4•5 : (f : A → B) → has-inverse f → is-coh-invertible f
+lem•10•4•5 {A = A} {B = B} f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾′ ; ℍ = H ; 𝕂 =  K }
   where
     open PathReasoning
     𝔾′  : f ∘ g ∼ id
     𝔾′ y = ((G ∘ f ∘ g) y)⁻¹ ○  ap f ((H ∘ g) y) ○  G y
 
-    lem₀ : H ∘ (g ∘ f) ∼ (ap (g ∘ f)) ∘ H
-    lem₀ = 10-4-4.def (g ∘ f) H
+    lem₀ : (x : A) → (H ∘ g ∘ f) x ≡ ap (g ∘ f) (H x)
+    lem₀ x = 10-4-4.def (g ∘ f) H x
 
-    lem₂ : f ∘ g ∘ f ∼ f
-    lem₂ x = (G ∘ f) x
+    lem₁ : (x : A) → ap (f ∘ g ∘ f) (H x) ○ ((G ∘ f) x) ≡ ((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)
+    lem₁ x = nat-htpy {f = f ∘ g ∘ f} {g = f} (G ∘ f) (H x)
 
-    lem₁ : f ∘ g ∘ f ∘ g ∘ f ∼ f
-    lem₁ x = begin
-         (f ∘ g ∘ f ∘ g ∘ f) x ≡⟨  (G ∘ f ∘ g ∘ f) x  ⟩
-         (f ∘ g ∘ f) x ≡⟨  lem₂ x ⟩
-         f x ∎
-
-    -- lem₃ : {x y : A} (p : x ≡ y) → Nat-Htpy {A = A} {B = B} {x = x} {y = y} {f = f ∘ g ∘ f} {g = f} ? p
-    lem₃ = λ (x : A) (y : A) → λ (p : x ≡ y) → nat-htpy {x = x} {y = y} lem₂ p
+    lem₂ : {x y : A} (p : x ≡ y) → ap (f ∘ g ∘ f) p ≡ (ap f (ap (g ∘ f) p))
+    lem₂ refl = refl
 
 
-    K : 𝔾′ ·ᵣ f ∼ f ·ₗ H
-    K x = begin
-      (𝔾′ ·ᵣ f) x ≡⟨ {!(𝔾′ ·ᵣ f) x ≡ (f ·ₗ H) x!} ⟩
-      (f ·ₗ H) x
-     ∎
+    lem₃ : (x : A) → ap f (ap (g ∘ f) (H x)) ○ ((G ∘ f) x) ≡ ap (f ∘ g ∘ f) (H x) ○ ((G ∘ f) x)
+    lem₃ x =  lem₂ (H x)⁻¹ ⋆ₗ ((G ∘ f) x)
 
-      -- begin
-      -- ((G (f (g (f x))))⁻¹) ○ ((ap f (H (g (f x)))) ○ ((G (f x)) ○ refl))  ≡⟨ ap (λ Y → trans ((G (f (g (f x))))⁻¹) (trans (ap f (H (g (f x)))) Y)) (trans-reflʳ (G (f x)))  ⟩
-      -- ((G (f (g (f x))))⁻¹) ○ ((ap f ((H ∘ g ∘ f) x)) ○ ((G (f x))))         ≡⟨ {!!} ⟩
-      -- ((G (f (g (f x))))⁻¹) ○ ((ap f ((ap (g ∘ f) ∘ H) x)) ○ ((G (f x))))         ≡⟨ {!!} ⟩
-      -- ((G (f (g (f x))))⁻¹) ○ ((((ap (f ∘ g ∘ f) ∘ H) x)) ○ ((G (f x))))         ≡⟨ {!!} ⟩
-      --                      --- ap  f      p         ○ H y
-      --                      --- H x  ○ ap g p
+    lem₄ : (x : A) → ap f (ap (g ∘ f) (H x)) ○ ((G ∘ f) x) ≡ ((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)
+    lem₄ = lem₃ ○ lem₁
 
-      -- ap f (H x)
+    lem₅ : (x : A) → ap f ((H ∘ g ∘ f) x) ○ ((G ∘ f) x) ≡ ap f (ap (g ∘ f) (H x)) ○ ((G ∘ f) x)
+    lem₅ x = (ap (λ Y → ap f Y) (lem₀ x)) ⋆ₗ ((G ∘ f) x)
+
+
+    lem₆ : (x : A) → ap f ((H ∘ g ∘ f) x) ○ ((G ∘ f) x) ≡ ((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)
+    lem₆ = lem₅ ○ lem₄
+
+    lem₇ : (x : A) → ((G ∘ f ∘ g ∘ f) x)⁻¹ ○ (ap f ((H ∘ g ∘ f) x) ○ ((G ∘ f) x)) ≡ ((G ∘ f ∘ g ∘ f) x)⁻¹ ○ (((G ∘ f ∘ g ∘ f) x) ○ ap f (H x))
+    lem₇ x = ap (((G ∘ f ∘ g ∘ f) x)⁻¹ ○_) (lem₆ x)
+
+
+    lem₈ : (x : A) → ((G ∘ f ∘ g ∘ f) x)⁻¹ ○ ((G ∘ f ∘ g ∘ f) x) ≡ refl
+    lem₈ = left-inv ((G ∘ f ∘ g ∘ f))
+
+    lem₉ : (x : A) → ((G ∘ f ∘ g ∘ f) x)⁻¹ ○ (((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)) ≡ (((G ∘ f ∘ g ∘ f) x)⁻¹ ○ ((G ∘ f ∘ g ∘ f) x)) ○ ap f (H x)
+    lem₉ x = (assoc (((G ∘ f ∘ g ∘ f) x)⁻¹) ((G ∘ f ∘ g ∘ f) x) (ap f (H x))) ⁻¹
+
+    lemₑ : (x : A) → (((G ∘ f ∘ g ∘ f) x)⁻¹ ○ ((G ∘ f ∘ g ∘ f) x)) ○ ap f (H x) ≡ refl ○ ap f (H x)
+    lemₑ x = ap (_○ ap f (H x)) (lem₈ x)
+
+    lemₕ : (x : A) → refl ○ ap f (H x) ≡ ap f (H x)
+    lemₕ x = left-identity {{PathGroupoid}} _
+
+
+    lemᵢ : (x : A) → ((G ∘ f ∘ g ∘ f) x)⁻¹ ○ (((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)) ≡ ap f (H x)
+    lemᵢ x = trans (trans (lem₉ x) (lemₑ x)) (lemₕ x)
+
+    lemⱼ : (x : A) → trans (trans (sym (G (f (g (f x))))) (ap f (H (g (f x))))) (G (f x)) ≡ ap f (H x)
+    lemⱼ x = (assoc ((sym (G (f (g (f x)))))) ((ap f (H (g (f x))))) (G (f x))) ○ (lem₇ x  ○ lemᵢ x)
+
+    K :  𝔾′ ·ᵣ f ∼ f ·ₗ H
+    K x  = lemⱼ x
 
 
 
@@ -354,7 +370,7 @@ thm•10•4•6 f = lem3 ∘ lem2 ∘ lem1
     lem1 = is-equiv⇒has-inverse {f = f}
 
     lem2 : has-inverse f → is-coh-invertible f -- lemma 10.4.5
-    lem2 = lem-10-4-5 f
+    lem2 = lem•10•4•5 f
 
     lem3 : is-coh-invertible f → is-contr-map f -- proposition 10.4.2
     lem3 = coh-invertible⇒is-contr-map f
