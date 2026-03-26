@@ -3,6 +3,7 @@ module Chapters.`11.Reading where
 open import Prelude
 open import Chapters.`09.Reading
 open import Chapters.`10.Reading
+open import Chapters.`10.Exercises
 
 -- open HomReasoning
 --------------------------------------------------------------------
@@ -39,17 +40,74 @@ fib-tot-equiv f t = ϕ , ϕ-is-equiv
   ψ (y , refl) = ((fst t) , y) , refl
 
 
-  G-hom : ϕ ∘ ψ  ∼ id
-  G-hom (y , refl) = refl
+  𝔾 : ϕ ∘ ψ  ∼ id
+  𝔾 (y , refl) = refl
 
-  H-hom : ψ ∘ ϕ  ∼ id
-  H-hom (x , refl) = refl
+  ℍ : ψ ∘ ϕ  ∼ id
+  ℍ (x , refl) = refl
 
   ϕ-is-equiv : is-equiv ϕ
-  ϕ-is-equiv = (ψ , G-hom) , (ψ , H-hom)
+  ϕ-is-equiv = (ψ , 𝔾) , (ψ , ℍ)
 
 -- lemma 11.1.3
 -- let 𝑓 : Π_(𝑥:𝐴) 𝐵 𝑥 → 𝐶 𝑥 be a family of maps
 -- The following are equivalent
 -- (i) for each x the map f x is an equivalence. We call f a _family of equivalences_
 -- (ii) The map tot (f) : Σ_(x : A) B x -> Σ_(x : A)  C x is an equivalence
+module 11•1•3 {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (f : (x : A) → 𝐁 x → 𝐂 x) where
+  -- is-contr-map {B = B} f = ∀ (b : B) → is-contr (fib f b)
+  -- 10.3.5 is-contr-map-equiv (f : A → B) : is-contr-map f → is-equiv f
+  -- thm•10•4•6 (f : A → B) : is-equiv f → is-contr-map f
+
+
+  lem : (x : A) (c : 𝐂 x) → fib (tot f) (x , c) ≃ fib (f x) c
+  lem x c = fib-tot-equiv f (x , c)
+
+
+  Φ : (x : A) (c : 𝐂 x) → is-contr (fib (f x) c) → is-contr (fib (tot f) (x , c))
+  Φ x c p with lem x c
+  ... | (ϕ , ϕ-is-equiv) = 10-3.ex-10-3-ii-iii⇒i ϕ p ϕ-is-equiv
+
+
+  Ψ : (x : A) (c : 𝐂 x) → is-contr (fib (tot f) (x , c)) → is-contr (fib (f x) c)
+  Ψ x c p with lem x c
+  ... | (ϕ , ϕ-is-equiv) = 10-3.ex-10-3-i-iii⇒ii ϕ p ϕ-is-equiv
+
+  lem0 : (x : A) (c : 𝐂 x) → is-contr (fib (tot f) (x , c)) ↔ is-contr (fib (f x) c)
+  lem0 x c = Ψ x c , Φ x c
+
+
+  i⇒ii : (x : A) → is-equiv (tot f) → is-equiv (f x)
+  i⇒ii x = {!!}
+
+  ii⇒i : (x : A) → is-equiv (f x) → is-equiv (tot f)
+  ii⇒i x iefx = {! (thm•10•4•6 (f x) iefx)!}
+
+  thm : (x : A) → is-equiv (f x) ↔ is-equiv (tot f)
+  thm x = ii⇒i x , i⇒ii x
+
+
+
+module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
+
+  σ : Σ[ x ∈ A ] (𝐂 (f x)) → Σ[ y ∈ B ] 𝐂 y
+  σ (x , z) =  f x , z
+
+  ϕ : (t : Σ[ y ∈ B ] (𝐂 y)) → fib σ t → fib f (fst t)
+  ϕ ( y , z) ((x , z) , refl) = x , refl
+
+  ψ : (t : Σ[ y ∈ B ] (𝐂 y)) → fib f (fst t) → fib σ t
+  ψ (y , z) (x , refl) = (x , z) , refl
+
+  𝔾 : (t : Σ[ y ∈ B ] (𝐂 y)) → ϕ t ∘ ψ t ∼ id
+  𝔾 (y , z) (x , refl) = refl
+
+  ℍ : (t : Σ[ y ∈ B ] (𝐂 y)) → ψ t ∘ ϕ t ∼ id
+  ℍ (y , z) ((x , z) , refl) = refl
+
+  lem0 : (t : Σ[ y ∈ B ] (𝐂 y)) → fib σ t ≃ fib f (fst t)
+  lem0 t = ϕ t , ((ψ t , 𝔾 t) , ψ t , ℍ t)
+
+
+  lem : is-equiv f → is-equiv σ
+  lem is-equiv-f = {!11•1•3.def !}

@@ -314,12 +314,11 @@ lem•10•4•5 {A = A} {B = B} f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾
     lem₀ : (x : A) → (H ∘ g ∘ f) x ≡ ap (g ∘ f) (H x)
     lem₀ x = 10-4-4.def (g ∘ f) H x
 
-    lem₁ : (x : A) → ap (f ∘ g ∘ f) (H x) ○ ((G ∘ f) x) ≡ ((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)
-    lem₁ x = nat-htpy {f = f ∘ g ∘ f} {g = f} (G ∘ f) (H x)
-
     lem₂ : {x y : A} (p : x ≡ y) → ap (f ∘ g ∘ f) p ≡ (ap f (ap (g ∘ f) p))
     lem₂ refl = refl
 
+    lem₁ : (x : A) → ap (f ∘ g ∘ f) (H x) ○ ((G ∘ f) x) ≡ ((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)
+    lem₁ x = nat-htpy {f = f ∘ g ∘ f} {g = f} (G ∘ f) (H x)
 
     lem₃ : (x : A) → ap f (ap (g ∘ f) (H x)) ○ ((G ∘ f) x) ≡ ap (f ∘ g ∘ f) (H x) ○ ((G ∘ f) x)
     lem₃ x =  lem₂ (H x)⁻¹ ⋆ₗ ((G ∘ f) x)

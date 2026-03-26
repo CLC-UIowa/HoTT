@@ -547,36 +547,12 @@ module 10-7 where
     i⇒ii-lemma {A = A} {B = B} pr-equiv x = thm•10•4•6 (pr₁ {A = A} {B = B}) pr-equiv x
 
     i⇒ii : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
-    i⇒ii {A = A} {B = B} ((f , f-sec-prf) , g , g-retr-prf) x with (i⇒ii-lemma ((f , f-sec-prf) , g , g-retr-prf) x)
-    ... | ((a , b) , a≡x) , ctr-prf = tr B a≡x b , λ b' → let fib-eq = ctr-prf (((x , b') , refl)) in lem fib-eq
+    i⇒ii {A = A} {B = B} is-equiv-pr x with i⇒ii-lemma is-equiv-pr x
+    ... | ((a , b) , refl) , ctr-prf = b , λ b' → lem (ctr-prf ((x , b') , refl))
+
       where
-        lem : ∀ {a x : A} {b : B a} {b' : B x} {a≡x} ->  _≡_ {A = fib (pr₁ {B = B}) x} ((a , b) , a≡x) ((x , b') , refl) -> tr B a≡x b ≡ b'
+        lem : ∀ {a x : A} {b : B a} {b' : B x} {a≡x} ->  _≡_ {A = fib (pr₁ {B = B}) x} ((a , b) , a≡x) ((x , b') , refl) → tr B a≡x b ≡ b'
         lem refl = refl
-
-        lem₁ : (x : A) → pr₁ (f x) ≡ x
-        lem₁ = f-sec-prf
-
-        lem₂ : (x : A) → g (pr₁ {B = B} (f x)) ≡ f x
-        lem₂ x = g-retr-prf (f x)
-
-        lem₃ : (x : A) → g (pr₁ {B = B} (f x)) ≡ g x
-        lem₃ x = ap g (lem₁ x)
-
-        lem₄ : f ∼ g
-        lem₄ x = trans ((lem₂ x) ⁻¹) (lem₃ x)
-
-        -- Idea:
-        -- pr₁ : Σ[x ∈ A] (B x) -> A
-        -- hence: (x : A) -> is-contr (fib a) === ∀ a, is-contr (Σ[s ∈ Σ[x ∈ A] (B x)] (pr₁ s ≡ a))
-
-        f-retr-prf : (λ x → f (pr₁ x)) ∼ id
-        f-retr-prf x = trans (lem₄ (pr₁ x)) (g-retr-prf x)
-
-        cB : B x
-        cB = tr B (lem₁ x) (snd (f x))
-
-        lem₅ : (b b' : B x) → (x , b) ≡ (x , b')
-        lem₅ b b' = (g-retr-prf (x , b)) ⁻¹ ○ (g-retr-prf (x , b'))
 
 
     ii⇒i : (all-is-contr : (x : A) → is-contr (B x)) → is-equiv (pr₁ {A = A} {B = B})
@@ -616,8 +592,8 @@ module 10-7 where
     m : A → Σ[ x ∈ A ] B x
     m {A = A} {B = B} = λ x → (x , b {A = A} {B = B} x)
 
-    -- observe that m̅ and pr₁ should are extentionally the same
-    -- so if m is equivalent, so does pr₁
+    -- observe that m̅ and pr₁ are extentionally the same
+    -- so if m is equivalent, so is pr₁
     lem : is-equiv (m {A = A} {B = B}) → is-equiv (pr₁ {A = A} {B = B})
     lem {A = A} {B = B} ((m̅ , m∘m̅~id) , m̅' , m̅'∘m~id ) = (m , λ x → refl) , (m , ret )
       where
