@@ -61,30 +61,16 @@ module 11•1•3 {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (f : (x : A) → �
 
 
   lem : (x : A) (c : 𝐂 x) → fib (tot f) (x , c) ≃ fib (f x) c
-  lem x c = fib-tot-equiv f (x , c)
-
-
-  Φ : (x : A) (c : 𝐂 x) → is-contr (fib (f x) c) → is-contr (fib (tot f) (x , c))
-  Φ x c p with lem x c
-  ... | (ϕ , ϕ-is-equiv) = 10-3.ex-10-3-ii-iii⇒i ϕ p ϕ-is-equiv
-
-
-  Ψ : (x : A) (c : 𝐂 x) → is-contr (fib (tot f) (x , c)) → is-contr (fib (f x) c)
-  Ψ x c p with lem x c
-  ... | (ϕ , ϕ-is-equiv) = 10-3.ex-10-3-i-iii⇒ii ϕ p ϕ-is-equiv
+  lem x c = fib-tot-equiv f (x , c) -- lemma 11•1•2
 
   lem0 : (x : A) (c : 𝐂 x) → is-contr (fib (tot f) (x , c)) ↔ is-contr (fib (f x) c)
-  lem0 x c = Ψ x c , Φ x c
+  lem0 x c with lem x c
+  ... | (ϕ , ϕ-is-equiv) =
+      (λ p → 10-3.ex-10-3-i-iii⇒ii ϕ p ϕ-is-equiv) , λ p → 10-3.ex-10-3-ii-iii⇒i ϕ p ϕ-is-equiv
 
-
-  i⇒ii : (x : A) → is-equiv (tot f) → is-equiv (f x)
-  i⇒ii x = {!!}
-
-  ii⇒i : (x : A) → is-equiv (f x) → is-equiv (tot f)
-  ii⇒i x iefx = {! (thm•10•4•6 (f x) iefx)!}
 
   thm : (x : A) → is-equiv (f x) ↔ is-equiv (tot f)
-  thm x = ii⇒i x , i⇒ii x
+  thm x = (λ p → {! thm•10•4•6 (f x) !}) , {!!}
 
 
 
