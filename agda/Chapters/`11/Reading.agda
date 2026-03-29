@@ -14,15 +14,15 @@ private
   variable
     ℓ ℓ₁ ℓ₂ ℓ₃ : Level
     A B D X Y Z : Set ℓ
-    𝐁 𝐂 𝐃 : A → Set ℓ
-    f g h i : (x : A) → 𝐁 x
+    -- 𝐁 𝐂 𝐃 : A → Set ℓ
+    -- f g h i : (x : A) → 𝐁 x
 
 
 --------------------------------------------------------------------
 -- §11.1: Families of equivalences
 
 -- Def 11.1.1
-tot : (∀ (x : A) → 𝐁 x → 𝐂 x) → Σ A 𝐁 → Σ A 𝐂
+tot : {𝐁 𝐂 : A → Set ℓ} → (∀ (x : A) → 𝐁 x → 𝐂 x) → Σ A 𝐁 → Σ A 𝐂
 tot f (x , y) = x , f x y
 
 
@@ -30,7 +30,7 @@ tot f (x , y) = x , f x y
 -- 𝑡 : Σ_(𝑥:𝐴) 𝐶 𝑥, there is an equivalence
 -- fib_(tot f) (t) ≃ fib_(f (pr₁ t)) (pr₂ t)
 
-fib-tot-equiv : (f : ∀ (x : A) → 𝐁 x → 𝐂 x) → (t : Σ A 𝐂) → fib (tot f) t ≃ fib (f (fst t)) (snd t)
+fib-tot-equiv : {𝐁 𝐂 : A → Set ℓ} → (f : ∀ (x : A) → 𝐁 x → 𝐂 x) → (t : Σ A 𝐂) → fib (tot f) t ≃ fib (f (fst t)) (snd t)
 fib-tot-equiv f t = ϕ , ϕ-is-equiv
   where
   ϕ : fib (tot f) t → fib (f (fst t)) (snd t)
@@ -68,17 +68,21 @@ module 11•1•3 {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (f : (x : A) → �
   ... | (ϕ , ϕ-is-equiv) =
       (λ p → 10-3.ex-10-3-i-iii⇒ii ϕ p ϕ-is-equiv) , λ p → 10-3.ex-10-3-ii-iii⇒i ϕ p ϕ-is-equiv
 
-
   thm : (x : A) → is-equiv (f x) ↔ is-equiv (tot f)
-  thm x = (λ p → {! thm•10•4•6 (f x) !}) , {!!}
+  thm x = {!!}
 
-
-
+-- Lemma 11.1.4
+-- Consider a map 𝑓 : 𝐴 → 𝐵, and let 𝐶 be a type family over 𝐵.
+-- If 𝑓 is an equivalence,then the map
+--       σ_f (𝐶) : λ (x, z). (f x, z) : Σ_{x: A} 𝐶 (f x) → Σ_{y: B} 𝐶 (y)
+-- is and equivalence
 module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
-
+  -- We first define the map σ
   σ : Σ[ x ∈ A ] (𝐂 (f x)) → Σ[ y ∈ B ] 𝐂 y
   σ (x , z) =  f x , z
 
+  -- Now we show that the fibers of σ and f at t are equivalent,
+  -- i.e. fib σ t ≃ fib f (pr₁ t)
   ϕ : (t : Σ[ y ∈ B ] (𝐂 y)) → fib σ t → fib f (fst t)
   ϕ ( y , z) ((x , z) , refl) = x , refl
 
@@ -94,6 +98,33 @@ module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
   lem0 : (t : Σ[ y ∈ B ] (𝐂 y)) → fib σ t ≃ fib f (fst t)
   lem0 t = ϕ t , ((ψ t , 𝔾 t) , ψ t , ℍ t)
 
-
+  -- we show that σ is equivalent if and only if ϕ is a contractible map
   lem : is-equiv f → is-equiv σ
   lem is-equiv-f = {!11•1•3.def !}
+
+-- Definition 11.1.5
+-- Consider a map f : A → B and a family of maps
+--     g : (x : A) → C x → D (f x)
+-- where C is a type family over A and D is a type family over B.
+-- We define tot_f g : Σ_{x : A} C x → Σ_{y:B} D y
+-- we say g is a family of maps over f
+
+In_familyOfMapsOver_Is_ : {𝐂 : A → Set ℓ} (𝐃 : B → Set ℓ) (f : A → B) (g : (x : A) → 𝐂 x → 𝐃 (f x))
+     → Σ A 𝐂  → Σ[ y ∈ B ] (𝐃 y)
+In 𝐃 familyOfMapsOver f Is g = λ (x , z) → (f x , g x z)
+
+
+-- Theorem 11.1.6
+-- suppose g is a family of maps over f,
+-- then the following are equivalent
+-- (i) The family of maps g over f is a family of equivalences
+-- (ii) the map tot_f (g) is an equivalence
+module 11•1•6 {𝐂 : A → Set ℓ}(𝐃 : B → Set ℓ) (f : A → B) (g : (x : A) → 𝐂 x → 𝐃 (f x)) where
+  thm : is-equiv (tot g) ↔ is-equiv (In 𝐃 familyOfMapsOver f Is g)
+  thm = {!!}
+
+
+-- § 11.2 The fundamental theorem
+-- The fundamental theorem describes what are the necessary and sufficient conditions on a type family 𝐁
+-- over a type A equipped with a point a : A
+-- to obtain an equivalence (a ≡ x) ≃ 𝐁 x for each x : A

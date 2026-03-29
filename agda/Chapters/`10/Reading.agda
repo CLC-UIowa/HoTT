@@ -288,10 +288,10 @@ nat-htpy H refl = right-identity (H _) ⁻¹
 
 -- Def. 10.4.4
 
-module 10-4-4 (f : A → A) (H : f ∼ id) where
+module 10•4•4 (f : A → A) (H : f ∼ id) where
   open PathReasoning
 
-  def : H ∘ f ∼ ap f ∘ H
+  def : H ·ᵣ f ∼ f ·ₗ H
   def x = begin
     H (f x)                                 ≡⟨ (right-identity (H (f x))) ⁻¹ ⟩
     H (f x)    ○ refl                       ≡⟨ (H (f x) ⋆ᵣ ((right-inv (H x)) ⁻¹)) ⟩
@@ -306,59 +306,37 @@ module 10-4-4 (f : A → A) (H : f ∼ id) where
 -- Lem 10.4.5: has-inverse f → is-coh-invertible f.
 lem•10•4•5 : (f : A → B) → has-inverse f → is-coh-invertible f
 lem•10•4•5 {A = A} {B = B} f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾′ ; ℍ = H ; 𝕂 =  K }
+-- NB: we do not use G directly and work with the "improved" homotopy for the same reason
+-- we used the improved concatination in the proof of the theorem 10.2.3
   where
     open PathReasoning
+
+    {- we first define 𝔾′ as an identification of the concatination of homotopies
+      (f ∘ g) y =================== (f ∘ g ∘ f ∘ g) y ================ (f ∘ g) y ========== y
+               ((G ∘ f ∘ g) y)⁻¹                       ap f ((H ∘ g) y)             G y
+    -}
     𝔾′  : f ∘ g ∼ id
     𝔾′ y = ((G ∘ f ∘ g) y)⁻¹ ○  ap f ((H ∘ g) y) ○  G y
 
-    lem₀ : (x : A) → (H ∘ g ∘ f) x ≡ ap (g ∘ f) (H x)
-    lem₀ x = 10-4-4.def (g ∘ f) H x
-
-    lem₂ : {x y : A} (p : x ≡ y) → ap (f ∘ g ∘ f) p ≡ (ap f (ap (g ∘ f) p))
-    lem₂ refl = refl
-
-    lem₁ : (x : A) → ap (f ∘ g ∘ f) (H x) ○ ((G ∘ f) x) ≡ ((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)
-    lem₁ x = nat-htpy {f = f ∘ g ∘ f} {g = f} (G ∘ f) (H x)
-
-    lem₃ : (x : A) → ap f (ap (g ∘ f) (H x)) ○ ((G ∘ f) x) ≡ ap (f ∘ g ∘ f) (H x) ○ ((G ∘ f) x)
-    lem₃ x =  lem₂ (H x)⁻¹ ⋆ₗ ((G ∘ f) x)
-
-    lem₄ : (x : A) → ap f (ap (g ∘ f) (H x)) ○ ((G ∘ f) x) ≡ ((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)
-    lem₄ = lem₃ ○ lem₁
-
-    lem₅ : (x : A) → ap f ((H ∘ g ∘ f) x) ○ ((G ∘ f) x) ≡ ap f (ap (g ∘ f) (H x)) ○ ((G ∘ f) x)
-    lem₅ x = (ap (λ Y → ap f Y) (lem₀ x)) ⋆ₗ ((G ∘ f) x)
-
-
-    lem₆ : (x : A) → ap f ((H ∘ g ∘ f) x) ○ ((G ∘ f) x) ≡ ((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)
-    lem₆ = lem₅ ○ lem₄
-
-    lem₇ : (x : A) → ((G ∘ f ∘ g ∘ f) x)⁻¹ ○ (ap f ((H ∘ g ∘ f) x) ○ ((G ∘ f) x)) ≡ ((G ∘ f ∘ g ∘ f) x)⁻¹ ○ (((G ∘ f ∘ g ∘ f) x) ○ ap f (H x))
-    lem₇ x = ap (((G ∘ f ∘ g ∘ f) x)⁻¹ ○_) (lem₆ x)
-
-
-    lem₈ : (x : A) → ((G ∘ f ∘ g ∘ f) x)⁻¹ ○ ((G ∘ f ∘ g ∘ f) x) ≡ refl
-    lem₈ = left-inv ((G ∘ f ∘ g ∘ f))
-
-    lem₉ : (x : A) → ((G ∘ f ∘ g ∘ f) x)⁻¹ ○ (((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)) ≡ (((G ∘ f ∘ g ∘ f) x)⁻¹ ○ ((G ∘ f ∘ g ∘ f) x)) ○ ap f (H x)
-    lem₉ x = (assoc (((G ∘ f ∘ g ∘ f) x)⁻¹) ((G ∘ f ∘ g ∘ f) x) (ap f (H x))) ⁻¹
-
-    lemₑ : (x : A) → (((G ∘ f ∘ g ∘ f) x)⁻¹ ○ ((G ∘ f ∘ g ∘ f) x)) ○ ap f (H x) ≡ refl ○ ap f (H x)
-    lemₑ x = ap (_○ ap f (H x)) (lem₈ x)
-
-    lemₕ : (x : A) → refl ○ ap f (H x) ≡ ap f (H x)
-    lemₕ x = left-identity {{PathGroupoid}} _
-
-
-    lemᵢ : (x : A) → ((G ∘ f ∘ g ∘ f) x)⁻¹ ○ (((G ∘ f ∘ g ∘ f) x) ○ ap f (H x)) ≡ ap f (H x)
-    lemᵢ x = trans (trans (lem₉ x) (lemₑ x)) (lemₕ x)
-
-    lemⱼ : (x : A) → trans (trans (sym (G (f (g (f x))))) (ap f (H (g (f x))))) (G (f x)) ≡ ap f (H x)
-    lemⱼ x = (assoc ((sym (G (f (g (f x)))))) ((ap f (H (g (f x))))) (G (f x))) ○ (lem₇ x  ○ lemᵢ x)
-
+    -- now we construct the needed homotopy K
     K :  𝔾′ ·ᵣ f ∼ f ·ₗ H
-    K x  = lemⱼ x
+    K x = begin
+      (𝔾′ ·ᵣ f) x                                                          ≡⟨ assoc (((G ∘ f ∘ g ∘ f) x)⁻¹) ((f ·ₗ (H ∘ g ∘ f)) x)  ((G ∘ f) x) ⟩
+      ((G ∘ f ∘ g ∘ f) x)⁻¹   ○ (((f ·ₗ (H ·ᵣ (g ∘ f))) x)  ○ ((G ∘ f) x))  ≡⟨ ((G ∘ f ∘ g ∘ f) x)⁻¹ ⋆ᵣ  (((ap (λ Y → ap f Y) (lem₁ x)) ⋆ₗ (G ∘ f) x)) ⟩
+      ((G ∘ f ∘ g ∘ f) x)⁻¹   ○ (((f ·ₗ ((g ∘ f) ·ₗ H)) x)   ○ ((G ∘ f) x))  ≡⟨ ((G ∘ f ∘ g ∘ f) x)⁻¹ ⋆ᵣ  (((lem₂ (H x)⁻¹) ⋆ₗ (G ∘ f) x)) ⟩
+      ((G ∘ f ∘ g ∘ f) x)⁻¹   ○ ((((f ∘ g ∘ f) ·ₗ H) x)     ○ ((G ∘ f) x))  ≡⟨ (((G ∘ f ∘ g ∘ f) x)⁻¹ ⋆ᵣ nat-htpy {f = f ∘ g ∘ f} {g = f} (G ∘ f) (H x)) ⟩
+      ((G ∘ f ∘ g ∘ f) x)⁻¹   ○ (((G ∘ f ∘ g ∘ f) x)       ○ (f ·ₗ H) x)    ≡⟨ (assoc (((G ∘ f ∘ g ∘ f) x)⁻¹) ((G ∘ f ∘ g ∘ f) x) (ap f (H x)))⁻¹ ⟩
+      ((G ∘ f ∘ g ∘ f) x)⁻¹   ○ ((G ∘ f ∘ g ∘ f) x)        ○ (f ·ₗ H) x     ≡⟨ left-inv ((G ∘ f ∘ g ∘ f) x) ⋆ₗ (f ·ₗ H) x ⟩
+      refl                                                 ○ (f ·ₗ H) x     ≡⟨ left-identity {{PathGroupoid}} _ ⟩
+      (f ·ₗ H) x ∎
 
+      where
+
+       lem₁ : H ·ᵣ (g ∘ f) ∼ ((g ∘ f) ·ₗ H)
+       lem₁ = 10•4•4.def (g ∘ f) H
+
+       lem₂ : {x y : A} (p : x ≡ y) → ap (f ∘ g ∘ f) p ≡ (ap f (ap (g ∘ f) p))
+       lem₂ refl = refl
 
 
 -- Thm 10.4.6: Any equivalence is a contractible map.
