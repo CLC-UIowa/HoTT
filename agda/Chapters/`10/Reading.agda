@@ -332,7 +332,7 @@ lem•10•4•5 {A = A} {B = B} f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾
 
       where
 
-       lem₁ : H ·ᵣ (g ∘ f) ∼ ((g ∘ f) ·ₗ H)
+       lem₁ : H ·ᵣ (g ∘ f) ∼ (g ∘ f) ·ₗ H
        lem₁ = 10•4•4.def (g ∘ f) H
 
        lem₂ : {x y : A} (p : x ≡ y) → ap (f ∘ g ∘ f) p ≡ (ap f (ap (g ∘ f) p))
