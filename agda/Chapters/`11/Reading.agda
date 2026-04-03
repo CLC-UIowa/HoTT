@@ -114,27 +114,37 @@ module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
   lem1 t with lem0 t
   ... | g , g-is-equiv = (λ p → 10-3.ex-10-3-i-iii⇒ii g p g-is-equiv ) , λ p → 10-3.ex-10-3-ii-iii⇒i g p g-is-equiv
 
-  -- lem' : is-contr-map f ↔ (is-contr-map (ϕ _))
-  -- lem' = (λ x t → {!_↔_.from (lem1 t) (x (fst t))!}) , {!!}
-
   lem' : is-contr-map f ↔ ((t : Σ B 𝐂) → is-contr-map (ϕ t))
-  lem' = (λ { contr-map-f (b , bc) xx →
-              ( (let (ctr , contr) = _↔_.from (lem1 (b , bc)) (contr-map-f b) in {!!}))
-            , {!!}  } )
-       -- ( (let (ctr , contr) = _↔_.from (lem1 (b , bc)) (contr-map-f b) in ctr) ,
-       --   case (_↔_.from (lem1 (b , bc)) (contr-map-f b)) of
-       --    { p →  {!!} } , {!!} ) })
-          , {!!}
+  lem' = forward , backward
+    where
+      forward : is-contr-map f → ((t : Σ B 𝐂) → is-contr-map (ϕ t))
+      forward = {!!}
+
+      backward : ((t : Σ B 𝐂) → is-contr-map (ϕ t)) → is-contr-map f
+      backward = {!!}
+
+  -- lem' : is-contr-map f ↔ ((t : Σ B 𝐂) → is-contr-map (ϕ t))
+  -- lem' = (λ { contr-map-f (b , bc) xx →
+  --             ( (let (ctr , contr) = _↔_.from (lem1 (b , bc)) (contr-map-f b) in {!!}))
+  --           , {!!}  } )
+  --      -- ( (let (ctr , contr) = _↔_.from (lem1 (b , bc)) (contr-map-f b) in ctr) ,
+  --      --   case (_↔_.from (lem1 (b , bc)) (contr-map-f b)) of
+  --      --    { p →  {!!} } , {!!} ) })
+  --         , {!!}
 
   -- Next show that σ is a contractible map if and only if f is a contractible map for each t : Σ B 𝐂
-  lem2 : is-contr-map σ ↔ is-contr-map f
-  lem2 = (λ contr-map-σ b → _↔_.to (lem1 (b , {!!})) (contr-map-σ (b , {!!}))) ,
-           λ { contr-map-f (b , c) → _↔_.from (lem1 (b , c)) (contr-map-f b) }
+  lem2 : is-contr-map f → is-contr-map σ
+  lem2 = backward
+    where
+      forward : is-contr-map σ → is-contr-map f
+      forward is-contr-σ = λ b → {!!}
+
+      backward : is-contr-map f → is-contr-map σ
+      backward is-contr-f (b , c) = _↔_.from (lem1 (b , c)) (is-contr-f b)
 
   -- finally, we show that f is an equivalence if and only if σ is an equivalence
-  lem : is-equiv σ ↔ is-equiv f
-  lem = (λ equiv-σ → is-contr-map-equiv f (_↔_.to lem2 (thm•10•4•6 σ equiv-σ))) ,
-           λ equiv-f → is-contr-map-equiv σ ( (_↔_.from lem2 (thm•10•4•6 f equiv-f)))
+  lem : is-equiv f → is-equiv σ
+  lem = (λ equiv-f → is-contr-map-equiv σ ((lem2 (thm•10•4•6 f equiv-f))))
 
 -- Definition 11.1.5
 -- Consider a map f : A → B and a family of maps
