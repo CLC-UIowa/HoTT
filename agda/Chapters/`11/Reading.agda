@@ -13,7 +13,7 @@ open import Chapters.`10.Exercises
 private
   variable
     ℓ ℓ₁ ℓ₂ ℓ₃ : Level
-    A B D X Y Z : Set ℓ
+    A B C D X Y Z : Set ℓ
     -- 𝐁 𝐂 𝐃 : A → Set ℓ
     -- f g h i : (x : A) → 𝐁 x
 
@@ -22,7 +22,7 @@ private
 -- §11.1: Families of equivalences
 
 -- Def 11.1.1
-tot : {𝐁 𝐂 : A → Set ℓ} → (∀ (x : A) → 𝐁 x → 𝐂 x) → Σ A 𝐁 → Σ A 𝐂
+tot : {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} → (∀ (x : A) → 𝐁 x → 𝐂 x) → Σ A 𝐁 → Σ A 𝐂
 tot f (x , y) = x , f x y
 
 
@@ -114,35 +114,18 @@ module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
   lem1 t with lem0 t
   ... | g , g-is-equiv = (λ p → 10-3.ex-10-3-i-iii⇒ii g p g-is-equiv ) , λ p → 10-3.ex-10-3-ii-iii⇒i g p g-is-equiv
 
-  lem' : is-contr-map f ↔ ((t : Σ B 𝐂) → is-contr-map (ϕ t))
-  lem' = forward , backward
-    where
-      forward : is-contr-map f → ((t : Σ B 𝐂) → is-contr-map (ϕ t))
-      forward = {!!}
-
-      backward : ((t : Σ B 𝐂) → is-contr-map (ϕ t)) → is-contr-map f
-      backward = {!!}
-
-  -- lem' : is-contr-map f ↔ ((t : Σ B 𝐂) → is-contr-map (ϕ t))
-  -- lem' = (λ { contr-map-f (b , bc) xx →
-  --             ( (let (ctr , contr) = _↔_.from (lem1 (b , bc)) (contr-map-f b) in {!!}))
-  --           , {!!}  } )
-  --      -- ( (let (ctr , contr) = _↔_.from (lem1 (b , bc)) (contr-map-f b) in ctr) ,
-  --      --   case (_↔_.from (lem1 (b , bc)) (contr-map-f b)) of
-  --      --    { p →  {!!} } , {!!} ) })
-  --         , {!!}
 
   -- Next show that σ is a contractible map if and only if f is a contractible map for each t : Σ B 𝐂
   lem2 : is-contr-map f → is-contr-map σ
   lem2 = backward
     where
-      forward : is-contr-map σ → is-contr-map f
-      forward is-contr-σ = λ b → {!!}
+      -- forward : is-contr-map σ → is-contr-map f
+      -- forward is-contr-σ = λ b → _↔_.to (lem1 (b , {!!})) (is-contr-σ (b , {!!})) -- Why is converse not possible?
 
       backward : is-contr-map f → is-contr-map σ
       backward is-contr-f (b , c) = _↔_.from (lem1 (b , c)) (is-contr-f b)
 
-  -- finally, we show that f is an equivalence if and only if σ is an equivalence
+  -- finally, we show that if f is an equivalence then  σ is an equivalence
   lem : is-equiv f → is-equiv σ
   lem = (λ equiv-f → is-contr-map-equiv σ ((lem2 (thm•10•4•6 f equiv-f))))
 
@@ -153,9 +136,16 @@ module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
 -- We define tot_f g : Σ_{x : A} C x → Σ_{y:B} D y
 -- we say g is a family of maps over f
 
-In_familyOfMapsOver_Is_ : {𝐂 : A → Set ℓ} (𝐃 : B → Set ℓ) (f : A → B) (g : (x : A) → 𝐂 x → 𝐃 (f x))
+tot[_]_ : {𝐂 : A → Set ℓ} {𝐃 : B → Set ℓ} (f : A → B) (g : (x : A) → 𝐂 x → 𝐃 (f x))
      → Σ A 𝐂  → Σ[ y ∈ B ] (𝐃 y)
-In 𝐃 familyOfMapsOver f Is g = λ (x , z) → (f x , g x z)
+tot[ f ] g = λ (x , z) → (f x , g x z)
+
+lem27 : {f : B → C} {g : A → B} → has-inverse f → has-inverse g → has-inverse (f ∘ g)
+lem27 (f̅ , f∘f̅~id , f̅∘f~id) (g̅ , g∘g̅~id , g̅∘g~id) = g̅ ∘ f̅ , ({!!} , {!!})
+
+lem28 : {f : B → C} {g : A → B} → is-equiv f → is-equiv g → is-equiv (f ∘ g)
+lem28 equiv-f equiv-g = {!!}
+
 
 
 -- Theorem 11.1.6
@@ -163,9 +153,45 @@ In 𝐃 familyOfMapsOver f Is g = λ (x , z) → (f x , g x z)
 -- then the following are equivalent
 -- (i) The family of maps g over f is a family of equivalences
 -- (ii) the map tot_f (g) is an equivalence
-module 11•1•6 {𝐂 : A → Set ℓ}(𝐃 : B → Set ℓ) (f : A → B) (g : (x : A) → 𝐂 x → 𝐃 (f x)) where
-  thm : is-equiv (tot g) ↔ is-equiv (In 𝐃 familyOfMapsOver f Is g)
-  thm = {!!}
+module 11•1•6 {A B : Set ℓ}{𝐂 : A → Set ℓ}(𝐃 : B → Set ℓ) (f : A → B) (equiv-f : is-equiv f)
+              (g : (x : A) → 𝐂 x → 𝐃 (f x)) where
+
+  lem1 : is-equiv (tot g) ↔ ((x : A) → is-equiv (g x))
+  lem1 = 11•1•3.thm g
+
+
+  {- We have a commuting triangle
+
+                       tot[ f ] g
+     Σ_{x : A} 𝐂 x ----------------> Σ_{y : B} (𝐃 y)
+          \                            /
+           \                          /
+            \                        /
+             \                      /
+       tot g  \                    / σ_f = λ (x , z). (f x , z)
+               \                  /
+                \                /
+                 \              /
+                 Σ_{x : A} D (f x)
+
+  -}
+
+  lem2 : tot[_]_ {𝐃 = 𝐃} f g ∼ (11•1•4.σ f ∘ tot g)
+  lem2 = refl-∼
+
+  lem25 : is-equiv (11•1•4.σ {𝐂 = 𝐃} f)
+  lem25 = 11•1•4.lem f equiv-f
+
+  lem29 : has-inverse (tot g) ↔ has-inverse (tot[_]_ {𝐃 = 𝐃} f g)
+  lem29 = {!!}
+
+  lem3 :  is-equiv (tot g) ↔ is-equiv (tot[_]_ {𝐃 = 𝐃} f g)
+  lem3 = has-inverse⇒is-equiv ∘ _↔_.to lem29 ∘ is-equiv⇒has-inverse , has-inverse⇒is-equiv ∘ _↔_.from lem29 ∘ is-equiv⇒has-inverse
+
+  thm : ((x : A) → is-equiv (g x)) ↔ is-equiv (tot[_]_ {𝐃 = 𝐃} f g)
+  thm = _↔_.to lem3 ∘ _↔_.from lem1 , _↔_.to lem1 ∘ _↔_.from lem3
+
+
 
 
 -- § 11.2 The fundamental theorem
