@@ -141,7 +141,7 @@ tot[_]_ : {𝐂 : A → Set ℓ} {𝐃 : B → Set ℓ} (f : A → B) (g : (x : 
 tot[ f ] g = λ (x , z) → (f x , g x z)
 
 has-inverse-comp : {f : B → C} {g : A → B} → has-inverse f → has-inverse g → has-inverse (f ∘ g)
-has-inverse-comp (f̅ , f∘f̅~id , f̅∘f~id) (g̅ , g∘g̅~id , g̅∘g~id) = g̅ ∘ f̅ , ({!!} , {!!})
+has-inverse-comp {f = f} {g = g} (f̅ , f∘f̅~id , f̅∘f~id) (g̅ , g∘g̅~id , g̅∘g~id) = g̅ ∘ f̅ , ((λ x →  ap f (g∘g̅~id (f̅ x)) ○ f∘f̅~id x) , λ x → ap g̅ (f̅∘f~id (g x)) ○ g̅∘g~id x )
 
 is-equiv-comp : {f : B → C} {g : A → B} → is-equiv f → is-equiv g → is-equiv (f ∘ g)
 is-equiv-comp {f = f} {g = g} equiv-f equiv-g = prf
@@ -172,8 +172,6 @@ has-inverse-comp' {f = f} {g = g} (f-inv , (f-inv-prf-right , f-inv-prf-left)) h
 
     has-inverse-g : has-inverse g
     has-inverse-g = has-inverse-htpy (has-inverse-comp has-inverse-f-inv has-inverse-f∘g) (sym-∼ g-eq)
-
-
 
 -- Theorem 11.1.6
 -- suppose g is a family of maps over f,
