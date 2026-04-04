@@ -140,11 +140,38 @@ tot[_]_ : {𝐂 : A → Set ℓ} {𝐃 : B → Set ℓ} (f : A → B) (g : (x : 
      → Σ A 𝐂  → Σ[ y ∈ B ] (𝐃 y)
 tot[ f ] g = λ (x , z) → (f x , g x z)
 
-lem27 : {f : B → C} {g : A → B} → has-inverse f → has-inverse g → has-inverse (f ∘ g)
-lem27 (f̅ , f∘f̅~id , f̅∘f~id) (g̅ , g∘g̅~id , g̅∘g~id) = g̅ ∘ f̅ , ({!!} , {!!})
+has-inverse-comp : {f : B → C} {g : A → B} → has-inverse f → has-inverse g → has-inverse (f ∘ g)
+has-inverse-comp (f̅ , f∘f̅~id , f̅∘f~id) (g̅ , g∘g̅~id , g̅∘g~id) = g̅ ∘ f̅ , ({!!} , {!!})
 
-lem28 : {f : B → C} {g : A → B} → is-equiv f → is-equiv g → is-equiv (f ∘ g)
-lem28 equiv-f equiv-g = {!!}
+is-equiv-comp : {f : B → C} {g : A → B} → is-equiv f → is-equiv g → is-equiv (f ∘ g)
+is-equiv-comp {f = f} {g = g} equiv-f equiv-g = prf
+  where
+    has-inverse-f : has-inverse f
+    has-inverse-f = is-equiv⇒has-inverse equiv-f
+
+    has-inverse-g : has-inverse g
+    has-inverse-g = is-equiv⇒has-inverse equiv-g
+
+    has-inverse-f∘g : has-inverse (f ∘ g)
+    has-inverse-f∘g = has-inverse-comp has-inverse-f has-inverse-g
+
+    prf : is-equiv (f ∘ g)
+    prf = has-inverse⇒is-equiv has-inverse-f∘g
+
+has-inverse-htpy : {f : A → B} {g : A → B} → has-inverse f → f ∼ g → has-inverse g
+has-inverse-htpy (f-inv , (f-inv-prf-left , f-inv-prf-right)) f∼g = f-inv , ((λ x → sym (f∼g (f-inv x)) ○ f-inv-prf-left x) , λ x → ap f-inv (sym (f∼g x)) ○ f-inv-prf-right x)
+
+has-inverse-comp' : {f : B → C} {g : A → B} → has-inverse f → has-inverse (f ∘ g) → has-inverse g
+has-inverse-comp' {f = f} {g = g} (f-inv , (f-inv-prf-right , f-inv-prf-left)) has-inverse-f∘g = has-inverse-g
+  where
+    g-eq : g ∼ f-inv ∘ (f ∘ g)
+    g-eq = sym ∘ f-inv-prf-left ∘ g
+
+    has-inverse-f-inv : has-inverse f-inv
+    has-inverse-f-inv = f , (f-inv-prf-left , f-inv-prf-right)
+
+    has-inverse-g : has-inverse g
+    has-inverse-g = has-inverse-htpy (has-inverse-comp has-inverse-f-inv has-inverse-f∘g) (sym-∼ g-eq)
 
 
 
@@ -179,11 +206,17 @@ module 11•1•6 {A B : Set ℓ}{𝐂 : A → Set ℓ}(𝐃 : B → Set ℓ) (f
   lem2 : tot[_]_ {𝐃 = 𝐃} f g ∼ (11•1•4.σ f ∘ tot g)
   lem2 = refl-∼
 
-  lem25 : is-equiv (11•1•4.σ {𝐂 = 𝐃} f)
-  lem25 = 11•1•4.lem f equiv-f
+  lem25 : has-inverse (11•1•4.σ {𝐂 = 𝐃} f)
+  lem25 = 11•1•4.lem f equiv-f |> is-equiv⇒has-inverse
 
   lem29 : has-inverse (tot g) ↔ has-inverse (tot[_]_ {𝐃 = 𝐃} f g)
-  lem29 = {!!}
+  lem29 = forward , backward
+    where
+      forward : has-inverse (tot g) → has-inverse (tot[_]_ {𝐃 = 𝐃} f g)
+      forward has-inverse-tot-g = has-inverse-comp lem25 has-inverse-tot-g
+
+      backward : has-inverse (tot[_]_ {𝐃 = 𝐃} f g) → has-inverse (tot g)
+      backward has-inverse-tot[f]g = has-inverse-comp' lem25 (has-inverse-htpy has-inverse-tot[f]g lem2)
 
   lem3 :  is-equiv (tot g) ↔ is-equiv (tot[_]_ {𝐃 = 𝐃} f g)
   lem3 = has-inverse⇒is-equiv ∘ _↔_.to lem29 ∘ is-equiv⇒has-inverse , has-inverse⇒is-equiv ∘ _↔_.from lem29 ∘ is-equiv⇒has-inverse
