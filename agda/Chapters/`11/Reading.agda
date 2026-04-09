@@ -159,19 +159,19 @@ is-equiv-comp {f = f} {g = g} equiv-f equiv-g = prf
     prf = has-inverse⇒is-equiv has-inverse-f∘g
 
 has-inverse-htpy : {f : A → B} {g : A → B} → has-inverse f → f ∼ g → has-inverse g
-has-inverse-htpy (f-inv , (f-inv-prf-left , f-inv-prf-right)) f∼g = f-inv , ((λ x → sym (f∼g (f-inv x)) ○ f-inv-prf-left x) , λ x → ap f-inv (sym (f∼g x)) ○ f-inv-prf-right x)
+has-inverse-htpy (f̅ , (f∘f̅~id , f̅∘f~id)) f∼g = f̅ , ((λ x →  ((f∼g ·ᵣ f̅) x)⁻¹ ○ f∘f̅~id x) , λ x →  ((f̅  ·ₗ f∼g)  x) ⁻¹ ○ f̅∘f~id x)
 
-has-inverse-comp' : {f : B → C} {g : A → B} → has-inverse f → has-inverse (f ∘ g) → has-inverse g
-has-inverse-comp' {f = f} {g = g} (f-inv , (f-inv-prf-right , f-inv-prf-left)) has-inverse-f∘g = has-inverse-g
+has-inverse-decomp : {f : B → C} {g : A → B} → has-inverse f → has-inverse (f ∘ g) → has-inverse g
+has-inverse-decomp {f = f} {g = g} (f̅ , (f∘f̅~id , f̅∘f~id)) has-inverse-f∘g = has-inverse-g
   where
-    g-eq : g ∼ f-inv ∘ (f ∘ g)
-    g-eq = sym ∘ f-inv-prf-left ∘ g
+    g-eq : g ∼ f̅ ∘ (f ∘ g)
+    g-eq = sym ∘ f̅∘f~id ∘ g
 
-    has-inverse-f-inv : has-inverse f-inv
-    has-inverse-f-inv = f , (f-inv-prf-left , f-inv-prf-right)
+    has-inverse-f̅ : has-inverse f̅
+    has-inverse-f̅ = f , (f̅∘f~id , f∘f̅~id)
 
     has-inverse-g : has-inverse g
-    has-inverse-g = has-inverse-htpy (has-inverse-comp has-inverse-f-inv has-inverse-f∘g) (sym-∼ g-eq)
+    has-inverse-g = has-inverse-htpy (has-inverse-comp has-inverse-f̅ has-inverse-f∘g) (sym-∼ g-eq)
 
 -- Theorem 11.1.6
 -- suppose g is a family of maps over f,
@@ -189,14 +189,14 @@ module 11•1•6 {A B : Set ℓ}{𝐂 : A → Set ℓ}(𝐃 : B → Set ℓ) (f
 
                        tot[ f ] g
      Σ_{x : A} 𝐂 x ----------------> Σ_{y : B} (𝐃 y)
-          \                            /
+          \                            ̅/|
            \                          /
             \                        /
              \                      /
        tot g  \                    / σ_f = λ (x , z). (f x , z)
                \                  /
                 \                /
-                 \              /
+                _\|             /
                  Σ_{x : A} D (f x)
 
   -}
@@ -204,20 +204,21 @@ module 11•1•6 {A B : Set ℓ}{𝐂 : A → Set ℓ}(𝐃 : B → Set ℓ) (f
   lem2 : tot[_]_ {𝐃 = 𝐃} f g ∼ (11•1•4.σ f ∘ tot g)
   lem2 = refl-∼
 
-  lem25 : has-inverse (11•1•4.σ {𝐂 = 𝐃} f)
-  lem25 = 11•1•4.lem f equiv-f |> is-equiv⇒has-inverse
+  has-inverse-σ : has-inverse (11•1•4.σ {𝐂 = 𝐃} f)
+  has-inverse-σ = 11•1•4.lem f equiv-f |> is-equiv⇒has-inverse
 
-  lem29 : has-inverse (tot g) ↔ has-inverse (tot[_]_ {𝐃 = 𝐃} f g)
-  lem29 = forward , backward
+  has-inv-tot-g⇔has-inv-tot-f-g : has-inverse (tot g) ↔ has-inverse (tot[_]_ {𝐃 = 𝐃} f g)
+  has-inv-tot-g⇔has-inv-tot-f-g = forward , backward
     where
       forward : has-inverse (tot g) → has-inverse (tot[_]_ {𝐃 = 𝐃} f g)
-      forward has-inverse-tot-g = has-inverse-comp lem25 has-inverse-tot-g
+      forward has-inverse-tot-g = has-inverse-comp has-inverse-σ has-inverse-tot-g
 
       backward : has-inverse (tot[_]_ {𝐃 = 𝐃} f g) → has-inverse (tot g)
-      backward has-inverse-tot[f]g = has-inverse-comp' lem25 (has-inverse-htpy has-inverse-tot[f]g lem2)
+      backward has-inverse-tot[f]g = has-inverse-decomp has-inverse-σ (has-inverse-htpy has-inverse-tot[f]g lem2)
 
   lem3 :  is-equiv (tot g) ↔ is-equiv (tot[_]_ {𝐃 = 𝐃} f g)
-  lem3 = has-inverse⇒is-equiv ∘ _↔_.to lem29 ∘ is-equiv⇒has-inverse , has-inverse⇒is-equiv ∘ _↔_.from lem29 ∘ is-equiv⇒has-inverse
+  lem3 = has-inverse⇒is-equiv ∘ _↔_.to has-inv-tot-g⇔has-inv-tot-f-g ∘ is-equiv⇒has-inverse
+             , has-inverse⇒is-equiv ∘ _↔_.from has-inv-tot-g⇔has-inv-tot-f-g ∘ is-equiv⇒has-inverse
 
   thm : ((x : A) → is-equiv (g x)) ↔ is-equiv (tot[_]_ {𝐃 = 𝐃} f g)
   thm = _↔_.to lem3 ∘ _↔_.from lem1 , _↔_.to lem1 ∘ _↔_.from lem3
@@ -229,3 +230,40 @@ module 11•1•6 {A B : Set ℓ}{𝐂 : A → Set ℓ}(𝐃 : B → Set ℓ) (f
 -- The fundamental theorem describes what are the necessary and sufficient conditions on a type family 𝐁
 -- over a type A equipped with a point a : A
 -- to obtain an equivalence (a ≡ x) ≃ 𝐁 x for each x : A
+
+
+-- Def 11.2.1 Unary Identity System
+-- Let A be a type equipped with the term a : A.
+-- A (unary) identity system on A at a consists of
+-- 1. a type family B over A equipped with b : B a
+-- 2. A function  h ↦ h a b : (Π_{x : A} Π_{y : B x} P x y) → P a b
+--     (for any family of types P indexed by x : A and y : B x) has a section
+
+rfl-ident-system : {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x) → Set ℓ₁} {a : A} (b : 𝐁 a) →
+                  ((x : A) (y : 𝐁 x) → P x y) → P a b
+rfl-ident-system {a = a} b h = h a b
+
+is-unary-ident-system : {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x) → Set ℓ₁} {a : A} (b : 𝐁 a) → Set (ℓ ⊔ ℓ₁)
+
+is-unary-ident-system {P = P} b = section (rfl-ident-system {P = P} b)
+
+
+-- Thm 11.2.2 (The fundamental theoerm of identity types)
+-- Let A be a type equipped with a : A
+-- Let B be a type family over A equipped with a point b : B a
+-- Let f be a family of maps f : Π_{x : A} (a ≡ x) → B x
+-- equipped with an identification f a refl ≡ b
+
+module 11•2•2 {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x) → Set ℓ₁}
+              (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) (f-ident : f a refl ≡ b) where
+  -- (i)   The family of maps f is a family of equivalences
+  -- (ii)  The total space Σ_{x : A} B x is contractible
+  -- (iii) The family B equipped with b : B a is an identity system
+  -- All of these are equivalent
+
+
+  i↔ii : (∀ (x : A) → is-equiv (f x)) ↔  is-contr (Σ A 𝐁)
+  i↔ii = {!!}
+
+  i↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b
+  i↔iii = {!!}
