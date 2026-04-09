@@ -261,9 +261,41 @@ module 11•2•2 {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x)
   -- (iii) The family B equipped with b : B a is an identity system
   -- All of these are equivalent
 
+  lem1 : is-equiv (tot f) ↔ (∀ (x : A) → is-equiv (f x))
+  lem1 = 11•1•3.thm f
 
-  i↔ii : (∀ (x : A) → is-equiv (f x)) ↔  is-contr (Σ A 𝐁)
-  i↔ii = {!!}
+  lem2 : is-contr (Σ[ x ∈ A ] (a ≡ x))
+  lem2 = thm-10∙1∙4 a
+
+  -- Recall from Ex 10.3 that if you have two of the three then third can be derived
+  --  (i) is-contr A (ii) is-contr B (iii) is-equiv f
+  -- thus using lem1 and lem2 we obtain the result
+
+  i↔ii : (∀ (x : A) → is-equiv (f x)) ↔ is-contr (Σ A 𝐁)
+  i↔ii = (λ x → 10-3.ex-10-3-i-iii⇒ii (tot f) lem2 ((_↔_.from lem1 x)))
+            , λ x → _↔_.to lem1 (10-3.ex-10-3-i-ii⇒iii (tot f) lem2 x)
+
+
+  {- We have the following diagram that commutes (why?)
+
+                                 ev-pair
+    Π_{t : Σ_{x : A} B x} P t -------------------> Π_{x : A} Π_{ y : B x } P x y
+           \                                       /
+            \                                     /
+             \                                   /
+              \                                 /
+               \                               /
+    ev-pt a b   \                             / λ h. h (a, b)
+                 \                           /
+                  \                         /
+                   \                       /
+                   _\|                   |/_
+                              P a b
+
+   We have that
+   ◦ ev-pair has a section (why?)
+
+  -}
 
   i↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b
-  i↔iii = {!!}
+  i↔iii = ( λ x → {!!} , {!!}) , {!!}
