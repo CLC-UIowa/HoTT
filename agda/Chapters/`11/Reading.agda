@@ -254,7 +254,11 @@ is-unary-ident-system {P = P} b = section (rfl-ident-system {P = P} b)
 -- Let f be a family of maps f : Π_{x : A} (a ≡ x) → B x
 -- equipped with an identification f a refl ≡ b
 
-module 11•2•2 {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x) → Set ℓ₁}
+tr2 : {ℓ : Level} {A : Set ℓ} {B : A → Set ℓ} {T : (a : A) → B a → Set ℓ} {a a' : A} {b : B a} {b' : B a'} → _≡_ {A = Σ A B} (a , b) (a' , b') → T a b → T a' b'
+tr2 {T = T} a,b≡a',b' t = tr (λ (x , y) → T x y) a,b≡a',b' t
+
+
+module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x) → Set ℓ}
               (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) (f-ident : f a refl ≡ b) where
   -- (i)   The family of maps f is a family of equivalences
   -- (ii)  The total space Σ_{x : A} B x is contractible
@@ -297,5 +301,12 @@ module 11•2•2 {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x)
 
   -}
 
-  i↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b
-  i↔iii = ( λ x → {!!} , {!!}) , {!!}
+
+  ii↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b
+  ii↔iii = forward , backward
+    where
+      forward : is-contr (Σ A 𝐁) → is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b
+      forward (tot-center , tot-prf) = (λ p a' b' → tr2 {ℓ = ℓ} {A = A} {B = 𝐁} {T = P} (sym (tot-prf (a , b)) ○ tot-prf (a' , b')) p ) , λ p → {!!}
+
+      backward : is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b → is-contr (Σ A 𝐁)
+      backward = {!!}
