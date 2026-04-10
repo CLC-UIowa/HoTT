@@ -301,12 +301,18 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A
 
   -}
 
-
   ii↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b
   ii↔iii = forward , backward
-    where
+    where -- (left-inv (tot-prf (a , b)))
       forward : is-contr (Σ A 𝐁) → is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b
-      forward (tot-center , tot-prf) = (λ p a' b' → tr2 {ℓ = ℓ} {A = A} {B = 𝐁} {T = P} (sym (tot-prf (a , b)) ○ tot-prf (a' , b')) p ) , λ p → {!!}
+      forward (tot-center , tot-prf) = (λ p a' b' → tr2 {ℓ = ℓ} {A = A} {B = 𝐁} {T = P} (sym (tot-prf (a , b)) ○ tot-prf (a' , b')) p )
+        , {!!} -- λ p → ind≡
+          -- (a , b)
+          -- (λ a,b e → {!!})
+          -- refl -- refl
+          -- (a , b)
+          -- (((sym (tot-prf (a , b))) ○ (tot-prf (a , b))))
+
 
       backward : is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b → is-contr (Σ A 𝐁)
       backward = {!!}
