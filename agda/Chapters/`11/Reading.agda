@@ -2,6 +2,7 @@ module Chapters.`11.Reading where
 
 open import Prelude
 open import Chapters.`09.Reading
+open import Chapters.`09.Exercises
 open import Chapters.`10.Reading
 open import Chapters.`10.Exercises
 
@@ -301,18 +302,34 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A
 
   -}
 
+  open 9-4
+
   ii↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b
   ii↔iii = forward , backward
     where -- (left-inv (tot-prf (a , b)))
-      forward : is-contr (Σ A 𝐁) → is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b
-      forward (tot-center , tot-prf) = (λ p a' b' → tr2 {ℓ = ℓ} {A = A} {B = 𝐁} {T = P} (sym (tot-prf (a , b)) ○ tot-prf (a' , b')) p )
-        , {!!} -- λ p → ind≡
-          -- (a , b)
-          -- (λ a,b e → {!!})
-          -- refl -- refl
-          -- (a , b)
-          -- (((sym (tot-prf (a , b))) ○ (tot-prf (a , b))))
+      ev-pair : ((t : Σ A 𝐁) → P (fst t) (snd t)) → (x : A) → (y : 𝐁 x) → P x y
+      ev-pair f x y = f (x , y)
 
+      ev-pt[a,b] : ((t : Σ A 𝐁) → P (fst t) (snd t)) → P a b
+      ev-pt[a,b] f = f (a , b)
+
+      φ : ((x : A) → (y : 𝐁 x) → P x y) → P a b
+      φ h = h a b
+
+      comm :  ev-pt[a,b] ∼ φ ∘ ev-pair
+      comm = refl-∼
+
+      ev-pair-sec : section ev-pair
+      ev-pair-sec = (λ f t → f (fst t) (snd t)) , refl-∼
+
+      9-4a-inst : section ev-pt[a,b] ↔ section φ
+      9-4a-inst = 9-4a.f-section↔g-section ev-pt[a,b] ev-pair φ comm ev-pair-sec
+
+      Contr⇒SI-inst = Contr⇒SI.SI {A = Σ A 𝐁}
+      SI⇒Contr-inst = SI⇒Contr.Contr {A = Σ A 𝐁}
+
+      forward : is-contr (Σ A 𝐁) → is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b
+      forward contr = {!Contr⇒SI-inst contr |> SingletonInduction.comp-sing!} -- running into Setω nonsense
 
       backward : is-unary-ident-system {A = A} {𝐁 = 𝐁} {P = P} {a = a} b → is-contr (Σ A 𝐁)
       backward = {!!}
