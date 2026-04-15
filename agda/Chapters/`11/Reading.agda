@@ -245,9 +245,9 @@ rfl-ident-system :
   (b : 𝐁 a) → ((x : A) (y : 𝐁 x) → P x y) → P a b
 rfl-ident-system {a = a} b h = h a b
 
-is-unary-ident-system : {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {a : A} (b : 𝐁 a) → Setω
-is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} {a = a} b =
-  {ℓ₁ : Level} → (P : (x : A) (y : 𝐁 x) → Set ℓ₁) → section {B = P a b} (rfl-ident-system {𝐁 = 𝐁} {P = P} b)
+is-unary-ident-system : {ℓ ℓ₁ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {a : A} (b : 𝐁 a) → Set (ℓ ⊔ lsuc ℓ₁)
+is-unary-ident-system {ℓ = ℓ} {ℓ₁ = ℓ₁} {A = A} {𝐁 = 𝐁} {a = a} b =
+  (P : (x : A) (y : 𝐁 x) → Set ℓ₁) → section {B = P a b} (rfl-ident-system {𝐁 = 𝐁} {P = P} b)
 
 -- Thm 11.2.2 (The fundamental theoerm of identity types)
 -- Let A be a type equipped with a : A
@@ -261,7 +261,7 @@ tr2 {T = T} a,b≡a',b' t = tr (λ x,y → T (fst x,y) (snd x,y)) a,b≡a',b' t
 contr-path : {ℓ : Level} {A : Set ℓ} → (a : A) → is-contr A → is-contr A
 contr-path a (center , contraction) = (a , λ x → sym (contraction a) ○ contraction x)
 
-module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
+module 11•2•2 {ℓ ℓ₁ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
               (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) (f-ident : f a refl ≡ b) where
   -- (i)   The family of maps f is a family of equivalences
   -- (ii)  The total space Σ_{x : A} B x is contractible
@@ -306,7 +306,7 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
 
   open 9-4
 
-  ii↔iii : (is-contr (Σ A 𝐁) ↔ is-unary-ident-system b)
+  ii↔iii : (is-contr (Σ A 𝐁) ↔ is-unary-ident-system {ℓ = ℓ} {ℓ₁ = ℓ₁}b)
   ii↔iii = forward , backward
     where -- (left-inv (tot-prf (a , b)))
       ev-pair : ∀ {P : (x : A) (y : 𝐁 x) → Set ℓ} → ((t : Σ A 𝐁) → P (fst t) (snd t)) → (x : A) → (y : 𝐁 x) → P x y
@@ -327,7 +327,7 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
       9-4a-inst : ∀ {P} → section (ev-pt[a,b] {P = P}) ↔ section φ
       9-4a-inst = 9-4a.f-section↔g-section ev-pt[a,b] ev-pair φ comm ev-pair-sec
 
-      Contr⇒SI-inst = Contr⇒SI.SI {A = Σ A 𝐁}
+      Contr⇒SI-inst = Contr⇒SI.SI {ℓ₁ = ℓ₁} {A = Σ A 𝐁}
       SI⇒Contr-inst = SI⇒Contr.Contr {A = Σ A 𝐁}
 
       forward : is-contr (Σ A 𝐁) → is-unary-ident-system {A = A} {𝐁 = 𝐁} {a = a} b
@@ -335,16 +335,16 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
         λ P →
           (λ p[a,b] x y →
             SingletonInduction.ind-sing
-              (Contr⇒SI-inst (contr-path (a , b) contr))
+              (Contr⇒SI-inst (contr-path (a , b) contr) {B = {!!}})
               {B = λ a,b → P (fst a,b) (snd a,b)}
               p[a,b]
               (x , y)) ,
         λ p[a,b] →
           SingletonInduction.comp-sing
-            (Contr⇒SI-inst (contr-path (a , b) contr))
+            (Contr⇒SI-inst (contr-path (a , b) contr) {B = {!!}})
             {B = λ a,b → P (fst a,b) (snd a,b)}
             p[a,b]
 
       -- Now just do the same thing, but backward
       backward : is-unary-ident-system {A = A} {𝐁 = 𝐁} {a = a} b → is-contr (Σ A 𝐁)
-      backward hyp = SI⇒Contr-inst (SingInd (a , b) (λ {ℓ = ℓ} {B = B} y a',b' → fst (hyp {!λ x y → B (x , y)!}) {!!} (fst a',b') (snd a',b') {!!}) {!!})
+      backward hyp = SI⇒Contr-inst {!!} -- (SingInd (a , b) (λ {ℓ = ℓ} {B = B} y a',b' → fst (hyp {!λ x y → B (x , y)!}) {!!} (fst a',b') (snd a',b') {!!}) {!!})
