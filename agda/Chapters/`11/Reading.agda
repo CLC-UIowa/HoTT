@@ -241,13 +241,13 @@ module 11•1•6 {A B : Set ℓ} {𝐂 : A → Set ℓ} (𝐃 : B → Set ℓ) 
 --     (for any family of types P indexed by x : A and y : B x) has a section
 
 rfl-ident-system :
-  {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x) → Set ℓ₁} {a : A}
-  (b : 𝐁 a)
-  → ((x : A) (y : 𝐁 x) → P x y) → P a b
+  {ℓ ℓ₁ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x) → Set ℓ₁} {a : A}
+  (b : 𝐁 a) → ((x : A) (y : 𝐁 x) → P x y) → P a b
 rfl-ident-system {a = a} b h = h a b
 
-is-unary-ident-system : {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {a : A} (b : 𝐁 a) → Set (lsuc ℓ)
-is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} {a = a} b = (P : (x : A) (y : 𝐁 x) → Set ℓ) → section {B = P a b} (rfl-ident-system {𝐁 = 𝐁} {P = P} b)
+is-unary-ident-system : {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {a : A} (b : 𝐁 a) → Setω
+is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} {a = a} b =
+  {ℓ₁ : Level} → (P : (x : A) (y : 𝐁 x) → Set ℓ₁) → section {B = P a b} (rfl-ident-system {𝐁 = 𝐁} {P = P} b)
 
 -- Thm 11.2.2 (The fundamental theoerm of identity types)
 -- Let A be a type equipped with a : A
@@ -306,7 +306,7 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
 
   open 9-4
 
-  ii↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system b
+  ii↔iii : (is-contr (Σ A 𝐁) ↔ is-unary-ident-system b)
   ii↔iii = forward , backward
     where -- (left-inv (tot-prf (a , b)))
       ev-pair : ∀ {P : (x : A) (y : 𝐁 x) → Set ℓ} → ((t : Σ A 𝐁) → P (fst t) (snd t)) → (x : A) → (y : 𝐁 x) → P x y
@@ -347,4 +347,4 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
 
       -- Now just do the same thing, but backward
       backward : is-unary-ident-system {A = A} {𝐁 = 𝐁} {a = a} b → is-contr (Σ A 𝐁)
-      backward = {!!}
+      backward hyp = SI⇒Contr-inst (SingInd (a , b) (λ {ℓ = ℓ} {B = B} y a',b' → fst (hyp {!λ x y → B (x , y)!}) {!!} (fst a',b') (snd a',b') {!!}) {!!})
