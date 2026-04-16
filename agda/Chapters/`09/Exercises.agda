@@ -21,7 +21,7 @@ module 9-1 where
   inv : {ℓ : Level} → {A : Set ℓ} → (x y : A) → x ≡ y → y ≡ x
   inv = λ x y p → ind≡ x (λ y x≡y → y ≡ x) refl y p
 
-  inv-is-equiv : (A : Set) → (x y : A) → is-equiv (inv x y)
+  inv-is-equiv : {ℓ : Level} (A : Set ℓ) → (x y : A) → is-equiv (inv x y)
   inv-is-equiv _ x y = ((inv y x , λ p → helper x y p) , inv y x , λ p → helper y x p)
     where
     -- Note: We write "equals" in double quotes because we don't have the

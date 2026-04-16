@@ -389,3 +389,52 @@ module 11•3•1 where
 
 --------------------------------------------------------------------
 -- §11.4: Embeddings
+
+
+-- Embeddings are homotopical analogue of the set theoritic notion of injective map
+-- Def 11.4.1
+record is-emb {A B : Set ℓ} (f : A → B) : Set ℓ where
+  constructor Embed
+  field
+    ap-equiv : (x y : A) → is-equiv (ap {x = x} {y = y} f)
+
+_↪[_] : Set ℓ → Set ℓ → Set ℓ -- becuase A ↪ B is already defined in prelude
+A ↪[ B ] = Σ[ f ∈ (A → B) ] is-emb f
+
+-- Theorem 11.4.1 Any Equivalence is an embedding
+thm•11•4•1 : A ≃ B → A ↪[ B ]
+thm•11•4•1 {A = A} {B = B} (f , f-equiv) = f , (lem•11•4•1 f-equiv)
+  where
+
+    -- if we show that Σ_{y : A} f x ≡ f y is an equivalence
+    -- then we can use theorem 11.2.2 to prove what we want
+
+    -- but first observe that
+    -- inv : (f x ≡ f y) → (f y ≡ f x)
+    -- is an equivalence
+    open import Chapters.`09.Exercises
+    lem0 : (x y : A) → is-equiv (9-1.inv (f x) (f y))
+    lem0 x y = 9-1.inv-is-equiv B (f x) (f y)
+
+    -- we have that the fiber `fib f (f x)` is contractible for each x
+    -- by theorem 10.4.6
+    lem1 : is-contr-map f
+    lem1 = thm•10•4•6 f f-equiv
+
+    -- tot uncurries a function
+    -- so tot (λ y → 9-1.inv (f x) (f y)) : ∀ (x : A) → Σ_{y} inv (f x) (f y) → Σ_{y} (f y) (f x)
+
+
+    lem11 : (x : A) → is-equiv (tot (λ y → 9-1.inv (f x) (f y)))
+    lem11 = λ x → _↔_.from (11•1•3.thm (λ y → 9-1.inv (f x) (f y))) (lem0 x)
+
+    -- if the function f and its domain is contractible, then the co-domain is contractible
+    lem : (x : A) → is-contr (Σ[ y ∈ A ] (f x ≡ f y))
+    lem x = 10-3.ex-10-3-ii-iii⇒i {B = Σ[ y ∈ A ] (f y ≡ f x)}
+                                    (tot (λ y → 9-1.inv (f x) (f y))) (lem1 (f x)) (lem11 x)
+
+    lem' : (x y : A) → is-equiv (ap {x = x} {y = y} f)
+    lem' x y = _↔_.from (11•2•2.i↔ii x refl (λ y → ap {x = x} {y = y} f)) (lem x) y
+
+    lem•11•4•1 : is-equiv f → is-emb f
+    lem•11•4•1 f-equiv =  Embed lem'
