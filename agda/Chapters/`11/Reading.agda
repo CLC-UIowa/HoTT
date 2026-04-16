@@ -261,8 +261,8 @@ tr2 {T = T} a,b≡a',b' t = tr (λ x,y → T (fst x,y) (snd x,y)) a,b≡a',b' t
 contr-path : {ℓ : Level} {A : Set ℓ} → (a : A) → is-contr A → is-contr A
 contr-path a (center , contraction) = (a , λ x → sym (contraction a) ○ contraction x)
 
-module 11•2•2 {ℓ ℓ₁ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
-              (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) (f-ident : f a refl ≡ b) where
+module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
+              (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) where
   -- (i)   The family of maps f is a family of equivalences
   -- (ii)  The total space Σ_{x : A} B x is contractible
   -- (iii) The family B equipped with b : B a is an identity system
@@ -351,3 +351,41 @@ module 11•2•2 {ℓ ℓ₁ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
   -- for convenience
   i↔iii : (∀ (x : A) → is-equiv (f x)) ↔ is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} b
   i↔iii = _↔_.to ii↔iii ∘ (_↔_.to i↔ii) , (_↔_.from i↔ii) ∘ _↔_.from ii↔iii
+
+
+--------------------------------------------------------------------
+-- §11.3: Equality on the natural numers
+
+
+-- Thm 11.3.1 For each m, n : ℕ, the cannonical map
+-- (m = n) → Eqℕ (m , n) is an equivalence
+
+-- If we show that Σ_{n : ℕ} Eqℕ (m , n) is contractible for each m : ℕ
+-- then we can use thm 11.2.2 (i↔ii) to show that the map is an equivalence
+
+-- AI> Previously we just had two functions toEqℕ and fromEqℕ,
+-- now we show that those two functions are inverses of each other.
+-- thus the type (m = n) and Eqℕ (m , n) are isomorphic
+
+module 11•3•1 where
+  open import Chapters.`01-08.Reading hiding (ap)
+
+  lem : (m : ℕ) → is-contr (Σ[ n ∈ ℕ ] Eqℕ m n)
+  lem m = (m , refl-Eqℕ m) , λ x → γ m (fst x) (snd x)
+    where
+      f : ∀ {m} → (Σ[ n ∈ ℕ ] Eqℕ m n) → Σ[ n ∈ ℕ ] Eqℕ (suc m) n
+      f (n , e) = (suc n , e)
+
+
+      γ : (m : ℕ) → ∀ (n : ℕ) (e : Eqℕ m n) → _≡_ {A = Σ[ n ∈ ℕ ] Eqℕ m n} (m , refl-Eqℕ m) (n , e)
+      γ zero zero ⋆ = refl
+      -- γ zero (suc n) e is absurd
+      -- γ (suc n) zero e is absurd
+      γ (suc m) (suc n) e = ap (f {m = m}) (γ m n e)
+
+  thm : (m n : ℕ) → is-equiv (toEqℕ m n)
+  thm m n = _↔_.from (11•2•2.i↔ii m (refl-Eqℕ m) (λ x → toEqℕ m x)) (lem m) n
+
+
+--------------------------------------------------------------------
+-- §11.4: Embeddings
