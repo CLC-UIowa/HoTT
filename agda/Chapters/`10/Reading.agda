@@ -74,18 +74,18 @@ thm-10∙1∙4 {A = A} a = (a , refl) , C
 --   - ind-singₐ : 𝐁 a → ∀ (x : A) → B x
 --   - comp-singₐ : ev-pt ∘ ind-singₐ ∼ id
 
-record SingletonInduction {ℓ ℓ₁ : Level} (A : Set ℓ) : Set (ℓ ⊔ lsuc ℓ₁) where
+record SingletonInduction {ℓ : Level} (A : Set ℓ) : Set (lsuc ℓ) where
   constructor SingInd
   field
     `a : A
 
   -- ev-pt is the converse of an induction principle for A
-  ev-pt : {B : A → Set ℓ₁} → (∀ (x : A) → B x) → B `a
+  ev-pt : {B : A → Set ℓ} → (∀ (x : A) → B x) → B `a
   ev-pt f = f `a
 
   field
-    ind-sing : {B : A → Set ℓ₁} → B `a → (∀ (x : A) → B x)
-    comp-sing : {B : A → Set ℓ₁} → ev-pt {B = B} ∘ ind-sing ∼ id
+    ind-sing : {B : A → Set ℓ} → B `a → (∀ (x : A) → B x)
+    comp-sing : {B : A → Set ℓ} → ev-pt {B = B} ∘ ind-sing ∼ id
 
 -- Example 10.2.2: The unit type satisfies singleton induction
 
@@ -93,7 +93,7 @@ record SingletonInduction {ℓ ℓ₁ : Level} (A : Set ℓ) : Set (ℓ ⊔ lsuc
 ind⊤ : {B : ⊤ → Set ℓ} → B tt → (∀ (x : ⊤) → B x)
 ind⊤ btt tt = btt
 
-⊤-SI : {B : ⊤ → Set ℓ} → SingletonInduction {ℓ₁ = ℓ₁} ⊤
+⊤-SI : {B : ⊤ → Set ℓ} → SingletonInduction ⊤
 ⊤-SI = SingInd tt ind⊤ (refl-∼)
 
 -- Theorem 10.2.3: The type A is contractible iff it satisfies
@@ -115,7 +115,7 @@ module Contr⇒SI {ℓ ℓ₁ : Level} {A : Set ℓ} (cntr : is-contr A) where
   p = left-inv (C a)
 
   -- Pfft
-  SI : {B : A → Set ℓ₁}  → SingletonInduction {ℓ₁ = ℓ₁} A
+  SI : {B : A → Set ℓ₁}  → SingletonInduction A
   SI .`a = a
   SI .ind-sing {B = B} b x = tr B (C′ x) b
   SI .comp-sing {B = B} x = begin
@@ -124,7 +124,7 @@ module Contr⇒SI {ℓ ℓ₁ : Level} {A : Set ℓ} (cntr : is-contr A) where
     x ∎
 
 -- -- The other direction
-module SI⇒Contr {ℓ} {A : Set ℓ} (SI : SingletonInduction {ℓ₁ = ℓ} A) where
+module SI⇒Contr {ℓ} {A : Set ℓ} (SI : SingletonInduction A) where
   open SingletonInduction
   Contr : is-contr A
   Contr = SI .`a , SI .ind-sing {B = λ x → SI .`a ≡ x} refl
