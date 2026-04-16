@@ -306,7 +306,7 @@ module 11•2•2 {ℓ ℓ₁ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
 
   open 9-4
 
-  ii↔iii : (is-contr (Σ A 𝐁) ↔ is-unary-ident-system {ℓ = ℓ} b)
+  ii↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system {ℓ = ℓ} b
   ii↔iii = forward , backward
     where -- (left-inv (tot-prf (a , b)))
       ev-pair : ∀ {P : (x : A) (y : 𝐁 x) → Set ℓ} → ((t : Σ A 𝐁) → P (fst t) (snd t)) → (x : A) → (y : 𝐁 x) → P x y
@@ -331,25 +331,23 @@ module 11•2•2 {ℓ ℓ₁ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
       SI⇒Contr-inst = SI⇒Contr.Contr {A = Σ A 𝐁}
 
       forward : is-contr (Σ A 𝐁) → is-unary-ident-system {A = A} {𝐁 = 𝐁} {a = a} b
-      forward contr =
-        λ P →
-          (λ p[a,b] x y →
-            SingletonInduction.ind-sing
-              (Contr⇒SI-inst (contr-path (a , b) contr) {B = λ a,b → P (fst a,b) (snd a,b)})
-              {B = λ a,b → P (fst a,b) (snd a,b)}
-              p[a,b]
-              (x , y)) ,
-        λ p[a,b] →
-          SingletonInduction.comp-sing
-            (Contr⇒SI-inst (contr-path (a , b) contr) {B = λ a,b → P (fst a,b) (snd a,b)})
-            {B = λ a,b → P (fst a,b) (snd a,b)}
-            p[a,b]
+      forward contr P =
+        _↔_.to 9-4a-inst
+          ((snd
+            $ _↔_.from section↔SI
+            $ Contr⇒SI-inst (contr-path (a , b) contr) -- We don't get to choose the center
+              {B = λ a,b → P (fst a,b) (snd a,b)}))
 
       -- Now just do the same thing, but backward
       backward : is-unary-ident-system {A = A} {𝐁 = 𝐁} {a = a} b → is-contr (Σ A 𝐁)
       backward hyp =
         SI⇒Contr-inst
-          (SingInd
-            (a , b)
-            (λ {B = C} y a',b' → fst (hyp (λ x y → C (x , y))) y (fst a',b') (snd a',b'))
-            (λ {B = C} c[a,b] → snd (hyp (λ x y → C (x , y))) c[a,b]))
+          (_↔_.to (section↔SI)
+            ( (a , b) ,
+              λ {B = P'} →
+                _↔_.from 9-4a-inst
+                  (hyp λ x y → P' (x , y))))
+
+  -- for convenience
+  i↔iii : (∀ (x : A) → is-equiv (f x)) ↔ is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} b
+  i↔iii = _↔_.to ii↔iii ∘ (_↔_.to i↔ii) , (_↔_.from i↔ii) ∘ _↔_.from ii↔iii

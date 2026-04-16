@@ -87,6 +87,17 @@ record SingletonInduction {ℓ : Level} (A : Set ℓ) : Set (lsuc ℓ) where
     ind-sing : {B : A → Set ℓ} → B `a → (∀ (x : A) → B x)
     comp-sing : {B : A → Set ℓ} → ev-pt {B = B} ∘ ind-sing ∼ id
 
+section↔SI :
+  {ℓ : Level} {A : Set ℓ}
+  → (Σ[ a ∈ A ] ({B : A → Set ℓ} → section (λ (f : (x : A) → B x) → f a))) ↔ SingletonInduction A
+section↔SI {ℓ = ℓ} {A = A} = forward , backward
+  where
+    forward : Σ[ a ∈ A ] ({B : A → Set ℓ} → section (λ (f : (x : A) → B x) → f a)) → SingletonInduction A
+    forward (a , sec) = SingInd a (λ {B = B} → fst (sec {B = B})) λ {B = B} → snd (sec {B = B})
+
+    backward : SingletonInduction A → (Σ[ a ∈ A ] ({B : A → Set ℓ} → section (λ (f : (x : A) → B x) → f a)))
+    backward SI = SingletonInduction.`a SI , (SingletonInduction.ind-sing SI , SingletonInduction.comp-sing SI)
+
 -- Example 10.2.2: The unit type satisfies singleton induction
 
 -- Induction principle for unit type
