@@ -366,6 +366,7 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
 -- AI> Previously we just had two functions toEqℕ and fromEqℕ,
 -- now we show that those two functions are inverses of each other.
 -- thus the type (m = n) and Eqℕ (m , n) are isomorphic
+-- or that the judgemental equality coincides with observational equality
 
 module 11•3•1 where
   open import Chapters.`01-08.Reading hiding (ap)
@@ -403,7 +404,7 @@ A ↪[ B ] = Σ[ f ∈ (A → B) ] is-emb f
 
 -- Theorem 11.4.1 Any Equivalence is an embedding
 thm•11•4•1 : A ≃ B → A ↪[ B ]
-thm•11•4•1 {A = A} {B = B} (f , f-equiv) = f , (lem•11•4•1 f-equiv)
+thm•11•4•1 {A = A} {B = B} (f , f-equiv) = f , (Embed lem•11•4•1)
   where
 
     -- if we show that Σ_{y : A} f x ≡ f y is an equivalence
@@ -421,70 +422,146 @@ thm•11•4•1 {A = A} {B = B} (f , f-equiv) = f , (lem•11•4•1 f-equiv)
     lem1 : is-contr-map f
     lem1 = thm•10•4•6 f f-equiv
 
-    -- tot uncurries a function
+    -- tot "uncurries" a function i.e. goes from ∀ x → f x → g x  to (x , f x)  → (x , g x)
     -- so tot (λ y → 9-1.inv (f x) (f y)) : ∀ (x : A) → Σ_{y} inv (f x) (f y) → Σ_{y} (f y) (f x)
-
 
     lem11 : (x : A) → is-equiv (tot (λ y → 9-1.inv (f x) (f y)))
     lem11 = λ x → _↔_.from (11•1•3.thm (λ y → 9-1.inv (f x) (f y))) (lem0 x)
 
-    -- if the function f and its domain is contractible, then the co-domain is contractible
+    -- if the function f is an equivalence and its domain is contractible, then the co-domain is contractible
     lem : (x : A) → is-contr (Σ[ y ∈ A ] (f x ≡ f y))
     lem x = 10-3.ex-10-3-ii-iii⇒i {B = Σ[ y ∈ A ] (f y ≡ f x)}
                                     (tot (λ y → 9-1.inv (f x) (f y))) (lem1 (f x)) (lem11 x)
 
-    lem' : (x y : A) → is-equiv (ap {x = x} {y = y} f)
-    lem' x y = _↔_.from (11•2•2.i↔ii x refl (λ y → ap {x = x} {y = y} f)) (lem x) y
-
-    lem•11•4•1 : is-equiv f → is-emb f
-    lem•11•4•1 f-equiv =  Embed lem'
+    lem•11•4•1 : (x y : A) → is-equiv (ap {x = x} {y = y} f)
+    lem•11•4•1 x y = _↔_.from (11•2•2.i↔ii x refl (λ y → ap {x = x} {y = y} f)) (lem x) y
 
 
-module 11•5•2 {A B : Set} where
-  open import Chapters.`01-08.Reading hiding (A ; B)
-  open import Chapters.`09.Reading
+--------------------------------------------------------------------
+-- §11.5: Disjointness of coproducts
+-- Characterize the identity types of a co-product
+-- open import Chapters.`01-08.Reading using (_⊎_; inl; inr)
+open import Data.Sum.Base using (_⊎_; inj₁; inj₂)
+open import Chapters.`01-08.Reading using (∅)
+-- Theorem 11.5.1 : Let A and B be types. Then there are equivalences
+--     inl x = inl x′  ≃ x = x′
+--     inl x = inr′    ≃ ∅
+--     inr y = inl x′  ≃ ∅
+--     inr y = inl y′  ≃ y = y′
+--  for x x′ : A and y y′ : B
 
-  Eq-copr : (A ⊎ B) → (A ⊎ B) → Set
-  Eq-copr (inl x) (inl x') = x ≡ x'
-  Eq-copr (inl x) (inr y') = ⊥
-  Eq-copr (inr y) (inl x') = ⊥
-  Eq-copr (inr y) (inr y') = y ≡ y'
+-- Defn 11.5.2
+-- Let A and B be types we define the Eq-copr
+-- Also called the observational equality of coproducts
+Eq-copr[_,_] : (A B : Set) → A + B → A + B → Set
+Eq-copr[ A , B ] (inj₁ x) (inj₁ x′) = x ≡ x′
+Eq-copr[ A , B ] (inj₁ x) (inj₂ y′) = ⊥
+Eq-copr[ A , B ] (inj₂ y) (inj₁ x′) = ⊥
+Eq-copr[ A , B ] (inj₂ y) (inj₂ y′) = y ≡ y′
 
-module 11•5•3 {A B : Set} where
-  open 11•5•2
-  open import Chapters.`01-08.Reading hiding (A ; B)
-  open import Chapters.`09.Reading
-
-  ρ : (t : A ⊎ B) → Eq-copr t t
-  ρ (inl x) = refl
-  ρ (inr y) = refl
-
-  Eq-copr-eq : (s t : A ⊎ B) → (s ≡ t) → Eq-copr s t
-  Eq-copr-eq = {!!}
-
-open import Chapters.`01-08.Reading hiding (A ; B)
-module 11•5•4 {A B : Set} (s : A ⊎ B) where
-  open 11•5•3
-  open 11•5•2
-  open import Chapters.`09.Reading
-
-  prop : is-contr (Σ[ t ∈ A ⊎ B ] (Eq-copr s t))
-  prop = {!!}
-
-module 11•5•1 (A B : Set) (x x' : A) (y y' : B) where
-  open import Chapters.`01-08.Reading hiding (A ; B)
-  open import Chapters.`09.Reading
-
-  thm₁ : _≡_ {A = A ⊎ B} (inl x) (inl x') ≃ (x ≡ x')
-  thm₁ = {!!}
+-- Lemma 11.5.3: The observational equality relation Eq-copr_{A , B} on A + B is
+-- reflexive, and therefore there is a map
+-- Eq-copr-eq : Π_{s, t : A + B} (s = t) → Eq-copr_{A , B} (s , t)
+Eq-copr-eq : ∀ (s t : A ⊎ B) → (s ≡ t) → Eq-copr[ A , B ] s t
+Eq-copr-eq (inj₁ x) t refl = refl
+Eq-copr-eq (inj₂ y) t refl = refl
 
 
-  thm₂ : _≡_ {A = A ⊎ B} (inl x) (inr y') ≃ ⊥
-  thm₂ = {!!}
+-- The refexivity term ρ is constructed using induction on p : A ⊎ B
+refl-Eq-copr : (p : A ⊎ B) → Eq-copr[ A , B ] p p
+refl-Eq-copr (inj₁ x) = refl
+refl-Eq-copr (inj₂ x) = refl
 
 
-  thm₃ : _≡_ {A = A ⊎ B} (inr y) (inl x') ≃ ⊥
-  thm₃ = {!!}
+-- Proposition 11.5.4
+-- For any s : A + B the total space
+-- Σ_{t : A + B} Eq-copr_{A, B}(s , t)
+-- is contractible
 
-  thm₄ : _≡_ {A = A ⊎ B} (inr y) (inr y') ≃ (y ≡ y')
-  thm₄ = {!!}
+module 11•5•4 {A B : Set} where
+  lem•11•5•4-helper1 : (x : A) → (Σ[ t ∈ A ⊎ B ] Eq-copr[ A , B ] (inj₁ x) t) ≃
+        ((Σ[ x′ ∈ A ] Eq-copr[ A , B ] (inj₁ x) (inj₁ x′)) + (Σ[ y′ ∈ B ] Eq-copr[ A , B ] (inj₁ x) (inj₂ y′)))
+  lem•11•5•4-helper1 x = f , has-inverse⇒is-equiv (f̅ , (G  , H))  where
+    f : (Σ[ t ∈ A ⊎ B ] Eq-copr[ A , B ] (inj₁ x) t) →
+        ((Σ[ x′ ∈ A ] Eq-copr[ A , B ] (inj₁ x) (inj₁ x′)) + (Σ[ y′ ∈ B ] Eq-copr[ A , B ] (inj₁ x) (inj₂ y′)))
+    f (inj₁ x , e) = inj₁ (x , e)
+
+    f̅ : ((Σ[ x′ ∈ A ] Eq-copr[ A , B ] (inj₁ x) (inj₁ x′)) + (Σ[ y′ ∈ B ] Eq-copr[ A , B ] (inj₁ x) (inj₂ y′)))
+      → (Σ[ t ∈ A ⊎ B ] Eq-copr[ A , B ] (inj₁ x) t)
+    f̅ (inj₁ ( x , e)) = inj₁ x , e
+
+    G : f ∘ f̅ ∼ id
+    G (inj₁ x) = refl
+    H : f̅ ∘ f ∼ id
+    H (inj₁ x , e) = refl
+
+
+  lem•11•5•4-helper1b : (y : B) → (Σ[ t ∈ A ⊎ B ] Eq-copr[ A , B ] (inj₂ y) t) ≃
+        ((Σ[ x′ ∈ A ] Eq-copr[ A , B ] (inj₂ y) (inj₁ x′)) + (Σ[ y′ ∈ B ] Eq-copr[ A , B ] (inj₂ y) (inj₂ y′)))
+  lem•11•5•4-helper1b y = f , has-inverse⇒is-equiv (f̅ , (G  , H))  where
+    f : (Σ[ t ∈ A ⊎ B ] Eq-copr[ A , B ] (inj₂ y) t) →
+        ((Σ[ x′ ∈ A ] Eq-copr[ A , B ] (inj₂ y) (inj₁ x′)) + (Σ[ y′ ∈ B ] Eq-copr[ A , B ] (inj₂ y) (inj₂ y′)))
+    f (inj₂ x , e) = inj₂ (x , e)
+
+    f̅ : ((Σ[ x′ ∈ A ] Eq-copr[ A , B ] (inj₂ y) (inj₁ x′)) + (Σ[ y′ ∈ B ] Eq-copr[ A , B ] (inj₂ y) (inj₂ y′))) →
+        (Σ[ t ∈ A ⊎ B ] Eq-copr[ A , B ] (inj₂ y) t)
+    f̅ (inj₂ (y , e)) = (inj₂ y) , e
+
+    G : f ∘ f̅ ∼ id
+    G (inj₂ y) = refl
+    H : f̅ ∘ f ∼ id
+    H (inj₂ y , e) = refl
+
+
+  lem•11•5•4-helper2 : (x : A) → (((Σ[ x′ ∈ A ] x ≡ x′) + Σ[ y ∈ B ] ∅) ≃ (Σ[ x′ ∈ A ] x ≡ x′))
+  lem•11•5•4-helper2 x = f , has-inverse⇒is-equiv (f̅ , (G  , H)) where
+    f : (((Σ[ x′ ∈ A ] x ≡ x′) + Σ[ y ∈ B ] ∅) → (Σ[ x′ ∈ A ] x ≡ x′))
+    f (inj₁ x) = x
+
+
+    f̅ : (Σ[ x′ ∈ A ] x ≡ x′) → ((Σ[ x′ ∈ A ] x ≡ x′) + Σ[ y ∈ B ] ∅)
+    f̅ x = inj₁ x
+
+    G : f ∘ f̅ ∼ id
+    G x = refl
+    H : f̅ ∘ f ∼ id
+    H (inj₁ x) = refl
+
+
+
+  lem•11•5•4-helper2b : (y : B) → ((Σ[ x ∈ A ] ∅) + (Σ[ y′ ∈ B ] y ≡ y′)) ≃ (Σ[ y′ ∈ B ] y ≡ y′)
+  lem•11•5•4-helper2b y = f , has-inverse⇒is-equiv (f̅ , (G  , H)) where
+    f : ((Σ[ x ∈ A ] ∅) + (Σ[ y′ ∈ B ] y ≡ y′)) → (Σ[ y′ ∈ B ] y ≡ y′)
+    f (inj₂ y) = y
+
+
+    f̅ : (Σ[ y′ ∈ B ] y ≡ y′) → ((Σ[ x ∈ A ] ∅) + (Σ[ y′ ∈ B ] y ≡ y′))
+    f̅ y = inj₂ y
+
+    G : f ∘ f̅ ∼ id
+    G x = refl
+    H : f̅ ∘ f ∼ id
+    H (inj₂ x) = refl
+
+
+
+  -- We proceed by showing Σ_{t : A + B} Eq-copr_{A, B}(inl x , t) is contractible
+  -- and Σ_{t : A + B} Eq-copr_{A, B}(inr y , t) is contractible after inducting on s
+  prop : (s : A ⊎ B) → is-contr (Σ[ t ∈ A ⊎ B ] Eq-copr[ A , B ] s t)
+  prop (inj₁ x) with lem•11•5•4-helper1 x | lem•11•5•4-helper2 x
+  ... | (f , f-eq) | (g , g-eq) = 10-3.ex-10-3-ii-iii⇒i (g ∘ f) (thm-10∙1∙4 x) equiv-g∘f where
+    equiv-g∘f : is-equiv (g ∘ f)
+    equiv-g∘f = is-equiv-comp {f = g} {g = f} g-eq f-eq
+
+  prop (inj₂ y) with lem•11•5•4-helper1b y | lem•11•5•4-helper2b y
+  ... | (f , f-eq) | (g , g-eq) = 10-3.ex-10-3-ii-iii⇒i (g ∘ f) (thm-10∙1∙4 y) equiv-g∘f where
+    equiv-g∘f : is-equiv (g ∘ f)
+    equiv-g∘f = is-equiv-comp {f = g} {g = f} g-eq f-eq
+
+
+thm•11•5•1 : (s t : A ⊎ B) → is-equiv (Eq-copr-eq s t)
+thm•11•5•1 s t = _↔_.from (11•2•2.i↔ii s (refl-Eq-copr s) (λ x → Eq-copr-eq s x)) (11•5•4.prop s) t
+
+
+--------------------------------------------------------------------
+-- §11.5: The structure identity principle
