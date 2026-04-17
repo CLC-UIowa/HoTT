@@ -438,3 +438,53 @@ thm•11•4•1 {A = A} {B = B} (f , f-equiv) = f , (lem•11•4•1 f-equiv)
 
     lem•11•4•1 : is-equiv f → is-emb f
     lem•11•4•1 f-equiv =  Embed lem'
+
+
+module 11•5•2 {A B : Set} where
+  open import Chapters.`01-08.Reading hiding (A ; B)
+  open import Chapters.`09.Reading
+
+  Eq-copr : (A ⊎ B) → (A ⊎ B) → Set
+  Eq-copr (inl x) (inl x') = x ≡ x'
+  Eq-copr (inl x) (inr y') = ⊥
+  Eq-copr (inr y) (inl x') = ⊥
+  Eq-copr (inr y) (inr y') = y ≡ y'
+
+module 11•5•3 {A B : Set} where
+  open 11•5•2
+  open import Chapters.`01-08.Reading hiding (A ; B)
+  open import Chapters.`09.Reading
+
+  ρ : (t : A ⊎ B) → Eq-copr t t
+  ρ (inl x) = refl
+  ρ (inr y) = refl
+
+  Eq-copr-eq : (s t : A ⊎ B) → (s ≡ t) → Eq-copr s t
+  Eq-copr-eq = {!!}
+
+open import Chapters.`01-08.Reading hiding (A ; B)
+module 11•5•4 {A B : Set} (s : A ⊎ B) where
+  open 11•5•3
+  open 11•5•2
+  open import Chapters.`09.Reading
+
+  prop : is-contr (Σ[ t ∈ A ⊎ B ] (Eq-copr s t))
+  prop = {!!}
+
+module 11•5•1 (A B : Set) (x x' : A) (y y' : B) where
+  open import Chapters.`01-08.Reading hiding (A ; B)
+  open import Chapters.`09.Reading
+
+  thm₁ : _≡_ {A = A ⊎ B} (inl x) (inl x') ≃ (x ≡ x')
+  thm₁ = {!!}
+
+
+  thm₂ : _≡_ {A = A ⊎ B} (inl x) (inr y') ≃ ⊥
+  thm₂ = {!!}
+
+
+  thm₃ : _≡_ {A = A ⊎ B} (inr y) (inl x') ≃ ⊥
+  thm₃ = {!!}
+
+  thm₄ : _≡_ {A = A ⊎ B} (inr y) (inr y') ≃ (y ≡ y')
+  thm₄ = {!!}
