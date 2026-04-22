@@ -255,9 +255,6 @@ is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} {a = a} b =
 -- Let f be a family of maps f : Π_{x : A} (a ≡ x) → B x
 -- equipped with an identification f a refl ≡ b
 
-tr2 : {ℓ : Level} {A : Set ℓ} {B : A → Set ℓ} {T : (a : A) → B a → Set ℓ} {a a' : A} {b : B a} {b' : B a'} → _≡_ {A = Σ A B} (a , b) (a' , b') → T a b → T a' b'
-tr2 {T = T} a,b≡a',b' t = tr (λ x,y → T (fst x,y) (snd x,y)) a,b≡a',b' t
-
 contr-path : {ℓ : Level} {A : Set ℓ} → (a : A) → is-contr A → is-contr A
 contr-path a (center , contraction) = (a , λ x → sym (contraction a) ○ contraction x)
 
@@ -382,7 +379,7 @@ module 11•3•1 where
       γ zero zero ⋆ = refl
       -- γ zero (suc n) e is absurd
       -- γ (suc n) zero e is absurd
-      γ (suc m) (suc n) e = ap (f {m = m}) (γ m n e)
+      γ (suc m) (suc n) e =  ap (f {m = m}) (γ m n e)
 
   thm : (m n : ℕ) → is-equiv (toEqℕ m n)
   thm m n = _↔_.from (11•2•2.i↔ii m (refl-Eqℕ m) (λ x → toEqℕ m x)) (lem m) n
@@ -551,12 +548,12 @@ module 11•5•4 {A B : Set} where
   prop (inj₁ x) with lem•11•5•4-helper1 x | lem•11•5•4-helper2 x
   ... | (f , f-eq) | (g , g-eq) = 10-3.ex-10-3-ii-iii⇒i (g ∘ f) (thm-10∙1∙4 x) equiv-g∘f where
     equiv-g∘f : is-equiv (g ∘ f)
-    equiv-g∘f = is-equiv-comp {f = g} {g = f} g-eq f-eq
+    equiv-g∘f = is-equiv-comp g-eq f-eq
 
   prop (inj₂ y) with lem•11•5•4-helper1b y | lem•11•5•4-helper2b y
   ... | (f , f-eq) | (g , g-eq) = 10-3.ex-10-3-ii-iii⇒i (g ∘ f) (thm-10∙1∙4 y) equiv-g∘f where
     equiv-g∘f : is-equiv (g ∘ f)
-    equiv-g∘f = is-equiv-comp {f = g} {g = f} g-eq f-eq
+    equiv-g∘f = is-equiv-comp g-eq f-eq
 
 
 thm•11•5•1 : (s t : A ⊎ B) → is-equiv (Eq-copr-eq s t)
@@ -564,4 +561,117 @@ thm•11•5•1 s t = _↔_.from (11•2•2.i↔ii s (refl-Eq-copr s) (λ x �
 
 
 --------------------------------------------------------------------
--- §11.5: The structure identity principle
+-- §11.6: The structure identity principle
+
+
+
+-- rfl-ident-system :
+--   {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x) → Set ℓ} {a : A}
+--   (b : 𝐁 a) → ((x : A) (y : 𝐁 x) → P x y) → P a b
+-- rfl-ident-system {a = a} b h = h a b
+
+-- is-unary-ident-system : {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {a : A} (b : 𝐁 a) → Set (lsuc ℓ)
+-- is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} {a = a} b =
+--   (P : (x : A) (y : 𝐁 x) → Set ℓ) → section {B = P a b} (rfl-ident-system {𝐁 = 𝐁} {P = P} b)
+
+
+-- Def 11.6.1
+-- Dependent identity system
+module 11•6•1 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 : (x : A) → 𝐁 x → 𝐂 x → Set ℓ)
+               (a : A) (b : 𝐁 a) (c : 𝐂 a) (d : 𝐃 a b c) where
+  is-dep-ident-system : Set (lsuc ℓ)
+  is-dep-ident-system = is-unary-ident-system {A = 𝐁 a} {𝐁 = λ y → 𝐃 a y c} {a = b} d
+
+
+-- Thm 11.6.2
+-- Structure identity principle
+-- The following are equivalent
+
+-- (i) Any family of maps (b = y) → 𝐃 a y c indexed by y : 𝐁 a is a family of equivalences
+-- (ii) The total space Σ_{y : 𝐁 a} 𝐃 a y c is contractible
+-- (iii) 𝐃 is a dependent identity system over 𝐂 at b : 𝐁 a
+
+-- (iv) Any family of maps ( (a, b) = (x , y)) → Σ_{z : 𝐂 x} 𝐃 x y z index by (x, y) : Σ_{x : A} 𝐁 x is a family of equivalences
+-- (v) The total space Σ_{(x , y) Σ_{x : A} 𝐁 x} Σ_{z : 𝐂 x} D x y z is contractible
+-- (vi) The type family (x , y) ↦ Σ_{z : 𝐂 x} D x y z is an identity system at (a , b) : Σ_{x : A} 𝐁 x
+
+
+
+module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 : (x : A) → 𝐁 x → 𝐂 x → Set ℓ) (a : A) (b : 𝐁 a) (c : 𝐂 a) (d : 𝐃 a b c) (c-ident-system : is-unary-ident-system {𝐁 = 𝐂} {a = a} c) where
+  i↔ii : {f : (y : 𝐁 a) → (b ≡ y) → 𝐃 a y c} → (∀ (x : 𝐁 a) → is-equiv (f x)) ↔ is-contr (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
+  i↔ii {f = f} = 11•2•2.i↔ii {𝐁 = λ y → 𝐃 a y c} b d f
+
+  ii↔iii : {f : (y : 𝐁 a) → (b ≡ y) → 𝐃 a y c} → is-contr (Σ[ y ∈ 𝐁 a ] 𝐃 a y c) ↔ 11•6•1.is-dep-ident-system 𝐃 a b c d
+  ii↔iii {f = f} = 11•2•2.ii↔iii {𝐁 = λ y → 𝐃 a y c} b d f
+
+
+
+  iv↔v : {f : (q : Σ[ x ∈ A ] 𝐁 x) → ((a , b) ≡ q) → Σ[ z ∈ 𝐂 (fst q) ] 𝐃 (fst q) (snd q) z} → (∀ (p : Σ[ x ∈ A ] 𝐁 x) → is-equiv (f p)) ↔ is-contr (Σ[ p ∈ (Σ[ x ∈ A ] 𝐁 x) ] (Σ[ z ∈ 𝐂 (fst p) ] 𝐃 (fst p) (snd p) z))
+  iv↔v {f = f} = 11•2•2.i↔ii (a , b) (f (a , b) refl) f
+
+
+  v↔vi : {f : (q : Σ[ x ∈ A ] 𝐁 x) → ((a , b) ≡ q) → Σ[ z ∈ 𝐂 (fst q) ] 𝐃 (fst q) (snd q) z} →
+    is-contr (Σ[ p ∈ (Σ[ x ∈ A ] 𝐁 x) ] (Σ[ z ∈ 𝐂 (fst p) ] 𝐃 (fst p) (snd p) z))
+       ↔ is-unary-ident-system {A = Σ[ x ∈ A ] 𝐁 x} {𝐁 = λ q → Σ[ z ∈ 𝐂 (fst q) ] 𝐃 (fst q) (snd q) z} {a = (a , b)} (f (a , b) refl)
+  v↔vi {f = f} = 11•2•2.ii↔iii (a , b) (f (a , b) refl) f
+
+
+  ii↔v : {f : (x : A) → (a ≡ x) → 𝐂 x} → is-contr ((Σ[ y ∈ 𝐁 a ] 𝐃 a y c)) ↔ is-contr (Σ[ p ∈ (Σ[ x ∈ A ] 𝐁 x) ] (Σ[ z ∈ 𝐂 (fst p) ] 𝐃 (fst p) (snd p) z))
+  ii↔v {f = f} = (λ x → 10-3.ex-10-3-ii-iii⇒i (fwd2 ∘ fwd) x {!!}) , λ x → 10-3.ex-10-3-ii-iii⇒i (bwk ∘ bwk2) x {!!}
+     where
+       fwd : (Σ[ p ∈ Σ A 𝐁 ] (Σ[ z ∈ 𝐂 (fst p) ] (𝐃 (fst p) (snd p) z))) → (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) ))
+       fwd ((a , b) , c , d) = (a , c) , (b , d)
+
+       bwk : (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) )) → (Σ[ p ∈ Σ A 𝐁 ] (Σ[ z ∈ 𝐂 (fst p) ] (𝐃 (fst p) (snd p) z)))
+       bwk ((a , c) , b , d) = (a , b) , c , d
+
+       G : fwd ∘ bwk ∼ id
+       G ((a , c) , b , d) = refl
+
+       H : bwk  ∘ fwd ∼ id
+       H ((a , b) , c , d) = refl
+
+       lem1 : (Σ[ p ∈ Σ A 𝐁 ] (Σ[ z ∈ 𝐂 (fst p) ] (𝐃 (fst p) (snd p) z))) ≃ (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) ))
+       lem1 = fwd , ((bwk , G) , (bwk , H))
+
+       𝐂-contr : is-contr (Σ A 𝐂)
+       𝐂-contr = _↔_.from (11•2•2.ii↔iii a c f) c-ident-system
+
+
+       fwd2 : (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) )) → (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
+       fwd2 ((a′ , c′) , b′ , d′) with 𝐂-contr
+       ... | 𝐂-ctr , 𝐂-contr = {!!} , {!!}
+       bwk2 : (Σ[ y ∈ 𝐁 a ] 𝐃 a y c) → (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) ))
+       bwk2 = {!!}
+
+       G2 : fwd2 ∘ bwk2 ∼ id
+       G2 = {!!}
+
+       H2 : bwk2 ∘ fwd2 ∼ id
+       H2 = {!!}
+
+       lem2 : (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) )) ≃ (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
+       lem2 = {!!}
+
+
+ex•11•6•2 : {A B : Set ℓ} {f : A → B} (b : B)(s1 s2 : Σ[ x ∈ A ] (f x ≡ b)) → (s1 ≡ s2) ≃ fib (ap f) ((snd s1) ○ (snd s2)⁻¹)
+ex•11•6•2 {f = f} b (x , p) (y , q) = {!!}
+  where
+    open import Chapters.`10.Reading
+    lem1 : ∀ (x : A) → is-contr (Σ[ y ∈ A ] x ≡ y)
+    lem1 x = thm-10∙1∙4 x
+
+    lem4 : is-contr (Σ[ q ∈ (f x ≡ b) ] p ≡ q)
+    lem4 = thm-10∙1∙4 p
+
+    g : (Σ[ q ∈ f x ≡ b ] (refl ≡ (trans p (sym q)))) → (Σ[ q ∈ (f x ≡ b) ] p ≡ q)
+    g (refl , snd₁) = refl , {!!}
+
+    equiv-g : is-equiv g
+    equiv-g = {!!}
+
+    lem3 : (Σ[ q ∈ f x ≡ b ] (refl ≡ (trans p (sym q)))) ≃ (Σ[ q ∈ (f x ≡ b) ] p ≡ q)
+    lem3 = g , equiv-g
+
+    lem2 : is-contr (Σ[ q ∈ f x ≡ b ] (refl ≡ (trans p (sym q))))
+    lem2 = 10-3.ex-10-3-ii-iii⇒i g lem4 equiv-g
