@@ -43,7 +43,7 @@ module 11•1c where
   ex2 = {!!}
 
 
-module 11•2 where
+module 11•2 (e : A ≃ B) where
   -- consider an equivalence e : A ≃ B.
   -- Construct and equivalence
   -- p ↦ p̃ : (e(x) = y) ≃ x = e⁻¹(y)
@@ -71,6 +71,41 @@ module 11•2 where
 module 11•3 {A B : Set ℓ} {f g : A → B} where
   -- show that (f ∼ g) → (is-emb f ↔ is-emb g)
   -- for any f, g : A → B
+  f→g : (f ∼ g) → is-emb f → is-emb g
+  f→g H (Embed ap-equiv) = Embed
+      (λ x y → has-inverse⇒is-equiv ((λ { e →  k x y (H x ○ e ○ (sym (H y))) }) ,
+         ((λ x₁ → {!k-sec x y!}) , λ { refl → {!!} })))
+     where
+       k = λ (x y : A) → (fst ∘ fst) (ap-equiv x y)
+       k-sec = λ (x y : A) → (snd ∘ fst) (ap-equiv x y)
+
 
   ex : (f ∼ g) → is-emb f ↔ is-emb g
-  ex = {!!}
+  ex H =  f→g H , {!!}
+
+
+
+module 11•4 where
+  -- Consider a comuting triangle
+{-
+       h
+  A --------> B
+  \           /
+   \         /
+  f \       / g
+    _\|   |/_
+        X
+
+-}
+  -- with H : f ~ g ∘ h
+
+  -- (a) Suppose g is an embedding. Show that f is an embedding iff h is an embedding
+  -- (b) Suppose h is an equivalence. Show that f is an embedding iff g is an embedding
+
+module 11•5 {A B C : Set ℓ} (f : A ↪[ B ]) (g : B ↪[ C ]) where
+  -- Consider 2 embeddings f : A ↪ B and g : B ↪ C. Show that the following are equivalent
+  -- (i) the composite g ∘ f is an equivalence
+  -- (ii) both f and g are equivalences
+
+  i↔ii : is-equiv ((fst g) ∘ (fst f)) ↔ (is-equiv (fst f) × is-equiv (fst g))
+  i↔ii = {!!}
