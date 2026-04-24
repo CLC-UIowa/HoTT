@@ -1,6 +1,7 @@
 module Chapters.`01-08.Reading where
 
 import Data.Empty
+open import Prelude using (_↔_)
 open import Data.Nat hiding (_!; _<_ ; _⊔_) public
 open import Data.Product public
 import Data.Unit
@@ -14,10 +15,10 @@ variable
   ℓ ℓ₁ ℓ₂ ℓ₃ : Level
   A B : Set ℓ
 
-record _↔_ (A B : Set ℓ) : Set ℓ  where
-  field
-    to : A → B
-    fro : B → A
+-- record _↔_ (A B : Set ℓ) : Set ℓ  where
+--   field
+--     to : A → B
+--     fro : B → A
 
 -------------------------------------------------------------------------------
 -- Section 1.3: Natural numbers
@@ -473,7 +474,7 @@ is-split-surjective : {A B : Set} → (A → B) → Set
 is-split-surjective {A} {B} f = (b : B) → Σ[ a ∈ A ] f a ≡ b
 
 -- For reference
--- data Fin′ : ℕ → Set where 
+-- data Fin′ : ℕ → Set where
 --   fzero : ∀ (k : ℕ) → Fin′ (suc k)
 --   fsuc : (k : ℕ) → Fin′ k → Fin′ (suc k)
 
@@ -511,26 +512,26 @@ repr k = indℕ (λ _ → Fin (suc k))
 -- The goal
 
 lem744a : {k : ℕ} → ι (suc k) (zerof k) ≡ 0
-lem744a {k} = indℕ 
-  (λ k → ι (suc k) (zerof k) ≡ 0) 
-  refl 
-  (λ n → id) k   
+lem744a {k} = indℕ
+  (λ k → ι (suc k) (zerof k) ≡ 0)
+  refl
+  (λ n → id) k
 
-lem744b : {k : ℕ} → (x : Fin k) → 
+lem744b : {k : ℕ} → (x : Fin k) →
   ι (suc k) (skip-zero k x) ≡ suc (ι k x)
-lem744b {k} = 
-  ind-Fin (λ k′ x′ → ι (suc k′) (skip-zero k′ x′) ≡ suc (ι k′ x′)) 
+lem744b {k} =
+  ind-Fin (λ k′ x′ → ι (suc k′) (skip-zero k′ x′) ≡ suc (ι k′ x′))
     (λ _ → refl) (λ k′ x′ → id) k
 
 lem744c : {k : ℕ} → (x : Fin k) → ι k (succf k x) ≅ suc (ι k x) mod k
-lem744c {k} x = 
-  ind-Fin 
-    (λ k x → ι k (succf k x) ≅ suc (ι k x) mod k) 
-    (λ k → tr 
+lem744c {k} x =
+  ind-Fin
+    (λ k x → ι k (succf k x) ≅ suc (ι k x) mod k)
+    (λ k → tr
       {B = λ X → X ≅ suc (ι (suc k) (inr ⋆)) mod suc k} 0
-       (ι (suc k) (succf (suc k) (inr ⋆))) 
-       (sym (lem744a {k = k})) (sym-≅ (suc k) (suc k) 0 (n≅0mod-n (suc k)))) 
-     (λ k x ih → {!!}) k x   
+       (ι (suc k) (succf (suc k) (inr ⋆)))
+       (sym (lem744a {k = k})) (sym-≅ (suc k) (suc k) 0 (n≅0mod-n (suc k))))
+     (λ k x ih → {!!}) k x
 
 prop745 : {k : ℕ} → (x : ℕ) → ι (suc k) (repr k x) ≅ x mod suc k
 prop745 = {!   !}
@@ -567,11 +568,11 @@ lemma816 : {A B : Set} → (A ↔ B) → (is-decidable A ↔ is-decidable B)
 lemma816 {A} {B} A↔B =
   record
     { to = f ++ g-cong
-    ; fro = g ++ f-cong
+    ; from = g ++ f-cong
     }
   where open _↔_
         f = A↔B .to
-        g = A↔B .fro
+        g = A↔B .from
         f-cong : ¬ B → ¬ A
         f-cong = λ ¬B → ¬B ∘ f
         g-cong : ¬ A → ¬ B
@@ -581,8 +582,5 @@ lemma816 {A} {B} A↔B =
         (f ++ g) (inr x) = inr (g x)
 
 ≡-decidable-ℕ : has-decidable-equality ℕ
-≡-decidable-ℕ m n = lemma816 (record { to = toEqℕ m n ; fro = fromEqℕ m n }) .fro (Eqℕ-decidable m n)
+≡-decidable-ℕ m n = lemma816 (record { to = toEqℕ m n ; from = fromEqℕ m n }) .from (Eqℕ-decidable m n)
   where open _↔_
-
-
-
