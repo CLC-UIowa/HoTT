@@ -578,7 +578,9 @@ thm•11•5•1 s t = _↔_.from (11•2•2.i↔ii s (refl-Eq-copr s) (λ x �
 -- Def 11.6.1
 -- Dependent identity system
 module 11•6•1 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 : (x : A) → 𝐁 x → 𝐂 x → Set ℓ)
-               (a : A) (b : 𝐁 a) (c : 𝐂 a) (d : 𝐃 a b c) where
+               (a : A) (b : 𝐁 a) (c : 𝐂 a)
+               (c-ident-system : is-unary-ident-system {𝐁 = 𝐂} {a = a} c)
+               (d : 𝐃 a b c) where
   is-dep-ident-system : Set (lsuc ℓ)
   is-dep-ident-system = is-unary-ident-system {A = 𝐁 a} {𝐁 = λ y → 𝐃 a y c} {a = b} d
 
@@ -601,12 +603,13 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
   i↔ii : {f : (y : 𝐁 a) → (b ≡ y) → 𝐃 a y c} → (∀ (x : 𝐁 a) → is-equiv (f x)) ↔ is-contr (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
   i↔ii {f = f} = 11•2•2.i↔ii {𝐁 = λ y → 𝐃 a y c} b d f
 
-  ii↔iii : {f : (y : 𝐁 a) → (b ≡ y) → 𝐃 a y c} → is-contr (Σ[ y ∈ 𝐁 a ] 𝐃 a y c) ↔ 11•6•1.is-dep-ident-system 𝐃 a b c d
+  ii↔iii : {f : (y : 𝐁 a) → (b ≡ y) → 𝐃 a y c}
+         → is-contr (Σ[ y ∈ 𝐁 a ] 𝐃 a y c) ↔ 11•6•1.is-dep-ident-system 𝐃 a b c c-ident-system d
   ii↔iii {f = f} = 11•2•2.ii↔iii {𝐁 = λ y → 𝐃 a y c} b d f
 
 
-
-  iv↔v : {f : (q : Σ[ x ∈ A ] 𝐁 x) → ((a , b) ≡ q) → Σ[ z ∈ 𝐂 (fst q) ] 𝐃 (fst q) (snd q) z} → (∀ (p : Σ[ x ∈ A ] 𝐁 x) → is-equiv (f p)) ↔ is-contr (Σ[ p ∈ (Σ[ x ∈ A ] 𝐁 x) ] (Σ[ z ∈ 𝐂 (fst p) ] 𝐃 (fst p) (snd p) z))
+  iv↔v : {f : (q : Σ[ x ∈ A ] 𝐁 x) → ((a , b) ≡ q) → Σ[ z ∈ 𝐂 (fst q) ] 𝐃 (fst q) (snd q) z}
+       → (∀ (p : Σ[ x ∈ A ] 𝐁 x) → is-equiv (f p)) ↔ is-contr (Σ[ p ∈ (Σ[ x ∈ A ] 𝐁 x) ] (Σ[ z ∈ 𝐂 (fst p) ] 𝐃 (fst p) (snd p) z))
   iv↔v {f = f} = 11•2•2.i↔ii (a , b) (f (a , b) refl) f
 
 
@@ -616,7 +619,8 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
   v↔vi {f = f} = 11•2•2.ii↔iii (a , b) (f (a , b) refl) f
 
 
-  ii↔v : {f : (x : A) → (a ≡ x) → 𝐂 x} → is-contr ((Σ[ y ∈ 𝐁 a ] 𝐃 a y c)) ↔ is-contr (Σ[ p ∈ (Σ[ x ∈ A ] 𝐁 x) ] (Σ[ z ∈ 𝐂 (fst p) ] 𝐃 (fst p) (snd p) z))
+  ii↔v : {f : (x : A) → (a ≡ x) → 𝐂 x}
+       → is-contr ((Σ[ y ∈ 𝐁 a ] 𝐃 a y c)) ↔ is-contr (Σ[ p ∈ (Σ[ x ∈ A ] 𝐁 x) ] (Σ[ z ∈ 𝐂 (fst p) ] 𝐃 (fst p) (snd p) z))
   ii↔v {f = f} = (λ x → 10-3.ex-10-3-ii-iii⇒i (fwd2 ∘ fwd) x {!!}) , λ x → 10-3.ex-10-3-ii-iii⇒i (bwk ∘ bwk2) x {!!}
      where
        fwd : (Σ[ p ∈ Σ A 𝐁 ] (Σ[ z ∈ 𝐂 (fst p) ] (𝐃 (fst p) (snd p) z))) → (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) ))
@@ -642,7 +646,8 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
        fwd2 ((a′ , c′) , b′ , d′) with 𝐂-contr
        ... | 𝐂-ctr , 𝐂-contr = {!!} , {!!}
        bwk2 : (Σ[ y ∈ 𝐁 a ] 𝐃 a y c) → (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) ))
-       bwk2 = {!!}
+       bwk2 (y , d) with 𝐂-contr
+       ... | 𝐂-ctr ,  x = (a , {!!}) , {!!}
 
        G2 : fwd2 ∘ bwk2 ∼ id
        G2 = {!!}
@@ -654,24 +659,24 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
        lem2 = {!!}
 
 
-ex•11•6•2 : {A B : Set ℓ} {f : A → B} (b : B)(s1 s2 : Σ[ x ∈ A ] (f x ≡ b)) → (s1 ≡ s2) ≃ fib (ap f) ((snd s1) ○ (snd s2)⁻¹)
-ex•11•6•2 {f = f} b (x , p) (y , q) = {!!}
-  where
-    open import Chapters.`10.Reading
-    lem1 : ∀ (x : A) → is-contr (Σ[ y ∈ A ] x ≡ y)
-    lem1 x = thm-10∙1∙4 x
+-- ex•11•6•2 : {A B : Set ℓ} {f : A → B} (b : B)(s1 s2 : Σ[ x ∈ A ] (f x ≡ b)) → (s1 ≡ s2) ≃ fib (ap f) ((snd s1) ○ (snd s2)⁻¹)
+-- ex•11•6•2 {f = f} b (x , p) (y , q) = {!!}
+--   where
+--     open import Chapters.`10.Reading
+--     lem1 : ∀ (x : A) → is-contr (Σ[ y ∈ A ] x ≡ y)
+--     lem1 x = thm-10∙1∙4 x
 
-    lem4 : is-contr (Σ[ q ∈ (f x ≡ b) ] p ≡ q)
-    lem4 = thm-10∙1∙4 p
+--     lem4 : is-contr (Σ[ q ∈ (f x ≡ b) ] p ≡ q)
+--     lem4 = thm-10∙1∙4 p
 
-    g : (Σ[ q ∈ f x ≡ b ] (refl ≡ (trans p (sym q)))) → (Σ[ q ∈ (f x ≡ b) ] p ≡ q)
-    g (refl , snd₁) = refl , {!!}
+--     g : (Σ[ q ∈ f x ≡ b ] (refl ≡ (trans p (sym q)))) → (Σ[ q ∈ (f x ≡ b) ] p ≡ q)
+--     g (refl , snd₁) = refl , {!!}
 
-    equiv-g : is-equiv g
-    equiv-g = {!!}
+--     equiv-g : is-equiv g
+--     equiv-g = {!!}
 
-    lem3 : (Σ[ q ∈ f x ≡ b ] (refl ≡ (trans p (sym q)))) ≃ (Σ[ q ∈ (f x ≡ b) ] p ≡ q)
-    lem3 = g , equiv-g
+--     lem3 : (Σ[ q ∈ f x ≡ b ] (refl ≡ (trans p (sym q)))) ≃ (Σ[ q ∈ (f x ≡ b) ] p ≡ q)
+--     lem3 = g , equiv-g
 
-    lem2 : is-contr (Σ[ q ∈ f x ≡ b ] (refl ≡ (trans p (sym q))))
-    lem2 = 10-3.ex-10-3-ii-iii⇒i g lem4 equiv-g
+--     lem2 : is-contr (Σ[ q ∈ f x ≡ b ] (refl ≡ (trans p (sym q))))
+--     lem2 = 10-3.ex-10-3-ii-iii⇒i g lem4 equiv-g
