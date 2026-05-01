@@ -403,12 +403,15 @@ record is-emb {A B : Set ℓ} (f : A → B) : Set ℓ where
   field
     ap-equiv : (x y : A) → is-equiv (ap {x = x} {y = y} f)
 
+  map : A → B
+  map = f
+
 _↪[_] : Set ℓ → Set ℓ → Set ℓ -- becuase A ↪ B is already defined in prelude
 A ↪[ B ] = Σ[ f ∈ (A → B) ] is-emb f
 
 -- Theorem 11.4.1 Any Equivalence is an embedding
-thm•11•4•1 : A ≃ B → A ↪[ B ]
-thm•11•4•1 {A = A} {B = B} (f , f-equiv) = f , (Embed lem•11•4•1)
+thm•11•4•1 : (e : A ≃ B) → (is-emb (fst e))
+thm•11•4•1 {A = A} {B = B} (f , f-equiv) = Embed lem•11•4•1
   where
 
     -- if we show that Σ_{y : A} f x ≡ f y is an equivalence

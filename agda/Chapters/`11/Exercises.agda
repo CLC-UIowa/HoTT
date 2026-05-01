@@ -90,6 +90,9 @@ is-equiv-∼ f∼g is-equiv-f = {!!}
 ap-comp-∼ : {A B C : Set ℓ} (f : A → B) (g : B → C) {x y : A} → (Paths.ap g) ∘ (Paths.ap {x = x} {y = y} f) ∼ Paths.ap (g ∘ f)
 ap-comp-∼ f g = λ z → Paths.ap-comp f g z
 
+has-inverse-has-inverse : {A B : Set ℓ} {f : A → B} (has-inv-f : has-inverse f) → has-inverse (fst (has-inv-f))
+has-inverse-has-inverse {f = f} (g , g-inv-prf) = f , ((snd g-inv-prf) , (fst g-inv-prf))
+
 module 11•4 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : f ∼ g ∘ h} where
   open Paths using (tr)
 
@@ -153,8 +156,33 @@ module 11•4 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : f
           emb : (x y : A) → is-equiv (Paths.ap f)
           emb x y = is-emb.ap-equiv ((_↔_.from $ 11•3.ex H) is-emb-ap-comp) x y
 
+  ex-b-aux : (is-equiv h) → (is-emb g → is-emb f)
+  ex-b-aux is-equiv-h = backward
+    where
+      is-emb-h : is-emb h
+      is-emb-h = thm•11•4•1 (h , is-equiv-h)
+
+      backward : is-emb g → is-emb f
+      backward is-emb-g = (_↔_.from $ ex-a is-emb-g) is-emb-h
+
   ex-b : (is-equiv h) → (is-emb f ↔ is-emb g)
-  ex-b = {!!}
+  ex-b is-equiv-h = forward , backward
+    where
+      h-inv : B → A
+      h-inv = fst $ is-equiv⇒has-inverse is-equiv-h
+
+      has-inverse-h-inv : has-inverse h-inv
+      has-inverse-h-inv = has-inverse-has-inverse (is-equiv⇒has-inverse is-equiv-h)
+
+      is-equiv-h-inv : is-equiv h-inv
+      is-equiv-h-inv = has-inverse⇒is-equiv has-inverse-h-inv
+
+
+      forward : is-emb f → is-emb g
+      forward is-emb-f = {!ex-b-aux!}
+
+      backward : is-emb g → is-emb f
+      backward = ex-b-aux is-equiv-h
 
 module 11•5 {A B C : Set ℓ} (f : A ↪[ B ]) (g : B ↪[ C ]) where
   -- Consider 2 embeddings f : A ↪ B and g : B ↪ C. Show that the following are equivalent
@@ -162,6 +190,50 @@ module 11•5 {A B C : Set ℓ} (f : A ↪[ B ]) (g : B ↪[ C ]) where
   -- (ii) both f and g are equivalences
 
   i↔ii : is-equiv ((fst g) ∘ (fst f)) ↔ (is-equiv (fst f) × is-equiv (fst g))
-  i↔ii = {!!}
+  i↔ii = forward , backward
+    where
+      forward : is-equiv ((fst g) ∘ (fst f)) → (is-equiv (fst f) × is-equiv (fst g))
+      forward is-equiv-g∘f = is-equiv-f , is-equiv-g
+        where
+          has-inverse-g∘f : has-inverse ((fst g) ∘ (fst f))
+          has-inverse-g∘f = is-equiv⇒has-inverse is-equiv-g∘f
 
-  ex = {!!}
+          f-inv : B → A
+          f-inv = (fst has-inverse-g∘f) ∘ (fst g)
+          -- f ((g ∘ f)⁻¹ (g x) = x
+          -- f ∘ (g ∘ f)⁻¹ ∘ g ∼ id
+          -- Want: f ∘ k ∘ g ∼ id , Have: k ∘ (g ∘ f) ∼ id , (g ∘ f) ∘ k ∼ id
+          -- Have: (g ∘ f ∘ k) x = x
+          -- g (f (k x)) = x
+          --
+          -- If g (f (f-inv x)) = g x, then f (f-inv x) = x
+          --
+          -- (g ∘ f ∘ f-inv)
+          -- ∼ ((g ∘ f) ∘ k ∘ g)
+          -- ~ g
+
+          -- TODO: refactor, or not
+          has-inverse-f : has-inverse (fst f)
+          has-inverse-f =
+            (f-inv , (λ x → `sec (is-emb.ap-equiv (snd g) (fst f (f-inv x)) x) (is-equiv-g∘f .proj₁ .snd (proj₁ g x))) , λ x →
+                                                                                                                            f .snd .is-emb.ap-equiv (f-inv (proj₁ f x)) (id x) .snd .proj₁
+                                                                                                                            (g .snd .is-emb.ap-equiv (f .proj₁ (f-inv (proj₁ f x)))
+                                                                                                                             (f .proj₁ (id x)) .proj₁ .proj₁
+                                                                                                                             (is-equiv-g∘f .proj₁ .snd (proj₁ g (proj₁ f x)))))
+
+          is-equiv-f : is-equiv (fst f)
+          is-equiv-f = has-inverse⇒is-equiv has-inverse-f
+
+          g-inv : C → B
+          g-inv = (fst f) ∘ fst has-inverse-g∘f
+
+          has-inverse-g : has-inverse (fst g)
+          has-inverse-g = g-inv , is-equiv-g∘f .proj₁ .snd , λ x →
+                                                                g .snd .is-emb.ap-equiv (g-inv (proj₁ g x)) (id x) .proj₁ .proj₁
+                                                                (is-equiv-g∘f .proj₁ .snd (proj₁ g x))
+
+          is-equiv-g : is-equiv (fst g)
+          is-equiv-g = has-inverse⇒is-equiv has-inverse-g
+
+      backward : (is-equiv (fst f) × is-equiv (fst g)) → is-equiv ((fst g) ∘ (fst f))
+      backward (is-equiv-f , is-equiv-g) = is-equiv-comp is-equiv-g is-equiv-f
