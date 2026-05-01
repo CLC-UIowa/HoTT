@@ -174,6 +174,13 @@ has-inverse-decomp {f = f} {g = g} (f̅ , (f∘f̅~id , f̅∘f~id)) has-inverse
     has-inverse-g : has-inverse g
     has-inverse-g = has-inverse-htpy (has-inverse-comp has-inverse-f̅ has-inverse-f∘g) (sym-∼ g-eq)
 
+is-equiv-decomp : {f : B → C} {g : A → B} → is-equiv f → is-equiv (f ∘ g) → is-equiv g
+is-equiv-decomp is-equiv-f is-equiv-f∘g =
+  has-inverse⇒is-equiv
+    (has-inverse-decomp
+      (is-equiv⇒has-inverse is-equiv-f)
+      (is-equiv⇒has-inverse is-equiv-f∘g))
+
 -- Theorem 11.1.6
 -- suppose g is a family of maps over f,
 -- then the following are equivalent

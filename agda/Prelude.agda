@@ -115,6 +115,9 @@ module Paths where
   ap-id : (p : x ≡ y) → p ≡ ap id p
   ap-id refl = refl
 
+  ap-comp : {C : Set ℓ} (f : A → B) (g : B → C) {x y : A} (p : x ≡ y) → ap g (ap f p) ≡ ap (g ∘ f) p
+  ap-comp f g refl = refl
+
   tr : (B : A → Set ℓ) → x ≡ y → B x → B y
   tr B refl b = b
 

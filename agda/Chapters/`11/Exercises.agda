@@ -1,7 +1,7 @@
 module Chapters.`11.Exercises where
 
 open import Prelude
-open import Chapters.`01-08.Reading
+open import Chapters.`01-08.Reading hiding (tr)
 open import Chapters.`01-08.Exercises
 open import Chapters.`09.Reading
 open import Chapters.`09.Exercises
@@ -83,10 +83,17 @@ module 11•3 {A B : Set ℓ} {f g : A → B} where
   ex : (f ∼ g) → is-emb f ↔ is-emb g
   ex H =  f→g H , {!!}
 
+-- SB> Should be easy
+is-equiv-∼ : {A B : Set ℓ} {f g : A → B} → (f ∼ g) → is-equiv f → is-equiv g
+is-equiv-∼ f∼g is-equiv-f = {!!}
 
+ap-comp-∼ : {A B C : Set ℓ} (f : A → B) (g : B → C) {x y : A} → (Paths.ap g) ∘ (Paths.ap {x = x} {y = y} f) ∼ Paths.ap (g ∘ f)
+ap-comp-∼ f g = λ z → Paths.ap-comp f g z
 
-module 11•4 where
-  -- Consider a comuting triangle
+module 11•4 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : f ∼ g ∘ h} where
+  open Paths using (tr)
+
+  -- Consider a commuting triangle
 {-
        h
   A --------> B
@@ -102,6 +109,53 @@ module 11•4 where
   -- (a) Suppose g is an embedding. Show that f is an embedding iff h is an embedding
   -- (b) Suppose h is an equivalence. Show that f is an embedding iff g is an embedding
 
+
+
+  ex-a : (is-emb g) → (is-emb f ↔ is-emb h)
+  ex-a is-emb-g = forward , backward
+    where
+      forward : is-emb f → is-emb h
+      forward is-emb-f = Embed emb
+        where -- SB> Sorry, I couldn't figure out how to put "where" syntax inside the lambda, so I did this nonsense instead
+          emb : (x y : A) → is-equiv (Paths.ap h)
+          emb x y = emb'
+            where
+              is-equiv-ap-comp : is-equiv (Paths.ap (g ∘ h))
+              is-equiv-ap-comp = is-emb.ap-equiv ((_↔_.to $ 11•3.ex H) is-emb-f) x y
+
+              is-equiv-comp-ap : is-equiv ((Paths.ap g) ∘ (Paths.ap h))
+              is-equiv-comp-ap = is-equiv-∼ (sym-∼ (ap-comp-∼ h g)) is-equiv-ap-comp
+
+              is-equiv-ap-g : is-equiv (Paths.ap {x = h x} {y = h y} g)
+              is-equiv-ap-g = is-emb.ap-equiv is-emb-g (h x) (h y)
+
+              emb' : is-equiv (Paths.ap h)
+              emb' = is-equiv-decomp is-equiv-ap-g is-equiv-comp-ap
+
+      backward : is-emb h → is-emb f
+      backward is-emb-h = Embed emb
+        where
+          is-emb-ap-comp : is-emb (g ∘ h)
+          is-emb-ap-comp = Embed emb'
+            where
+              emb' : (x y : A) → is-equiv (Paths.ap (g ∘ h))
+              emb' x y = is-equiv-ap-comp
+                where
+                  is-equiv-ap-g : is-equiv (Paths.ap {x = h x} {y = h y} g)
+                  is-equiv-ap-g = is-emb.ap-equiv is-emb-g (h x) (h y)
+
+                  is-equiv-comp-ap : is-equiv ((Paths.ap g) ∘ (Paths.ap h))
+                  is-equiv-comp-ap = is-equiv-comp is-equiv-ap-g (is-emb.ap-equiv is-emb-h x y)
+
+                  is-equiv-ap-comp : is-equiv (Paths.ap (g ∘ h))
+                  is-equiv-ap-comp = is-equiv-∼ (ap-comp-∼ h g) is-equiv-comp-ap
+
+          emb : (x y : A) → is-equiv (Paths.ap f)
+          emb x y = is-emb.ap-equiv ((_↔_.from $ 11•3.ex H) is-emb-ap-comp) x y
+
+  ex-b : (is-equiv h) → (is-emb f ↔ is-emb g)
+  ex-b = {!!}
+
 module 11•5 {A B C : Set ℓ} (f : A ↪[ B ]) (g : B ↪[ C ]) where
   -- Consider 2 embeddings f : A ↪ B and g : B ↪ C. Show that the following are equivalent
   -- (i) the composite g ∘ f is an equivalence
@@ -109,3 +163,5 @@ module 11•5 {A B C : Set ℓ} (f : A ↪[ B ]) (g : B ↪[ C ]) where
 
   i↔ii : is-equiv ((fst g) ∘ (fst f)) ↔ (is-equiv (fst f) × is-equiv (fst g))
   i↔ii = {!!}
+
+  ex = {!!}

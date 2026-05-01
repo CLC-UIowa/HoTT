@@ -153,6 +153,9 @@ ap = λ f x y p → ind≡ x (λ y x≡y → f x ≡ f y) refl y p
 ap-id : (x y : A) (p : x ≡ y) → p ≡ ap id x y p
 ap-id = λ x y p → ind≡ x (λ y x≡y → x≡y ≡ ap id x y x≡y) refl y p
 
+ap-comp : {A B C : Set ℓ} (f : A → B) (g : B → C) (x y : A) (p : x ≡ y) → ap g (f x) (f y) (ap f x y p) ≡ ap (g ∘ f) x y p
+ap-comp f g x y refl = refl
+
 tr : {A : Set} {B : A → Set} (x y : A) → x ≡ y → B x → B y
 tr {A} {B} = λ x y p → ind≡ x (λ y x≡y → B x → B y) id y p
 
