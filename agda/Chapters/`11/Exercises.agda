@@ -49,7 +49,7 @@ module 11•1c where
       ... | ()
 
 
-module 11•2 (e : A ≃ B) where
+module 11•2 where
   -- consider an equivalence e : A ≃ B.
   -- Construct and equivalence
   -- p ↦ p̃ : (e(x) = y) ≃ x = e⁻¹(y)
@@ -72,7 +72,11 @@ module 11•2 (e : A ≃ B) where
 
 -}
 
-
+  open PathReasoning
+  lem : {A B : Set ℓ} → (x : A) (y : B) (e : A ≃ B) → (((fst e) x) ≡ y) ≃ (x ≡ (fst (sym-≃ e)) y)
+  lem x y e = (λ e1 → sym (begin  fst (sym-≃ e) y ≡⟨ Paths.ap (λ y → fst (sym-≃ e) y) (sym e1) ⟩
+                                  fst (sym-≃ e) (fst e x) ≡⟨ {!  e .snd .snd .snd x !} ⟩
+                                  x ∎) ) , (((λ e1 → {!!}) , {!!}) , {!!})
 
 module 11•3 {A B : Set ℓ} {f g : A → B} where
   -- show that (f ∼ g) → (is-emb f ↔ is-emb g)
@@ -243,3 +247,29 @@ module 11•5 {A B C : Set ℓ} (f : A ↪[ B ]) (g : B ↪[ C ]) where
 
       backward : (is-equiv (fst f) × is-equiv (fst g)) → is-equiv ((fst g) ∘ (fst f))
       backward (is-equiv-f , is-equiv-g) = is-equiv-comp is-equiv-g is-equiv-f
+
+
+
+-- We say that map f : A → B is path split
+-- if f has a section
+-- and the map ap f (x , y) : x ≡ y → f x ≡ f y for each x y has a section
+is-path-split : {A B : Set ℓ} → (A → B) → Set ℓ
+is-path-split {A = A} {B = B} f = section f × ∀ (x y : A) → section (Paths.ap {A = A} {B = B} {x = x} {y = y} f)
+
+
+module 11•10 {A B : Set ℓ} {f : A → B} where
+  -- show that the following is equivlant
+  -- (i) : The map f is an equivlance
+  -- (ii) : The map f is path-split
+
+  -- Note that any equivlance is an embedding,
+  i→ii : is-equiv f → is-path-split f
+  i→ii is-equiv-f = (is-equiv-f .proj₁) , λ x y → fst (lem .is-emb.ap-equiv x y)
+      where
+        lem = thm•11•4•1 (f , is-equiv-f)
+
+
+  ii→i : is-path-split f → is-equiv f
+  ii→i (sec-f , sec-ap-f) = sec-f ,
+                              ((fst sec-f) ,
+                                λ x → sec-ap-f (proj₁ sec-f (f x)) (id x) .proj₁ (sec-f .snd (f x)))
