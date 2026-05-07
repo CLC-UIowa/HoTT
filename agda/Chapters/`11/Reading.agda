@@ -608,6 +608,15 @@ module 11•6•1 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
 -- (vi) The type family (x , y) ↦ Σ_{z : 𝐂 x} D x y z is an identity system at (a , b) : Σ_{x : A} 𝐁 x
 
 
+compose-≃ : A ≃ B → B ≃ C → A ≃ C
+compose-≃ e1 e2 = (fst e2 ∘ fst e1) , (is-equiv-comp (snd e2) (snd e1))
+
+sym-≃ : A ≃ B → B ≃ A
+sym-≃ (f , is-eq-f) with is-equiv⇒has-inverse is-eq-f
+... | (f̅ , is-eq-f̅) =  f̅ , ((f , (is-eq-f̅ .snd)) , (f , (is-eq-f̅ .fst)))
+
+refl-≃ : A ≃ A
+refl-≃ = id , ((id , (λ x → refl)) , (id , λ x → refl))
 
 module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 : (x : A) → 𝐁 x → 𝐂 x → Set ℓ) (a : A) (b : 𝐁 a) (c : 𝐂 a) (d : 𝐃 a b c) (c-ident-system : is-unary-ident-system {𝐁 = 𝐂} {a = a} c) where
   i↔ii : {f : (y : 𝐁 a) → (b ≡ y) → 𝐃 a y c} → (∀ (x : 𝐁 a) → is-equiv (f x)) ↔ is-contr (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
@@ -631,7 +640,7 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
 
   ii↔v : {f : (x : A) → (a ≡ x) → 𝐂 x}
        → is-contr ((Σ[ y ∈ 𝐁 a ] 𝐃 a y c)) ↔ is-contr (Σ[ p ∈ (Σ[ x ∈ A ] 𝐁 x) ] (Σ[ z ∈ 𝐂 (fst p) ] 𝐃 (fst p) (snd p) z))
-  ii↔v {f = f} = (λ x → 10-3.ex-10-3-ii-iii⇒i (fwd2 ∘ fwd) x {!!}) , λ x → 10-3.ex-10-3-ii-iii⇒i (bwk ∘ bwk2) x {!!}
+  ii↔v {f = f} = (λ x → 10-3.ex-10-3-ii-iii⇒i (λ x → lem3 .fst x) x (lem3 .snd)) , λ x → 10-3.ex-10-3-i-iii⇒ii (λ x → lem3 .fst x) x (lem3 .snd)
      where
        fwd : (Σ[ p ∈ Σ A 𝐁 ] (Σ[ z ∈ 𝐂 (fst p) ] (𝐃 (fst p) (snd p) z))) → (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) ))
        fwd ((a , b) , c , d) = (a , c) , (b , d)
@@ -652,7 +661,7 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
        𝐂-contr = (_↔_.from (11•2•2.ii↔iii a c f) c-ident-system)
 
        fwd2 : (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) )) → (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
-       fwd2 ((a′ , c′) , b , d) = {!!}
+       fwd2 ((a′ , c′) , b , d) = {!!} , {!!}
            -- tr (λ (x , z) → (Σ[ y ∈ 𝐁 x ] (𝐃 x y z)))
            --            ({!(snd 𝐂-contr) (a , c)!}) ({! b!} , {!!})
 
@@ -667,6 +676,9 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
 
        lem2 : (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) )) ≃ (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
        lem2 = {!!}
+
+       lem3 : (Σ[ p ∈ Σ A 𝐁 ] (Σ[ z ∈ 𝐂 (fst p) ] (𝐃 (fst p) (snd p) z))) ≃ (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
+       lem3 = compose-≃ lem1 lem2
 
 
 ex•11•6•2 : {A B : Set ℓ} {f : A → B} (b : B)(s1 s2 : Σ[ x ∈ A ] (f x ≡ b)) → (s1 ≡ s2) ≃ fib (ap f) ((snd s1) ○ (snd s2)⁻¹)

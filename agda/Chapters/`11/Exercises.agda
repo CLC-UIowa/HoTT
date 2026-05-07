@@ -24,7 +24,7 @@ module 11•1b where
   ex1 = Embed (λ x y → ((λ { refl → refl }) , λ { refl → refl }) , ((λ { refl → refl }) , λ { refl → refl }))
 
   ex2 : is-emb {A = B} {B = A ⊎ B} inr
-  ex2 = {!!}
+  ex2 = Embed (λ x y → ((λ { refl → refl }) , λ { refl → refl }) , ((λ { refl → refl }) , λ { refl → refl }))
 
 
 module 11•1c where
@@ -32,15 +32,21 @@ module 11•1c where
   -- show that inr : B → A + B is an equivalence iff A is empty
 
   ex1 : is-equiv {A = A} {B = A ⊎ B} inl ↔ (B → ∅)
-  ex1 {A = A} {B = B} = fwd , λ x → ((λ { (inl x) → x ; (inr b) → ex-falso (x b) }) , λ { (inl x) → refl ; (inr b) → ex-falso (x b) })
-    , ( (λ { (inl x) → x ; (inr b) → ex-falso (x b) }) , λ { x → refl } )
+  ex1 {A = A} {B = B} = fwd , λ x → ((λ { (inl x) → x ; (inr b) → ex-falso (x b) })
+                        , λ { (inl x) → refl ; (inr b) → ex-falso (x b) })
+                        , ( (λ { (inl x) → x ; (inr b) → ex-falso (x b) }) , λ { x → refl } )
     where
       fwd : is-equiv {A = A} {B = A ⊎ B} inl → (B → ∅)
       fwd ((f , G) , f' , H) b with G (inr b)
       ... | ()
 
   ex2 : is-equiv {A = B} {B = A ⊎ B} inr ↔ (A → ∅)
-  ex2 = {!!}
+  ex2 {A = A} = fwd , λ x → ((λ { (inl a) → ex-falso (x a) ; (inr x) → x }) , λ { (inl a) → ex-falso (x a) ; (inr b) → refl })
+                            , ((λ { (inl a) → ex-falso (x a) ; (inr b) → b }) , λ x → refl)
+    where
+      fwd : is-equiv {A = B} {B = A ⊎ B} inr → (A → ∅)
+      fwd ((f , G) , f' , H) a with G (inl a)
+      ... | ()
 
 
 module 11•2 (e : A ≃ B) where
@@ -85,7 +91,7 @@ module 11•3 {A B : Set ℓ} {f g : A → B} where
 
 -- SB> Should be easy
 is-equiv-∼ : {A B : Set ℓ} {f g : A → B} → (f ∼ g) → is-equiv f → is-equiv g
-is-equiv-∼ f∼g is-equiv-f = {!!}
+is-equiv-∼ f∼g is-equiv-f = has-inverse⇒is-equiv (has-inverse-htpy (is-equiv⇒has-inverse is-equiv-f) f∼g)
 
 ap-comp-∼ : {A B C : Set ℓ} (f : A → B) (g : B → C) {x y : A} → (Paths.ap g) ∘ (Paths.ap {x = x} {y = y} f) ∼ Paths.ap (g ∘ f)
 ap-comp-∼ f g = λ z → Paths.ap-comp f g z
