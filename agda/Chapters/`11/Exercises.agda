@@ -249,13 +249,40 @@ module 11•5 {A B C : Set ℓ} (f : A ↪[ B ]) (g : B ↪[ C ]) where
       backward (is-equiv-f , is-equiv-g) = is-equiv-comp is-equiv-g is-equiv-f
 
 
+module 11•8 {A : Set ℓ}{𝐁 𝐂 𝐃 : A → Set ℓ}  where
+  open PathReasoning
+  part-a : (f g : (x : A) →  𝐁 x → 𝐂 x) → ((x : A) → (f x) ∼ (g x)) → (tot f ∼ tot g)
+  part-a f g f∼g (a , Ba) = begin (( a , f a Ba ) ≡⟨ Paths.ap (λ y → (a , y)) (f∼g a Ba) ⟩ (a , g a Ba) ∎)
 
--- We say that map f : A → B is path split
--- if f has a section
+  part-b : (f : (x : A) →  𝐁 x → 𝐂 x) (g : (x : A) →  𝐂 x → 𝐃 x)
+         → tot (λ x → g x ∘ (f x)) ∼ (tot g ∘ tot f)
+  part-b f g (a , Ba) = refl
+
+  part-c : tot (λ x → id {A = 𝐁 x}) ∼ id
+  part-c (a , Ba) = refl
+
+  part-d : (a : A) → (f : ∀ x → 𝐁 x → (a ≡ x)) → (∀ x → retraction {A = 𝐁 x} {B = (a ≡ x)} (f x))
+        → (∀ x → is-equiv {A = 𝐁 x} {B = (a ≡ x)}  (f x))
+  part-d a f retr-f x = 10-3.ex-10-3-i-ii⇒iii (f x) (contr-b x) (contr-a≡x x)
+      where
+        contr-a≡x : ∀ x → is-contr (a ≡ x)
+        contr-a≡x = {!!}
+
+        contr-b : ∀ x → is-contr (𝐁 x)
+        contr-b = {!!}
+
+  -- part-e :
+
+module 11•9 {A B : Set ℓ} {f : A → B} where
+  ex : (∀ (x y : A) → section (Paths.ap {x = x} {y = y} f)) → is-emb f
+  ex sec-ap-f = Embed (λ x′ y′ → sec-ap-f x′ y′ , {!!}) -- this probably comes from 11•8
+
+
+-- We say that map f : A → B is path split when
+-- f has a section
 -- and the map ap f (x , y) : x ≡ y → f x ≡ f y for each x y has a section
 is-path-split : {A B : Set ℓ} → (A → B) → Set ℓ
-is-path-split {A = A} {B = B} f = section f × ∀ (x y : A) → section (Paths.ap {A = A} {B = B} {x = x} {y = y} f)
-
+is-path-split {A = A} {B = B} f = section f × ∀ (x y : A) → section (Paths.ap {x = x} {y = y} f)
 
 module 11•10 {A B : Set ℓ} {f : A → B} where
   -- show that the following is equivlant
