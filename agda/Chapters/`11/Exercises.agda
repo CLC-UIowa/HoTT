@@ -9,6 +9,10 @@ open import Chapters.`10.Reading
 open import Chapters.`10.Exercises
 open import Chapters.`11.Reading
 
+private
+  variable
+    ℓ ℓ₁ ℓ₂ ℓ₃ : Level
+    A B : Set ℓ
 
 module 11•1a where
   -- show that the map ∅ → A is an embedding for any type A
@@ -78,7 +82,7 @@ module 11•2 where
                                   fst (sym-≃ e) (fst e x) ≡⟨ {!  e .snd .snd .snd x !} ⟩
                                   x ∎) ) , (((λ e1 → {!!}) , {!!}) , {!!})
 
-module 11•3 {A B : Set ℓ} {f g : A → B} where
+module 11•3 {A B : Set} {f g : A → B} where
   -- show that (f ∼ g) → (is-emb f ↔ is-emb g)
   -- for any f, g : A → B
   f→g : (f ∼ g) → is-emb f → is-emb g
@@ -103,7 +107,7 @@ ap-comp-∼ f g = λ z → Paths.ap-comp f g z
 has-inverse-has-inverse : {A B : Set ℓ} {f : A → B} (has-inv-f : has-inverse f) → has-inverse (fst (has-inv-f))
 has-inverse-has-inverse {f = f} (g , g-inv-prf) = f , ((snd g-inv-prf) , (fst g-inv-prf))
 
-module 11•4 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : f ∼ g ∘ h} where
+module 11•4 {A B X : Set} {f : A → X} {g : B → X} {h : A → B} {H : f ∼ g ∘ h} where
   open Paths using (tr)
 
   -- Consider a commuting triangle
@@ -170,7 +174,7 @@ module 11•4 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : f
   ex-b-aux is-equiv-h = backward
     where
       is-emb-h : is-emb h
-      is-emb-h = thm•11•4•1 (h , is-equiv-h)
+      is-emb-h = thm•11•4•2 (h , is-equiv-h)
 
       backward : is-emb g → is-emb f
       backward is-emb-g = (_↔_.from $ ex-a is-emb-g) is-emb-h
@@ -194,7 +198,7 @@ module 11•4 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : f
       backward : is-emb g → is-emb f
       backward = ex-b-aux is-equiv-h
 
-module 11•5 {A B C : Set ℓ} (f : A ↪[ B ]) (g : B ↪[ C ]) where
+module 11•5 {A B C : Set} (f : A ↪[ B ]) (g : B ↪[ C ]) where
   -- Consider 2 embeddings f : A ↪ B and g : B ↪ C. Show that the following are equivalent
   -- (i) the composite g ∘ f is an equivalence
   -- (ii) both f and g are equivalences
@@ -263,36 +267,44 @@ module 11•8 {A : Set ℓ}  where
 
   part-d : {𝐁 : A → Set ℓ} (a : A) → (f : ∀ x → 𝐁 x → (a ≡ x)) → (∀ x → retraction {A = 𝐁 x} {B = (a ≡ x)} (f x))
         → (∀ x → is-equiv {A = 𝐁 x} {B = (a ≡ x)}  (f x))
-  part-d {𝐁 = 𝐁} a f retr-f x = lem4 -- ((fst retr-f) , {!10-2.retract-is-contractible!}) , retr-f
+  part-d {𝐁 = 𝐁} a f retr-f x = is-equiv-decomp lem3 (is-equiv-∼ ( sym-∼ (retr-f x .snd)) id-equiv)
       where
         r : ∀ x → (a ≡ x) → 𝐁 x
         r x = fst (retr-f x)
 
         lem : retraction (tot f)
         lem = (tot r) , (λ { (x , Bx) → Paths.ap (λ y → (x , y)) ((retr-f x) .snd Bx) })
+
         lem2 : is-contr (Σ[ x ∈ A ] a ≡ x) → is-contr (Σ A 𝐁)
         lem2 = 10-2.retract-is-contractible (tot f) lem
 
         lem3 : is-equiv (r x)
         lem3 = _↔_.from (11•2•2.i↔ii a (r a refl) r) (lem2 (thm-10∙1∙4 a)) x
 
-        lem4 : is-equiv (f x)
-        lem4 = is-equiv-decomp lem3 (is-equiv-∼ ( sym-∼ (retr-f x .snd)) (((λ z → z) , (λ x₁ → refl)) , (id , (λ x₁ → refl))))
-        -- r ∘ f = id
+        id-equiv = (id , (λ x₁ → refl)) , (id , (λ x₁ → refl))
 
 
-        -- 10-3.ex-10-3-i-ii⇒iii (f x) (contr-b x) (contr-a≡x x)
-      -- where
-      --   contr-a≡x : ∀ x → is-contr (a ≡ x) -- is-contr (Σ[ x ∈ A ] a ≡ x)
-      --   contr-a≡x = {!!}
-
-      --   contr-b : ∀ x → is-contr (𝐁 x)
-      --   contr-b = {!!}
 
   part-e : {𝐁 : A → Set ℓ} (a : A)(f : ∀ x → (a ≡ x) → 𝐁 x) → (∀ x → section (f x)) → (∀ x → is-equiv (f x))
-  part-e {𝐁 = 𝐁} a f sec-f = {!!}
+  part-e {𝐁 = 𝐁} a f sec-f x = is-equiv-f
+    where
+      f̅ : ∀ x → 𝐁 x → a ≡ x
+      f̅ x = sec-f x .fst
 
-module 11•9 {A B : Set ℓ} {f : A → B} where
+      lem : section (tot f)
+      lem = (tot f̅ ) , λ { ( x , Bx ) → Paths.ap (λ y → (x , y)) (sec-f x .snd Bx) }
+
+      id-equiv : is-equiv {A = 𝐁 x} id
+      id-equiv = (id , (λ x₁ → refl)) , (id , (λ x₁ → refl))
+
+      is-equiv-f̅ : is-equiv (f̅ x)
+      is-equiv-f̅ = part-d a f̅ (λ x₁ → (f x₁) , (λ x₂ → sec-f x₁ .snd x₂)) x
+
+      is-equiv-f : is-equiv (f x)
+      is-equiv-f = is-equiv-decomp is-equiv-f̅ {!!}
+
+
+module 11•9 {A B : Set} {f : A → B} where
   ex : (∀ (x y : A) → section (Paths.ap {x = x} {y = y} f)) → is-emb f
   ex sec-ap-f = Embed λ x y → 11•8.part-e x (λ y → Paths.ap {x = x} {y = y} f) (sec-ap-f x) y
 
@@ -303,7 +315,7 @@ module 11•9 {A B : Set ℓ} {f : A → B} where
 is-path-split : {A B : Set ℓ} → (A → B) → Set ℓ
 is-path-split {A = A} {B = B} f = section f × ∀ (x y : A) → section (Paths.ap {x = x} {y = y} f)
 
-module 11•10 {A B : Set ℓ} {f : A → B} where
+module 11•10 {A B : Set} {f : A → B} where
   -- show that the following is equivalent
   -- (i) : The map f is an equivalence
   -- (ii) : The map f is path-split
@@ -312,7 +324,7 @@ module 11•10 {A B : Set ℓ} {f : A → B} where
   i→ii : is-equiv f → is-path-split f
   i→ii is-equiv-f = (is-equiv-f .proj₁) , λ x y → fst (lem .is-emb.ap-equiv x y)
       where
-        lem = thm•11•4•1 (f , is-equiv-f)
+        lem = thm•11•4•2 (f , is-equiv-f)
 
 
   ii→i : is-path-split f → is-equiv f

@@ -11,9 +11,10 @@ open import Relation.Binary.PropositionalEquality hiding (J) public
 open import Level using (Level)
 open import Agda.Primitive using (lsuc ; _⊔_ ; Setω)
 
-variable
-  ℓ ℓ₁ ℓ₂ ℓ₃ : Level
-  A B : Set ℓ
+private
+  variable
+    ℓ ℓ₁ ℓ₂ ℓ₃ : Level
+    A B : Set ℓ
 
 -- record _↔_ (A B : Set ℓ) : Set ℓ  where
 --   field

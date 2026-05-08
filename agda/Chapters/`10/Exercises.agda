@@ -1,6 +1,7 @@
 module Chapters.`10.Exercises where
 
 open import Prelude
+open import Chapters.`01-08.Reading hiding (tr; _⁻¹; left-inv; ap; ¬_; Fin; pr₁; ind≡)
 open import Chapters.`09.Reading
 open import Chapters.`10.Reading
 
@@ -91,8 +92,8 @@ module 10-3 where
   -- The remainder of the proof is just computation i.e. refl.
   -}
 
-  const-tt-has-section :  is-contr A → section {ℓ} {A} (const tt)
-  const-tt-has-section (center , contraction) = const center , (λ x → refl)
+  const-tt-has-section :  is-contr A → section {ℓ} {A} (const 𝟙.⋆)
+  const-tt-has-section (center , contraction) = const center , (λ { 𝟙.⋆ → refl })
 
   {-
   -- Now let's show that (const tt) has a retraction.
@@ -116,14 +117,14 @@ module 10-3 where
   -- has a retraction then we can show A is contractible.
   -}
 
-  const-tt-has-retraction : is-contr A → retraction {ℓ} {A} (const tt)
+  const-tt-has-retraction : is-contr A → retraction {ℓ} {A} (const 𝟙.⋆)
   const-tt-has-retraction (center , contraction) = const center , contraction
 
   {-
   -- We have all we need to show that (const tt) is an equivalence from A to ⊤.
   -}
 
-  const-tt-is-equiv : is-contr A → is-equiv {ℓ} {A} (const tt)
+  const-tt-is-equiv : is-contr A → is-equiv {ℓ} {A} (const 𝟙.⋆)
   const-tt-is-equiv is-contr-A =
     ( const-tt-has-section is-contr-A , const-tt-has-retraction is-contr-A )
 
@@ -250,28 +251,28 @@ module 10-3 where
   ex-10-3-i-ii⇒iii : (f : A → B) →  is-contr A → is-contr B → is-equiv f
   ex-10-3-i-ii⇒iii {A = A} {B = B} f (a , prf-cA) (b , prf-cB)  = f-sec , f-retr
     where
-      is-equiv-const-tt-B : is-equiv {A = B} (const tt)
+      is-equiv-const-tt-B : is-equiv {A = B} (const 𝟙.⋆)
       is-equiv-const-tt-B = const-tt-is-equiv (b , prf-cB)
 
-      is-equiv-const-tt-A : is-equiv {A = A} (const tt)
+      is-equiv-const-tt-A : is-equiv {A = A} (const 𝟙.⋆)
       is-equiv-const-tt-A = const-tt-is-equiv (a , prf-cA)
 
-      prf-hom1 : f ∼ `retr is-equiv-const-tt-B ∘ const tt
+      prf-hom1 : f ∼ `retr is-equiv-const-tt-B ∘ const 𝟙.⋆
       prf-hom1 = sym ∘ prf-cB ∘ f
 
 
-      g-sec→f-sec = _↔_.from $ f-section↔g-section f (const tt) (`retr is-equiv-const-tt-B) prf-hom1
+      g-sec→f-sec = _↔_.from $ f-section↔g-section f (const 𝟙.⋆) (`retr is-equiv-const-tt-B) prf-hom1
                              (fst is-equiv-const-tt-A)
 
 
-      prf-hom2 : f ∼ `retr is-equiv-const-tt-B ∘ const tt
+      prf-hom2 : f ∼ `retr is-equiv-const-tt-B ∘ const 𝟙.⋆
       prf-hom2 = sym ∘ prf-cB ∘ f
 
-      h-ret→f-ret = _↔_.from $ f-retraction↔h-retraction f (const tt) (`sec is-equiv-const-tt-B) prf-hom2
-                  (const tt , refl-∼)
+      h-ret→f-ret = _↔_.from $ f-retraction↔h-retraction f (const 𝟙.⋆) (`sec is-equiv-const-tt-B) prf-hom2
+                  (const 𝟙.⋆ , λ { ⋆ → refl })
 
       f-sec : section f
-      f-sec = g-sec→f-sec  (const tt , prf-cB)
+      f-sec = g-sec→f-sec  (const 𝟙.⋆ , prf-cB)
 
       f-retr : retraction f
       f-retr =  h-ret→f-ret (snd is-equiv-const-tt-A)
