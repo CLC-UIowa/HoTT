@@ -249,21 +249,21 @@ module 11•5 {A B C : Set ℓ} (f : A ↪[ B ]) (g : B ↪[ C ]) where
       backward (is-equiv-f , is-equiv-g) = is-equiv-comp is-equiv-g is-equiv-f
 
 
-module 11•8 {A : Set ℓ}{𝐁 𝐂 𝐃 : A → Set ℓ}  where
+module 11•8 {A : Set ℓ}  where
   open PathReasoning
-  part-a : (f g : (x : A) →  𝐁 x → 𝐂 x) → ((x : A) → (f x) ∼ (g x)) → (tot f ∼ tot g)
+  part-a : {𝐁 𝐂 : A → Set ℓ}(f g : (x : A) →  𝐁 x → 𝐂 x) → ((x : A) → (f x) ∼ (g x)) → (tot f ∼ tot g)
   part-a f g f∼g (a , Ba) = begin (( a , f a Ba ) ≡⟨ Paths.ap (λ y → (a , y)) (f∼g a Ba) ⟩ (a , g a Ba) ∎)
 
-  part-b : (f : (x : A) →  𝐁 x → 𝐂 x) (g : (x : A) →  𝐂 x → 𝐃 x)
+  part-b : {𝐁 𝐂 𝐃 : A → Set ℓ}(f : (x : A) →  𝐁 x → 𝐂 x) (g : (x : A) →  𝐂 x → 𝐃 x)
          → tot (λ x → g x ∘ (f x)) ∼ (tot g ∘ tot f)
   part-b f g (a , Ba) = refl
 
-  part-c : tot (λ x → id {A = 𝐁 x}) ∼ id
+  part-c : {𝐁 : A → Set ℓ} → tot (λ x → id {A = 𝐁 x}) ∼ id
   part-c (a , Ba) = refl
 
-  part-d : (a : A) → (f : ∀ x → 𝐁 x → (a ≡ x)) → (∀ x → retraction {A = 𝐁 x} {B = (a ≡ x)} (f x))
+  part-d : {𝐁 : A → Set ℓ} (a : A) → (f : ∀ x → 𝐁 x → (a ≡ x)) → (∀ x → retraction {A = 𝐁 x} {B = (a ≡ x)} (f x))
         → (∀ x → is-equiv {A = 𝐁 x} {B = (a ≡ x)}  (f x))
-  part-d a f retr-f x = 10-3.ex-10-3-i-ii⇒iii (f x) (contr-b x) (contr-a≡x x)
+  part-d {𝐁 = 𝐁} a f retr-f x = 10-3.ex-10-3-i-ii⇒iii (f x) (contr-b x) (contr-a≡x x)
       where
         contr-a≡x : ∀ x → is-contr (a ≡ x)
         contr-a≡x = {!!}
@@ -271,11 +271,12 @@ module 11•8 {A : Set ℓ}{𝐁 𝐂 𝐃 : A → Set ℓ}  where
         contr-b : ∀ x → is-contr (𝐁 x)
         contr-b = {!!}
 
-  -- part-e :
+  part-e : {𝐁 : A → Set ℓ} (a : A)(f : ∀ x → (a ≡ x) → 𝐁 x) → (∀ x → section (f x)) → (∀ x → is-equiv (f x))
+  part-e {𝐁 = 𝐁} a f sec-f = {!!}
 
 module 11•9 {A B : Set ℓ} {f : A → B} where
   ex : (∀ (x y : A) → section (Paths.ap {x = x} {y = y} f)) → is-emb f
-  ex sec-ap-f = Embed (λ x′ y′ → sec-ap-f x′ y′ , {!!}) -- this probably comes from 11•8
+  ex sec-ap-f = Embed λ x y → 11•8.part-e x (λ y → Paths.ap {x = x} {y = y} f) (sec-ap-f x) y
 
 
 -- We say that map f : A → B is path split when
