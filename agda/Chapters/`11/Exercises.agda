@@ -252,7 +252,7 @@ module 11•5 {A B C : Set ℓ} (f : A ↪[ B ]) (g : B ↪[ C ]) where
 module 11•8 {A : Set ℓ}  where
   open PathReasoning
   part-a : {𝐁 𝐂 : A → Set ℓ}(f g : (x : A) →  𝐁 x → 𝐂 x) → ((x : A) → (f x) ∼ (g x)) → (tot f ∼ tot g)
-  part-a f g f∼g (a , Ba) = begin (( a , f a Ba ) ≡⟨ Paths.ap (λ y → (a , y)) (f∼g a Ba) ⟩ (a , g a Ba) ∎)
+  part-a f g f∼g (a , Ba) = Paths.ap (λ y → (a , y)) (f∼g a Ba)
 
   part-b : {𝐁 𝐂 𝐃 : A → Set ℓ}(f : (x : A) →  𝐁 x → 𝐂 x) (g : (x : A) →  𝐂 x → 𝐃 x)
          → tot (λ x → g x ∘ (f x)) ∼ (tot g ∘ tot f)
@@ -262,14 +262,32 @@ module 11•8 {A : Set ℓ}  where
   part-c (a , Ba) = refl
 
   part-d : {𝐁 : A → Set ℓ} (a : A) → (f : ∀ x → 𝐁 x → (a ≡ x)) → (∀ x → retraction {A = 𝐁 x} {B = (a ≡ x)} (f x))
-        → (∀ x → is-equiv {A = 𝐁 x} {B = (a ≡ x)}  (f x))
-  part-d {𝐁 = 𝐁} a f retr-f x = 10-3.ex-10-3-i-ii⇒iii (f x) (contr-b x) (contr-a≡x x)
+        → (∀ x → is-equiv {A = 𝐁 x} {B = (a ≡ x)}  (f x))
+  part-d {𝐁 = 𝐁} a f retr-f x = lem4 -- ((fst retr-f) , {!10-2.retract-is-contractible!}) , retr-f
       where
-        contr-a≡x : ∀ x → is-contr (a ≡ x)
-        contr-a≡x = {!!}
+        r : ∀ x → (a ≡ x) → 𝐁 x
+        r x = fst (retr-f x)
 
-        contr-b : ∀ x → is-contr (𝐁 x)
-        contr-b = {!!}
+        lem : retraction (tot f)
+        lem = (tot r) , (λ { (x , Bx) → Paths.ap (λ y → (x , y)) ((retr-f x) .snd Bx) })
+        lem2 : is-contr (Σ[ x ∈ A ] a ≡ x) → is-contr (Σ A 𝐁)
+        lem2 = 10-2.retract-is-contractible (tot f) lem
+
+        lem3 : is-equiv (r x)
+        lem3 = _↔_.from (11•2•2.i↔ii a (r a refl) r) (lem2 (thm-10∙1∙4 a)) x
+
+        lem4 : is-equiv (f x)
+        lem4 = is-equiv-decomp lem3 (is-equiv-∼ ( sym-∼ (retr-f x .snd)) (((λ z → z) , (λ x₁ → refl)) , (id , (λ x₁ → refl))))
+        -- r ∘ f = id
+
+
+        -- 10-3.ex-10-3-i-ii⇒iii (f x) (contr-b x) (contr-a≡x x)
+      -- where
+      --   contr-a≡x : ∀ x → is-contr (a ≡ x) -- is-contr (Σ[ x ∈ A ] a ≡ x)
+      --   contr-a≡x = {!!}
+
+      --   contr-b : ∀ x → is-contr (𝐁 x)
+      --   contr-b = {!!}
 
   part-e : {𝐁 : A → Set ℓ} (a : A)(f : ∀ x → (a ≡ x) → 𝐁 x) → (∀ x → section (f x)) → (∀ x → is-equiv (f x))
   part-e {𝐁 = 𝐁} a f sec-f = {!!}
@@ -286,11 +304,11 @@ is-path-split : {A B : Set ℓ} → (A → B) → Set ℓ
 is-path-split {A = A} {B = B} f = section f × ∀ (x y : A) → section (Paths.ap {x = x} {y = y} f)
 
 module 11•10 {A B : Set ℓ} {f : A → B} where
-  -- show that the following is equivlant
-  -- (i) : The map f is an equivlance
+  -- show that the following is equivalent
+  -- (i) : The map f is an equivalence
   -- (ii) : The map f is path-split
 
-  -- Note that any equivlance is an embedding,
+  -- Note that any equivalence is an embedding,
   i→ii : is-equiv f → is-path-split f
   i→ii is-equiv-f = (is-equiv-f .proj₁) , λ x y → fst (lem .is-emb.ap-equiv x y)
       where
