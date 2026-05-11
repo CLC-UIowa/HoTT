@@ -700,3 +700,8 @@ module 10-8 where
       -- Finally, we prove commutativity, which is just refl-∼
       H : f ∼ fst ∘ e
       H = refl-∼
+
+
+  -- To avoid patternInTele nonsense
+  domain-≃-Σ-fib' : (f : A → B) → Σ[ e,_ ∈ A ≃ (Σ[ b ∈ B ] (fib f b)) ] (f ∼ fst ∘ (fst e,_))
+  domain-≃-Σ-fib' = domain-≃-Σ-fib

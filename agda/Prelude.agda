@@ -36,6 +36,9 @@ record _↔_ {ℓ₁} {ℓ₂} (A : Set ℓ₁) (B : Set ℓ₂) : Set (ℓ₁ �
     to : A → B
     from : B → A
 
+sym-↔ : {ℓ₁ : Level} {ℓ₂ : Level} → {A : Set ℓ₁} {B : Set ℓ₂} → (A ↔ B) → (B ↔ A)
+sym-↔ ( to , from ) = from , to
+
 -----------------------------------------------------------------------------
 -- Syntax for groupoids
 

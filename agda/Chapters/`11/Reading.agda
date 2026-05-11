@@ -174,11 +174,31 @@ has-inverse-decomp {f = f} {g = g} (f̅ , (f∘f̅~id , f̅∘f~id)) has-inverse
     has-inverse-g : has-inverse g
     has-inverse-g = has-inverse-htpy (has-inverse-comp has-inverse-f̅ has-inverse-f∘g) (sym-∼ g-eq)
 
+has-inverse-decomp' : {f : B → C} {g : A → B} → has-inverse g → has-inverse (f ∘ g) → has-inverse f
+has-inverse-decomp' {f = f} {g = g} (g̅ , (g∘g̅~id , g̅∘g~id)) has-inverse-f∘g = has-inverse-f
+  where
+    f-eq : f ∼ (f ∘ g) ∘ g̅
+    f-eq x = sym $ ap f (g∘g̅~id x)
+
+    has-inverse-g̅ : has-inverse g̅
+    has-inverse-g̅ = g , (g̅∘g~id , g∘g̅~id)
+
+    has-inverse-f : has-inverse f
+    has-inverse-f = has-inverse-htpy (has-inverse-comp has-inverse-f∘g has-inverse-g̅) (sym-∼ f-eq)
+
+-- TODO: rename to is-equiv-decomp1 and is-equiv-decomp2 (or something)
 is-equiv-decomp : {f : B → C} {g : A → B} → is-equiv f → is-equiv (f ∘ g) → is-equiv g
 is-equiv-decomp is-equiv-f is-equiv-f∘g =
   has-inverse⇒is-equiv
     (has-inverse-decomp
       (is-equiv⇒has-inverse is-equiv-f)
+      (is-equiv⇒has-inverse is-equiv-f∘g))
+
+is-equiv-decomp' : {f : B → C} {g : A → B} → is-equiv g → is-equiv (f ∘ g) → is-equiv f
+is-equiv-decomp' is-equiv-g is-equiv-f∘g =
+  has-inverse⇒is-equiv
+    (has-inverse-decomp'
+      (is-equiv⇒has-inverse is-equiv-g)
       (is-equiv⇒has-inverse is-equiv-f∘g))
 
 -- Theorem 11.1.6

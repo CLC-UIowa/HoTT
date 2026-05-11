@@ -331,3 +331,61 @@ module 11•10 {A B : Set} {f : A → B} where
   ii→i (sec-f , sec-ap-f) = sec-f ,
                               ((fst sec-f) ,
                                 λ x → sec-ap-f (proj₁ sec-f (f x)) (id x) .proj₁ (sec-f .snd (f x)))
+
+equiv-sym : {A B : Set ℓ} → (A ≃ B) → (B ≃ A)
+equiv-sym (_ , is-equiv-f) = `sec is-equiv-f , equivalence-inverse-equivalence is-equiv-f
+
+is-equiv-fam : {A : Set ℓ} {B C : A → Set ℓ} (f : (x : A) → B x → C x) → Set ℓ
+is-equiv-fam {A} f = ∀ (x) → is-equiv (f x)
+
+module 11•11 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : f ∼ g ∘ h} where
+  fib-triangle : (x : X) → fib f x → fib g x
+  fib-triangle x (a , fa≡x) = (h a , tr (λ a' → a' ≡ x) (H a) fa≡x  )
+
+  vert1 : (Σ[ x ∈ X ] (fib f x)) → A
+  vert1 = fst $ equiv-sym $ fst $ 10-8.domain-≃-Σ-fib' f
+
+  is-equiv-vert1 : is-equiv vert1
+  is-equiv-vert1 = snd $ equiv-sym $ fst $ 10-8.domain-≃-Σ-fib' f
+
+  vert2 : (Σ[ x ∈ X ] (fib g x)) → B
+  vert2 = fst $ equiv-sym $ fst $ 10-8.domain-≃-Σ-fib' g
+
+  is-equiv-vert2 : is-equiv vert2
+  is-equiv-vert2 = snd $ equiv-sym $ fst $ 10-8.domain-≃-Σ-fib' g
+
+  -- Part (a)
+  bottom : (Σ[ x ∈ X ] (fib f x)) → B
+  bottom = h ∘ vert1
+
+  top : (Σ[ x ∈ X ] (fib f x)) → B
+  top = vert2 ∘ tot fib-triangle
+
+  fig-triangle-square-commutes : bottom ≡ top
+  fig-triangle-square-commutes = refl
+
+  blah' = is-equiv-decomp
+
+  -- Part (b)
+  is-equiv-h↔is-equiv-bottom : is-equiv h ↔ is-equiv bottom
+  is-equiv-h↔is-equiv-bottom =
+    (λ is-equiv-h → is-equiv-comp is-equiv-h is-equiv-vert1)
+    , is-equiv-decomp' is-equiv-vert1 -- Eta contracting here
+
+  is-equiv-tot-fib-triangle↔is-equiv-top : is-equiv (tot fib-triangle) ↔ is-equiv top
+  is-equiv-tot-fib-triangle↔is-equiv-top =
+    is-equiv-comp is-equiv-vert2 -- Eta contracting here
+    , λ is-equiv-top → is-equiv-decomp is-equiv-vert2 is-equiv-top
+
+  is-equiv-top↔is-equiv-bottom : is-equiv top ↔ is-equiv bottom
+  is-equiv-top↔is-equiv-bottom = id , id -- lol
+
+  is-equiv-h↔is-equiv-tot-fib-triangle : is-equiv h ↔ (is-equiv $ tot fib-triangle)
+  is-equiv-h↔is-equiv-tot-fib-triangle = {!!} -- Simply need to chain ↔ from previous lemmas
+
+  is-equiv-tot-fib-triangle↔is-equiv-fam-fib-triangle : (is-equiv $ tot fib-triangle) ↔ is-equiv-fam fib-triangle
+  is-equiv-tot-fib-triangle↔is-equiv-fam-fib-triangle = 11•1•3.thm fib-triangle
+
+  -- More ↔ chaining
+  is-equiv-h↔is-equiv-fam-fib-triangle : is-equiv h ↔ is-equiv-fam fib-triangle
+  is-equiv-h↔is-equiv-fam-fib-triangle = {!!}
