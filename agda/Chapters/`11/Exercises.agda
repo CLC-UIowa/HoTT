@@ -1,8 +1,6 @@
 module Chapters.`11.Exercises where
 
 open import Prelude
--- open import Chapters.`01-08.Reading hiding (tr)
--- open import Chapters.`01-08.Exercises
 open import Chapters.`09.Reading
 open import Chapters.`09.Exercises
 open import Chapters.`10.Reading

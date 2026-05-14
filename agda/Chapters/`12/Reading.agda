@@ -1,7 +1,6 @@
 module Chapters.`12.Reading where
 
 open import Prelude
-open import Chapters.`01-08.Reading using (∅ ; ⋆ ; 𝟙 ; ex-falso)
 open import Chapters.`01-08.Exercises
 open import Chapters.`09.Reading
 open import Chapters.`09.Exercises
@@ -45,13 +44,6 @@ is-contr⇒is-prop A (c , cntr) x y =
   (cntr x ⁻¹ ○ cntr y) , λ { refl → left-inv (cntr x) }
 
 
--- In particular the unit type is a proposition, so is the empty type
-is-prop-∅ : is-prop ∅
-is-prop-∅ = λ x y → 10-1.ex-10-1 x y ((ex-falso x) , (ex-falso y))
-
-is-prop-𝟙 : is-prop 𝟙
-is-prop-𝟙 = λ {𝟙.⋆ 𝟙.⋆ → 10-1.ex-10-1 𝟙.⋆ 𝟙.⋆ (⋆ , (λ { 𝟙.⋆ → refl })) }
-
 -- AH> I would really prefer we use Agda stdlib's ⊤ and ⊥ over 𝟙 and ∅,
 --     and yes I am fully aware of the irony in asserting this simply 
 --     because 𝟙 does not render in my emacs font.
@@ -86,10 +78,10 @@ module _ {A : Set} where
   lemmer : {X Y : Set} → {f : X → Y} → (X → is-emb f) → is-emb f
   lemmer = λ x → {!!}
 
-  contractibleIfInhabited→const⋆-embedding : (A → is-contr A) → is-emb {A = A} (const 𝟙.⋆)
-  contractibleIfInhabited→const⋆-embedding f = thm•11•4•2 (const 𝟙.⋆ , 10-3.const-tt-is-equiv {A = A} {!!})
+  contractibleIfInhabited→const⋆-embedding : (A → is-contr A) → is-emb {A = A} (const tt)
+  contractibleIfInhabited→const⋆-embedding f = thm•11•4•2 (const tt , 10-3.const-tt-is-equiv {A = A} {!!})
 
-  const⋆-embedding→is-prop : is-emb {A = A} (const 𝟙.⋆) → is-prop A
+  const⋆-embedding→is-prop : is-emb {A = A} (const tt) → is-prop A
   const⋆-embedding→is-prop (Embed ap-equiv) = λ x y → (ap-equiv x y .fst .fst refl) , (λ e → {!ap-equiv x y .fst .snd!})
 
 
