@@ -284,22 +284,24 @@ module 11•8 {A : Set ℓ}  where
 
 
   part-e : {𝐁 : A → Set ℓ} (a : A)(f : ∀ x → (a ≡ x) → 𝐁 x) → (∀ x → section (f x)) → (∀ x → is-equiv (f x))
-  part-e {𝐁 = 𝐁} a f sec-f x = is-equiv-f
+  part-e {𝐁 = 𝐁} a f sec-f x = is-equiv-f x
     where
       f̅ : ∀ x → 𝐁 x → a ≡ x
       f̅ x = sec-f x .fst
 
       lem : section (tot f)
-      lem = (tot f̅ ) , λ { ( x , Bx ) → ap (λ y → (x , y)) (sec-f x .snd Bx) }
+      lem = (tot f̅) , λ { ( x , Bx ) → ap (λ y → (x , y)) (sec-f x .snd Bx) }
 
-      id-equiv : is-equiv {A = 𝐁 x} id
-      id-equiv = (id , (λ x₁ → refl)) , (id , (λ x₁ → refl))
+      is-equiv-f̅ : ∀ x → is-equiv (f̅ x)
+      is-equiv-f̅ x = part-d a f̅ (λ x₁ → (f x₁) , (λ x₂ → sec-f x₁ .snd x₂)) x
 
-      is-equiv-f̅ : is-equiv (f̅ x)
-      is-equiv-f̅ = part-d a f̅ (λ x₁ → (f x₁) , (λ x₂ → sec-f x₁ .snd x₂)) x
-
-      is-equiv-f : is-equiv (f x)
-      is-equiv-f = is-equiv-decomp is-equiv-f̅ {!!}
+      open PathReasoning
+      is-equiv-f : ∀ x → is-equiv (f x)
+      is-equiv-f = _↔_.to (11•2•2.lem1 a (f a refl) f) (lem , (tot f̅ , λ x →
+        begin (tot f̅ (tot f x)) ≡⟨ part-b f f̅ x ⟩
+               tot (λ x → f̅ x ∘ (f x)) x ≡⟨ part-a (λ x → (f̅ x) ∘ (f x))
+                                                   (λ x → id ∘ id) (λ x₂ x₃ → is-equiv-f̅ x₂ .fst .snd x₃) x ⟩
+              x ∎))
 
 
 module 11•9 {A B : Set} {f : A → B} where
