@@ -26,13 +26,14 @@ private
 -- Def 12.1.1
 -- A type A is a proposition if its identity types are contractible i.e
 
-is-prop : Set → Set
+is-prop : ∀ {ℓ} → Set ℓ → Set ℓ
 is-prop A = ∀ (x y : A) → is-contr (x ≡ y)
 
 -- given a universe 𝓤, define Prop[𝓤] to be the type of all small propositions
 -- AI> I can't make this work
--- Prop[_] : Set → Set
--- Prop[ 𝓤 ] = Σ[ x ∈ 𝓤 ] is-prop x
+-- AH> This is the closest Agda analogue
+Prop[_] : (ℓ : Level) → Set (lsuc ℓ)
+Prop[ ℓ ] = Σ[ X ∈ Set ℓ ] (is-prop X)
 
 -- Example 12.1.2
 -- Any contractible type is a proposition by Exercise 10.1

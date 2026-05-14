@@ -15,15 +15,20 @@ private
   variable
     ℓ ℓ₁ ℓ₂ ℓ₃ : Level
     A B C D X Y Z : Set ℓ
-    -- 𝐁 𝐂 𝐃 : A → Set ℓ
+    𝐁 𝐂 𝐃 : A → Set ℓ
     -- f g h i : (x : A) → 𝐁 x
 
 
 --------------------------------------------------------------------
 -- §11.1: Families of equivalences
 
--- Def 11.1.1
-tot : {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} → (∀ (x : A) → 𝐁 x → 𝐂 x) → Σ A 𝐁 → Σ A 𝐂
+-- Def 11.1.1.
+-- AH> Rijke doesn't elaborate much here, but we can view (tot f)
+--     as a map between *total spaces* over the base space A induced
+--     by a map f between the fibers over x of the type families (fibrations)
+--     𝐁 and 𝐂. 
+--     (This is what I infer, at least, from naming this function `tot`).
+tot : (∀ (x : A) → 𝐁 x → 𝐂 x) → Σ A 𝐁 → Σ A 𝐂
 tot f (x , y) = x , f x y
 
 
@@ -31,7 +36,9 @@ tot f (x , y) = x , f x y
 -- 𝑡 : Σ_(𝑥:𝐴) 𝐶 𝑥, there is an equivalence
 -- fib_(tot f) (t) ≃ fib_(f (pr₁ t)) (pr₂ t)
 
-fib-tot-equiv : {𝐁 𝐂 : A → Set ℓ} → (f : ∀ (x : A) → 𝐁 x → 𝐂 x) → (t : Σ A 𝐂) → fib (tot f) t ≃ fib (f (fst t)) (snd t)
+fib-tot-equiv : (f : ∀ (x : A) → 𝐁 x → 𝐂 x) → 
+                (t : Σ A 𝐂) → 
+                fib (tot f) t ≃ fib (f (fst t)) (snd t)
 fib-tot-equiv f t = ϕ , ϕ-is-equiv
   where
   ϕ : fib (tot f) t → fib (f (fst t)) (snd t)
