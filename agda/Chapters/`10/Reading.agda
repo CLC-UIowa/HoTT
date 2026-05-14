@@ -178,8 +178,8 @@ is-contr-map : (f : A → B) → Set _
 is-contr-map {B = B} f = ∀ (b : B) → is-contr (fib f b)
 
 -- Thm 10.3.5: Any contractible map is an equivalence
-is-contr-map-equiv : ∀ (f : A → B) → is-contr-map f → is-equiv f
-is-contr-map-equiv {A = A} {B = B} f is-contr-map-f = sec-is-contr-map-f , retr-is-contr-map-f
+is-contr-map-equiv : ∀ {f : A → B} → is-contr-map f → is-equiv f
+is-contr-map-equiv {A = A} {B = B} {f} is-contr-map-f = sec-is-contr-map-f , retr-is-contr-map-f
   where
   g̅ : B → A
   g̅ y with is-contr-map-f y

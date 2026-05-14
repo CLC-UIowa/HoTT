@@ -26,7 +26,7 @@ private
 -- AH> Rijke doesn't elaborate much here, but we can view (tot f)
 --     as a map between *total spaces* over the base space A induced
 --     by a map f between the fibers over x of the type families (fibrations)
---     𝐁 and 𝐂. 
+--     𝐁 and 𝐂.
 --     (This is what I infer, at least, from naming this function `tot`).
 tot : (∀ (x : A) → 𝐁 x → 𝐂 x) → Σ A 𝐁 → Σ A 𝐂
 tot f (x , y) = x , f x y
@@ -36,8 +36,8 @@ tot f (x , y) = x , f x y
 -- 𝑡 : Σ_(𝑥:𝐴) 𝐶 𝑥, there is an equivalence
 -- fib_(tot f) (t) ≃ fib_(f (pr₁ t)) (pr₂ t)
 
-fib-tot-equiv : (f : ∀ (x : A) → 𝐁 x → 𝐂 x) → 
-                (t : Σ A 𝐂) → 
+fib-tot-equiv : (f : ∀ (x : A) → 𝐁 x → 𝐂 x) →
+                (t : Σ A 𝐂) →
                 fib (tot f) t ≃ fib (f (fst t)) (snd t)
 fib-tot-equiv f t = ϕ , ϕ-is-equiv
   where
@@ -85,8 +85,8 @@ module 11•1•3 {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (f : (x : A) → �
   -- Thus, we know that (tot f) is an equivalence if and only if f x is an equivalence for each x : A
   -- by using thm•10•4•6 and lem 10.3.5
   thm : is-equiv (tot f) ↔ ((x : A) → is-equiv (f x))
-  thm = (λ tot-equiv x → is-contr-map-equiv (f x) (_↔_.to lem1 (thm•10•4•6 (tot f) tot-equiv) x)) ,
-                     λ fx-equiv → is-contr-map-equiv (tot f) (_↔_.from lem1 (λ a → thm•10•4•6 (f a) (fx-equiv a)))
+  thm = (λ tot-equiv x → is-contr-map-equiv (_↔_.to lem1 (thm•10•4•6 (tot f) tot-equiv) x)) ,
+                     λ fx-equiv → is-contr-map-equiv (_↔_.from lem1 (λ a → thm•10•4•6 (f a) (fx-equiv a)))
 
 -- Lemma 11.1.4
 -- Consider a map 𝑓 : 𝐴 → 𝐵, and let 𝐶 be a type family over 𝐵.
@@ -135,7 +135,7 @@ module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
 
   -- finally, we show that if f is an equivalence then  σ is an equivalence
   lem : is-equiv f → is-equiv σ
-  lem = (λ equiv-f → is-contr-map-equiv σ ((lem2 (thm•10•4•6 f equiv-f))))
+  lem = (λ equiv-f → is-contr-map-equiv ((lem2 (thm•10•4•6 f equiv-f))))
 
 -- Definition 11.1.5
 -- Consider a map f : A → B and a family of maps

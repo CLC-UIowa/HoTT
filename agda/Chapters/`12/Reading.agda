@@ -40,17 +40,17 @@ Prop[ ℓ ] = Σ[ X ∈ Set ℓ ] (is-prop X)
 -- Any contractible type is a proposition by Exercise 10.1
 -- AH> Restating/proving here for easier reference and better naming than ex-10-1:
 is-contr⇒is-prop : ∀ (A : Set ℓ) → is-contr A → is-prop A
-is-contr⇒is-prop A (c , cntr) x y = 
+is-contr⇒is-prop A (c , cntr) x y =
   (cntr x ⁻¹ ○ cntr y) , λ { refl → left-inv (cntr x) }
 
 
 -- AH> I would really prefer we use Agda stdlib's ⊤ and ⊥ over 𝟙 and ∅,
---     and yes I am fully aware of the irony in asserting this simply 
+--     and yes I am fully aware of the irony in asserting this simply
 --     because 𝟙 does not render in my emacs font.
-is-prop-⊥ : is-prop ⊥ 
-is-prop-⊥ () 
+is-prop-⊥ : is-prop ⊥
+is-prop-⊥ ()
 is-prop-⊤ : is-prop ⊤
-is-prop-⊤ = is-contr⇒is-prop ⊤ ⊤-contr 
+is-prop-⊤ = is-contr⇒is-prop ⊤ ⊤-contr
 
 ----------------------------------------
 -- Proposition 12.1.3
@@ -65,7 +65,7 @@ is-prop-⊤ = is-contr⇒is-prop ⊤ ⊤-contr
 
 is-prop′ : Set ℓ → Set ℓ
 is-prop′ A = ∀ (x y : A) → x ≡ y
-                                                                               
+
 module _ {A : Set} where
 -- The proof proceeds by showing (i) → (ii) → (iii) → (iv) → i
   open is-contr
@@ -77,52 +77,53 @@ module _ {A : Set} where
 
   -- AH> Intuitively, is-prop′ says "all my elements are equal (but I may have
   --     none)" and is-contr says "I'm a prop AND I'm inhabited"; the proof is
-  --     simply to let the inhabitant `a` be the center and let 
+  --     simply to let the inhabitant `a` be the center and let
   --       isProp a : ∀ (y : A) → a ≡ y
   --     be the contraction.
   is-prop′⇒contractibleIfInhabited : is-prop′ A → (A → is-contr A)
   is-prop′⇒contractibleIfInhabited isProp a = (a , isProp a)
 
   lemmer : {X Y : Set} → {f : X → Y} → (X → is-emb f) → is-emb f
-  lemmer {f = f} m = Embed λ x y → m x .is-emb.ap-equiv x y 
-  
+  lemmer {f = f} m = Embed λ x y → m x .is-emb.ap-equiv x y
+
   -- Helpers:
   --  - thm•11•4•2 : (e : A ≃ B) → (is-emb (fst e))
   --  - const-tt-is-equiv : is-contr A → is-equiv {ℓ} {A} (const tt)
   -- AH> N.b. I prefer writing (λ (x : A) → tt) over (const tt), here,
   --     as we are making a statement about the type A (the domain).
-  --     
+  --
   --     The proof, in English:
-  --     By the lemmer above, we have 
+  --     By the lemmer above, we have
   --       (A → is-emb (λ (x : A) → tt)) → is-emb (λ (x : A) → tt).
-  --     This means we must show that 
-  --       GOAL: (A → is-emb (λ (x : A) → tt)), 
-  --     which is great! Importantly, this goal means we have an `a : A` in context.  
+  --     This means we must show that
+  --       GOAL: (A → is-emb (λ (x : A) → tt)),
+  --     which is great! Importantly, this goal means we have an `a : A` in context.
   --     Theorem 11.4.2 says that if f is an equivalence, then f is an embedding. Applying yields:
   --       GOAL: A ≃ ⊤
   --     But we proved from exercise 10.3 (const-tt-is-equiv) that, if A is contractible, then
   --     (λ (x : A) → tt) is an equivalence. We have `a : A` in scope and `f : A → is-contr A`,
-  --     hence 
+  --     hence
   --       (10-3.const-tt-is-equiv (f a) : is-equiv f
   --     which proves that A ≃ ⊤.
-  contractibleIfInhabited→const⋆-embedding : 
+  contractibleIfInhabited→const⋆-embedding :
     (A → is-contr A) → is-emb (λ (x : A) → tt)
-  contractibleIfInhabited→const⋆-embedding f = 
-    lemmer {f = λ (x : A) → tt} 
+  contractibleIfInhabited→const⋆-embedding f =
+    lemmer {f = λ (x : A) → tt}
       (λ a → thm•11•4•2 ((λ x → tt) , (10-3.const-tt-is-equiv (f a))))
 
   -- AH> An alternative route to proving (iv) to (i) is to use the below
   -- proof with a proof that is-prop′ implies is-prop...
   const⋆-embedding⇒is-prop′  : is-emb {A = A} (λ (x : A) → tt) → is-prop′ A
   const⋆-embedding⇒is-prop′ (Embed ap-equiv) x y = ap-equiv x y .fst .fst refl
-  
+
   -- However this is not so simple...
-  is-prop′⇒is-prop : is-prop′ A → is-prop A 
-  is-prop′⇒is-prop isProp x y = isProp x y , λ { refl → {!!} } 
+  is-prop′⇒is-prop : is-prop′ A → is-prop A
+  is-prop′⇒is-prop isProp x y = isProp x y , λ { refl → {!!} }
 
   const⋆-embedding⇒is-prop : is-emb {A = A} (λ (x : A) → tt) → is-prop A
-  const⋆-embedding⇒is-prop (Embed ap-equiv) x y with ap-equiv x y 
-  ... | (f , sec) , _ = {!sec refl!} , {!!}
+  const⋆-embedding⇒is-prop (Embed ap-equiv) x y with ap-equiv x y
+  ... | (f , sec) , retr = f refl ,
+    λ { refl → {!sec refl!} }
 
 
 -- Proposition 12.1.4
@@ -151,14 +152,30 @@ is-subtype {A = A} 𝐁 = ∀ (x : A) → is-prop (𝐁 x)
 -- Let A B by types, let e : A ≃ B then we have
 -- is-prop A ↔ is-prop B
 lem•12•2•2 : (A ≃ B) → is-prop A ↔ is-prop B
-lem•12•2•2 {A = A} {B = B} e = fwd , bwk  where
+lem•12•2•2 {A = A} {B = B} (f , is-equiv-f) = fwd , bwk  where
   fwd : is-prop A → is-prop B
-  fwd prop-A = λ x y → {!!}
+  fwd prop-A x y = 10-3.ex-10-3-ii-iii⇒i (ap f̅) (prop-A (f̅ x) (f̅ y)) lem2
+    where
+      f̅ = is-equiv-f .fst .fst
+      is-equiv-f̅ : is-equiv f̅
+      is-equiv-f̅ = equivalence-inverse-equivalence is-equiv-f
+
+      lem : is-contr-map (ap {x = x} {y = y} f̅)
+      lem = thm•10•4•6 (ap {x = x} {y = y} f̅) (is-emb.ap-equiv (thm•11•4•2 (f̅ , is-equiv-f̅)) x y)
+
+      lem2 : is-equiv (ap f̅)
+      lem2 = is-contr-map-equiv lem
+
 
   bwk : is-prop B → is-prop A
-  bwk prop-B x y = {!!} where
-    lem : is-contr-map (Paths.ap (fst e))
-    lem = thm•10•4•6 (Paths.ap {x = x} {y = y} (e .fst)) (is-emb.ap-equiv (thm•11•4•2 e) x y)
+  bwk prop-B x y = 10-3.ex-10-3-ii-iii⇒i (ap f) (prop-B (f x) (f y)) lem2  where
+    lem : is-contr-map (ap f)
+    lem = thm•10•4•6 (ap {x = x} {y = y} f) (is-emb.ap-equiv (thm•11•4•2 (f , is-equiv-f)) x y)
+
+    lem2 : is-equiv (ap f)
+    lem2 = is-contr-map-equiv lem
+
+
 
 -- Theorem 12.2.3
 -- Consider a map f : A → B. The following are equivalent
@@ -166,10 +183,12 @@ lem•12•2•2 {A = A} {B = B} e = fwd , bwk  where
 -- (ii) the fiber fib f b is a proposition for each b : B
 module 12•2•3 {f : A → B} where
   i→ii : is-emb f → ((b : B) → is-prop (fib f b))
-  i→ii (Embed p) b = {!!}
+  i→ii (Embed p) b (a , fa≡b) (a′ , fa′≡b) = {!!}
+
+
 
   ii→i : ((b : B) → is-prop (fib f b)) → is-emb f
-  ii→i = {!!}
+  ii→i p = Embed (λ x y → {!p (f y) !})
 
 
 -- Corollary 12.2.4: Consider a family B of types over A. The following are equivalent
