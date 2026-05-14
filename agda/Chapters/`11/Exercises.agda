@@ -73,23 +73,50 @@ module 11•2 where
                    y
 
 -}
+  G : {A B : Set ℓ} (e : A ≃ B) → (fst e) ∘ (sym-≃ e .fst) ∼ id
+  G e x = e .snd .fst .snd x
+
+  lem' : {A B : Set ℓ} (e : A ≃ B) → (sym-≃ (sym-≃ e)) .fst ∼ e .fst
+  lem' e = λ x → refl
+
+
 
   open PathReasoning
+  -- G' : {A B : Set ℓ} (e : A ≃ B) → (sym-≃ e .fst) ∘ (fst e) ∘ (sym-≃ e .fst) ∼ (sym-≃ e .fst)
+  -- G' e x = begin (sym-≃ e .fst ∘ fst e ∘ sym-≃ e .fst) x  ≡⟨ refl ⟩
+  --                (sym-≃ e .fst ∘ (fst e ∘ sym-≃ e .fst)) x  ≡⟨ {!G e x!} ⟩
+  --                (sym-≃ e .fst ∘ id) x ≡⟨ refl ⟩
+  --                sym-≃ e .fst x ∎
+
+
   lem : {A B : Set ℓ} → (x : A) (y : B) (e : A ≃ B) → (((fst e) x) ≡ y) ≃ (x ≡ (fst (sym-≃ e)) y)
-  lem x y e = (λ e1 → sym (begin  fst (sym-≃ e) y ≡⟨ Paths.ap (λ y → fst (sym-≃ e) y) (sym e1) ⟩
-                                  fst (sym-≃ e) (fst e x) ≡⟨ {!  e .snd .snd .snd x !} ⟩
-                                  x ∎) ) , (((λ e1 → {!!}) , {!!}) , {!!})
+  lem x y e = (λ { refl → sym (begin fst (sym-≃ e) (fst e x) ≡⟨ {!e .snd .snd .snd x!} ⟩
+                          x ∎) } )
+            , {!!}
+
+
+
+
+    -- (λ e1 → sym (begin  fst (sym-≃ e) y ≡⟨ Paths.ap (λ y → fst (sym-≃ e) y) (sym e1) ⟩
+    --                               fst (sym-≃ e) (fst e x) ≡⟨ {!  e .snd .snd .snd x !} ⟩
+    --                               x ∎) ) , (((λ e1 → {!!}) , {!!})
+    --              , {!!})
 
 module 11•3 {A B : Set} {f g : A → B} where
   -- show that (f ∼ g) → (is-emb f ↔ is-emb g)
   -- for any f, g : A → B
+  open PathReasoning
   f→g : (f ∼ g) → is-emb f → is-emb g
-  f→g H (Embed ap-equiv) = Embed
-      (λ x y → has-inverse⇒is-equiv ((λ { e →  k x y (H x ○ e ○ (sym (H y))) }) ,
-         ((λ x₁ → {!k-sec x y!}) , λ { refl → {!!} })))
+  f→g H (Embed ap-equiv-f) = Embed λ x y → lem x y H (ap-equiv-f x y)
      where
-       k = λ (x y : A) → (fst ∘ fst) (ap-equiv x y)
-       k-sec = λ (x y : A) → (snd ∘ fst) (ap-equiv x y)
+       sec-ap-g : ∀ x y → section (ap {x = x} {y = y} g)
+       sec-ap-g x y = (λ gx≡gy → ap-equiv-f x y .fst .fst (H x ○ gx≡gy ○ H y ⁻¹)) ,
+                      λ { gx≡gy → {!!} }
+
+       lem : ∀ x y → (f ∼ g) → is-equiv (ap {x = x} {y = y} f) → is-equiv (ap {x = x} {y = y} g)
+       lem x y H equiv-ap-f = sec-ap-g x y , {!!}
+       -- k = λ (x y : A) → (fst ∘ fst) (ap-equiv-f x y)
+       -- k-sec = λ (x y : A) → (snd ∘ fst) (ap-equiv-f x y)
 
 
   ex : (f ∼ g) → is-emb f ↔ is-emb g
@@ -332,27 +359,25 @@ module 11•10 {A B : Set} {f : A → B} where
                               ((fst sec-f) ,
                                 λ x → sec-ap-f (fst sec-f (f x)) (id x) .fst (sec-f .snd (f x)))
 
-equiv-sym : {A B : Set ℓ} → (A ≃ B) → (B ≃ A)
-equiv-sym (_ , is-equiv-f) = `sec is-equiv-f , equivalence-inverse-equivalence is-equiv-f
 
 is-equiv-fam : {A : Set ℓ} {B C : A → Set ℓ} (f : (x : A) → B x → C x) → Set ℓ
-is-equiv-fam {A} f = ∀ (x) → is-equiv (f x)
+is-equiv-fam {A} f = ∀ x → is-equiv (f x)
 
 module 11•11 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : f ∼ g ∘ h} where
   fib-triangle : (x : X) → fib f x → fib g x
   fib-triangle x (a , fa≡x) = (h a , tr (λ a' → a' ≡ x) (H a) fa≡x  )
 
   vert1 : (Σ[ x ∈ X ] (fib f x)) → A
-  vert1 = fst $ equiv-sym $ fst $ 10-8.domain-≃-Σ-fib' f
+  vert1 = fst $ sym-≃ $ fst $ 10-8.domain-≃-Σ-fib' f
 
   is-equiv-vert1 : is-equiv vert1
-  is-equiv-vert1 = snd $ equiv-sym $ fst $ 10-8.domain-≃-Σ-fib' f
+  is-equiv-vert1 = snd $ sym-≃ $ fst $ 10-8.domain-≃-Σ-fib' f
 
   vert2 : (Σ[ x ∈ X ] (fib g x)) → B
-  vert2 = fst $ equiv-sym $ fst $ 10-8.domain-≃-Σ-fib' g
+  vert2 = fst $ sym-≃ $ fst $ 10-8.domain-≃-Σ-fib' g
 
   is-equiv-vert2 : is-equiv vert2
-  is-equiv-vert2 = snd $ equiv-sym $ fst $ 10-8.domain-≃-Σ-fib' g
+  is-equiv-vert2 = snd $ sym-≃ $ fst $ 10-8.domain-≃-Σ-fib' g
 
   -- Part (a)
   bottom : (Σ[ x ∈ X ] (fib f x)) → B

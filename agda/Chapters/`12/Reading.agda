@@ -183,7 +183,17 @@ lem•12•2•2 {A = A} {B = B} (f , is-equiv-f) = fwd , bwk  where
 -- (ii) the fiber fib f b is a proposition for each b : B
 module 12•2•3 {f : A → B} where
   i→ii : is-emb f → ((b : B) → is-prop (fib f b))
-  i→ii (Embed p) b (a , fa≡b) (a′ , fa′≡b) = {!!}
+  i→ii (Embed p) b (a , fa≡b) (a′ , fa′≡b) = _↔_.to (lem•12•2•2 (lem2 a b fa≡b)) {!!} (a , fa≡b) (a′ , fa′≡b)
+    where
+      fwd : is-emb f → (∀ y → is-contr (Σ[ x ∈ A ] (f x ≡ f y)))
+      fwd ef y = {!!}
+
+      lem : is-emb f ↔ (∀ y → is-contr (Σ[ x ∈ A ] (f x ≡ f y)))
+      lem = fwd , {!!}
+
+      lem2 : ∀ y b → (p : f y ≡ b) → fib f (f y) ≃ fib f b
+      lem2 = {!!}
+
 
 
 
