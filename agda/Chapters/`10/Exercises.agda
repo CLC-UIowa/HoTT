@@ -91,7 +91,7 @@ module 10-3 where
   -- The remainder of the proof is just computation i.e. refl.
   -}
 
-  const-tt-has-section :  is-contr A → section {ℓ} {A} (const tt)
+  const-tt-has-section :  is-contr A → section (λ (x : A) → tt)
   const-tt-has-section (center , contraction) = const center , (λ { tt → refl })
 
   {-
@@ -116,14 +116,14 @@ module 10-3 where
   -- has a retraction then we can show A is contractible.
   -}
 
-  const-tt-has-retraction : is-contr A → retraction {ℓ} {A} (const tt)
+  const-tt-has-retraction : is-contr A → retraction (λ (x : A) → tt)
   const-tt-has-retraction (center , contraction) = const center , contraction
 
   {-
   -- We have all we need to show that (const tt) is an equivalence from A to ⊤.
   -}
 
-  const-tt-is-equiv : is-contr A → is-equiv {ℓ} {A} (const tt)
+  const-tt-is-equiv : is-contr A → is-equiv (λ (x : A) → tt)
   const-tt-is-equiv is-contr-A =
     ( const-tt-has-section is-contr-A , const-tt-has-retraction is-contr-A )
 
@@ -141,7 +141,7 @@ module 10-3 where
   -- Let's try that.
   -}
 
-  A-is-contractible : is-equiv {ℓ} {A} (const tt) → is-contr A
+  A-is-contractible : is-equiv (λ (x : A) → tt) → is-contr A
   A-is-contractible (_ , (h , h-is-retraction)) = (h tt , h-is-retraction)
 
   -------------------------------------------------------------------------------

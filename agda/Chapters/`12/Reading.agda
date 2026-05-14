@@ -61,28 +61,68 @@ is-prop-⊤ = is-contr⇒is-prop ⊤ ⊤-contr
 --           is-prop′ A := Π_{x y : A} x ≡ y
 -- (iii) The type A is contractible as soon as it is inhabited, i.e., there is a function of type
 --           A → is-contr A
--- (iv) the map const_⋆ : A → 𝟙 is an embedding
+-- (iv) the map const_⋆ : A → ⊤ is an embedding
 
 is-prop′ : Set ℓ → Set ℓ
 is-prop′ A = ∀ (x y : A) → x ≡ y
                                                                                
 module _ {A : Set} where
 -- The proof proceeds by showing (i) → (ii) → (iii) → (iv) → i
+  open is-contr
 
+  -- AH> the simple intuition here is that if (x ≡ y) is contractible,
+  --     it's inhabited! So we just take the center of contraction.
   is-prop⇒is-prop′ : is-prop A → is-prop′ A
-  is-prop⇒is-prop′ pa = λ x y → is-contr.center (pa x y)
+  is-prop⇒is-prop′ isProp x y = isProp x y .center
 
+  -- AH> Intuitively, is-prop′ says "all my elements are equal (but I may have
+  --     none)" and is-contr says "I'm a prop AND I'm inhabited"; the proof is
+  --     simply to let the inhabitant `a` be the center and let 
+  --       isProp a : ∀ (y : A) → a ≡ y
+  --     be the contraction.
   is-prop′⇒contractibleIfInhabited : is-prop′ A → (A → is-contr A)
-  is-prop′⇒contractibleIfInhabited pa = λ x → x , pa x
+  is-prop′⇒contractibleIfInhabited isProp a = (a , isProp a)
 
   lemmer : {X Y : Set} → {f : X → Y} → (X → is-emb f) → is-emb f
-  lemmer = λ x → {!!}
+  lemmer {f = f} m = Embed λ x y → m x .is-emb.ap-equiv x y 
+  
+  -- Helpers:
+  --  - thm•11•4•2 : (e : A ≃ B) → (is-emb (fst e))
+  --  - const-tt-is-equiv : is-contr A → is-equiv {ℓ} {A} (const tt)
+  -- AH> N.b. I prefer writing (λ (x : A) → tt) over (const tt), here,
+  --     as we are making a statement about the type A (the domain).
+  --     
+  --     The proof, in English:
+  --     By the lemmer above, we have 
+  --       (A → is-emb (λ (x : A) → tt)) → is-emb (λ (x : A) → tt).
+  --     This means we must show that 
+  --       GOAL: (A → is-emb (λ (x : A) → tt)), 
+  --     which is great! Importantly, this goal means we have an `a : A` in context.  
+  --     Theorem 11.4.2 says that if f is an equivalence, then f is an embedding. Applying yields:
+  --       GOAL: A ≃ ⊤
+  --     But we proved from exercise 10.3 (const-tt-is-equiv) that, if A is contractible, then
+  --     (λ (x : A) → tt) is an equivalence. We have `a : A` in scope and `f : A → is-contr A`,
+  --     hence 
+  --       (10-3.const-tt-is-equiv (f a) : is-equiv f
+  --     which proves that A ≃ ⊤.
+  contractibleIfInhabited→const⋆-embedding : 
+    (A → is-contr A) → is-emb (λ (x : A) → tt)
+  contractibleIfInhabited→const⋆-embedding f = 
+    lemmer {f = λ (x : A) → tt} 
+      (λ a → thm•11•4•2 ((λ x → tt) , (10-3.const-tt-is-equiv (f a))))
 
-  contractibleIfInhabited→const⋆-embedding : (A → is-contr A) → is-emb {A = A} (const tt)
-  contractibleIfInhabited→const⋆-embedding f = thm•11•4•2 (const tt , 10-3.const-tt-is-equiv {A = A} {!!})
+  -- AH> An alternative route to proving (iv) to (i) is to use the below
+  -- proof with a proof that is-prop′ implies is-prop...
+  const⋆-embedding⇒is-prop′  : is-emb {A = A} (λ (x : A) → tt) → is-prop′ A
+  const⋆-embedding⇒is-prop′ (Embed ap-equiv) x y = ap-equiv x y .fst .fst refl
+  
+  -- However this is not so simple...
+  is-prop′⇒is-prop : is-prop′ A → is-prop A 
+  is-prop′⇒is-prop isProp x y = isProp x y , λ { refl → {!!} } 
 
-  const⋆-embedding→is-prop : is-emb {A = A} (const tt) → is-prop A
-  const⋆-embedding→is-prop (Embed ap-equiv) = λ x y → (ap-equiv x y .fst .fst refl) , (λ e → {!ap-equiv x y .fst .snd!})
+  const⋆-embedding⇒is-prop : is-emb {A = A} (λ (x : A) → tt) → is-prop A
+  const⋆-embedding⇒is-prop (Embed ap-equiv) x y with ap-equiv x y 
+  ... | (f , sec) , _ = {!sec refl!} , {!!}
 
 
 -- Proposition 12.1.4
