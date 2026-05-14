@@ -1,7 +1,7 @@
 module Chapters.`11.Exercises where
 
 open import Prelude
-open import Chapters.`01-08.Reading hiding (tr)
+-- open import Chapters.`01-08.Reading hiding (tr)
 -- open import Chapters.`01-08.Exercises
 open import Chapters.`09.Reading
 open import Chapters.`09.Exercises
@@ -16,7 +16,7 @@ private
 
 module 11•1a where
   -- show that the map ∅ → A is an embedding for any type A
-  ex : ∅ ↪ A
+  ex : ⊥ ↪ A
   ex = (λ ()) , Embed (λ ())
 
 
@@ -24,10 +24,10 @@ module 11•1b where
   -- show that inl : A → A + B and inr : B → A + B are embeddings
   -- for any two types A and B
 
-  ex1 : is-emb {A = A} {B = A ⊎ B} inl
+  ex1 : is-emb {A = A} {B = A + B} inj₁
   ex1 = Embed (λ x y → ((λ { refl → refl }) , λ { refl → refl }) , ((λ { refl → refl }) , λ { refl → refl }))
 
-  ex2 : is-emb {A = B} {B = A ⊎ B} inr
+  ex2 : is-emb {A = B} {B = A + B} inj₂
   ex2 = Embed (λ x y → ((λ { refl → refl }) , λ { refl → refl }) , ((λ { refl → refl }) , λ { refl → refl }))
 
 
@@ -35,21 +35,21 @@ module 11•1c where
   -- show that inl : A → A + B is an equivalence iff B is empty
   -- show that inr : B → A + B is an equivalence iff A is empty
 
-  ex1 : is-equiv {A = A} {B = A ⊎ B} inl ↔ (B → ∅)
-  ex1 {A = A} {B = B} = fwd , λ x → ((λ { (inl x) → x ; (inr b) → ex-falso (x b) })
-                        , λ { (inl x) → refl ; (inr b) → ex-falso (x b) })
-                        , ( (λ { (inl x) → x ; (inr b) → ex-falso (x b) }) , λ { x → refl } )
+  ex1 : is-equiv {A = A} {B = A + B} inj₁ ↔ (B → ⊥)
+  ex1 {A = A} {B = B} = fwd , λ x → ((λ { (inj₁ x) → x ; (inj₂ b) → ⊥-elim (x b) })
+                        , λ { (inj₁ x) → refl ; (inj₂ b) → ⊥-elim (x b) })
+                        , ( (λ { (inj₁ x) → x ; (inj₂ b) → ⊥-elim (x b) }) , λ { x → refl } )
     where
-      fwd : is-equiv {A = A} {B = A ⊎ B} inl → (B → ∅)
-      fwd ((f , G) , f' , H) b with G (inr b)
+      fwd : is-equiv {A = A} {B = A + B} inj₁ → (B → ⊥)
+      fwd ((f , G) , f' , H) b with G (inj₂ b)
       ... | ()
 
-  ex2 : is-equiv {A = B} {B = A ⊎ B} inr ↔ (A → ∅)
-  ex2 {A = A} = fwd , λ x → ((λ { (inl a) → ex-falso (x a) ; (inr x) → x }) , λ { (inl a) → ex-falso (x a) ; (inr b) → refl })
-                            , ((λ { (inl a) → ex-falso (x a) ; (inr b) → b }) , λ x → refl)
+  ex2 : is-equiv {A = B} {B = A + B} inj₂ ↔ (A → ⊥)
+  ex2 {A = A} = fwd , λ x → ((λ { (inj₁ a) → ⊥-elim (x a) ; (inj₂ x) → x }) , λ { (inj₁ a) → ⊥-elim (x a) ; (inj₂ b) → refl })
+                            , ((λ { (inj₁ a) → ⊥-elim (x a) ; (inj₂ b) → b }) , λ x → refl)
     where
-      fwd : is-equiv {A = B} {B = A ⊎ B} inr → (A → ∅)
-      fwd ((f , G) , f' , H) a with G (inl a)
+      fwd : is-equiv {A = B} {B = A + B} inj₂ → (A → ⊥)
+      fwd ((f , G) , f' , H) a with G (inj₁ a)
       ... | ()
 
 
@@ -305,7 +305,7 @@ module 11•8 {A : Set ℓ}  where
 
 
 module 11•9 {A B : Set} {f : A → B} where
-  ex : (∀ (x y : A) → section (Paths.ap {x = x} {y = y} f)) → is-emb f
+  ex : (∀ (x y : A) → section (ap {x = x} {y = y} f)) → is-emb f
   ex sec-ap-f = Embed λ x y → 11•8.part-e x (λ y → Paths.ap {x = x} {y = y} f) (sec-ap-f x) y
 
 
