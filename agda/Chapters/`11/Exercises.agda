@@ -2,7 +2,7 @@ module Chapters.`11.Exercises where
 
 open import Prelude
 open import Chapters.`01-08.Reading hiding (tr)
-open import Chapters.`01-08.Exercises
+-- open import Chapters.`01-08.Exercises
 open import Chapters.`09.Reading
 open import Chapters.`09.Exercises
 open import Chapters.`10.Reading
@@ -16,7 +16,7 @@ private
 
 module 11•1a where
   -- show that the map ∅ → A is an embedding for any type A
-  ex : ∅ ↪[ A ]
+  ex : ∅ ↪ A
   ex = (λ ()) , Embed (λ ())
 
 
@@ -198,7 +198,7 @@ module 11•4 {A B X : Set} {f : A → X} {g : B → X} {h : A → B} {H : f ∼
       backward : is-emb g → is-emb f
       backward = ex-b-aux is-equiv-h
 
-module 11•5 {A B C : Set} (f : A ↪[ B ]) (g : B ↪[ C ]) where
+module 11•5 {A B C : Set} (f : A ↪ B) (g : B ↪ C) where
   -- Consider 2 embeddings f : A ↪ B and g : B ↪ C. Show that the following are equivalent
   -- (i) the composite g ∘ f is an equivalence
   -- (ii) both f and g are equivalences
@@ -229,11 +229,11 @@ module 11•5 {A B C : Set} (f : A ↪[ B ]) (g : B ↪[ C ]) where
           -- TODO: refactor, or not
           has-inverse-f : has-inverse (fst f)
           has-inverse-f =
-            (f-inv , (λ x → `sec (is-emb.ap-equiv (snd g) (fst f (f-inv x)) x) (is-equiv-g∘f .proj₁ .snd (proj₁ g x))) , λ x →
-                                                                                                                            f .snd .is-emb.ap-equiv (f-inv (proj₁ f x)) (id x) .snd .proj₁
-                                                                                                                            (g .snd .is-emb.ap-equiv (f .proj₁ (f-inv (proj₁ f x)))
-                                                                                                                             (f .proj₁ (id x)) .proj₁ .proj₁
-                                                                                                                             (is-equiv-g∘f .proj₁ .snd (proj₁ g (proj₁ f x)))))
+            (f-inv , (λ x → `sec (is-emb.ap-equiv (snd g) (fst f (f-inv x)) x) (is-equiv-g∘f .fst .snd (fst g x))) , λ x →
+                                                                                                                            f .snd .is-emb.ap-equiv (f-inv (fst f x)) (id x) .snd .fst
+                                                                                                                            (g .snd .is-emb.ap-equiv (f .fst (f-inv (fst f x)))
+                                                                                                                             (f .fst (id x)) .fst .fst
+                                                                                                                             (is-equiv-g∘f .fst .snd (fst g (fst f x)))))
 
           is-equiv-f : is-equiv (fst f)
           is-equiv-f = has-inverse⇒is-equiv has-inverse-f
@@ -242,9 +242,9 @@ module 11•5 {A B C : Set} (f : A ↪[ B ]) (g : B ↪[ C ]) where
           g-inv = (fst f) ∘ fst has-inverse-g∘f
 
           has-inverse-g : has-inverse (fst g)
-          has-inverse-g = g-inv , is-equiv-g∘f .proj₁ .snd , λ x →
-                                                                g .snd .is-emb.ap-equiv (g-inv (proj₁ g x)) (id x) .proj₁ .proj₁
-                                                                (is-equiv-g∘f .proj₁ .snd (proj₁ g x))
+          has-inverse-g = g-inv , is-equiv-g∘f .fst .snd , λ x →
+                                                                g .snd .is-emb.ap-equiv (g-inv (fst g x)) (id x) .fst .fst
+                                                                (is-equiv-g∘f .fst .snd (fst g x))
 
           is-equiv-g : is-equiv (fst g)
           is-equiv-g = has-inverse⇒is-equiv has-inverse-g
@@ -322,7 +322,7 @@ module 11•10 {A B : Set} {f : A → B} where
 
   -- Note that any equivalence is an embedding,
   i→ii : is-equiv f → is-path-split f
-  i→ii is-equiv-f = (is-equiv-f .proj₁) , λ x y → fst (lem .is-emb.ap-equiv x y)
+  i→ii is-equiv-f = (is-equiv-f .fst) , λ x y → fst (lem .is-emb.ap-equiv x y)
       where
         lem = thm•11•4•2 (f , is-equiv-f)
 
@@ -330,7 +330,7 @@ module 11•10 {A B : Set} {f : A → B} where
   ii→i : is-path-split f → is-equiv f
   ii→i (sec-f , sec-ap-f) = sec-f ,
                               ((fst sec-f) ,
-                                λ x → sec-ap-f (proj₁ sec-f (f x)) (id x) .proj₁ (sec-f .snd (f x)))
+                                λ x → sec-ap-f (fst sec-f (f x)) (id x) .fst (sec-f .snd (f x)))
 
 equiv-sym : {A B : Set ℓ} → (A ≃ B) → (B ≃ A)
 equiv-sym (_ , is-equiv-f) = `sec is-equiv-f , equivalence-inverse-equivalence is-equiv-f

@@ -16,7 +16,7 @@ open import Data.Fin
   renaming (zero to fzero ; suc to fsuc) public
 open import Data.Nat using (ℕ ; suc ; zero) public
 
-open import Function hiding (_↔_) public
+open import Function hiding (_↔_ ; _↪_) public
 
 open import Relation.Binary using (IsEquivalence)
 open import Relation.Binary.PropositionalEquality

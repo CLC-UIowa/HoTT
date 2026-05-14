@@ -1,7 +1,7 @@
 module Chapters.`12.Reading where
 
 open import Prelude
-open import Chapters.`01-08.Reading hiding (tr)
+open import Chapters.`01-08.Reading using (∅ ; ⋆ ; 𝟙 ; ex-falso)
 open import Chapters.`01-08.Exercises
 open import Chapters.`09.Reading
 open import Chapters.`09.Exercises
@@ -35,8 +35,16 @@ is-prop A = ∀ (x y : A) → is-contr (x ≡ y)
 Prop[_] : (ℓ : Level) → Set (lsuc ℓ)
 Prop[ ℓ ] = Σ[ X ∈ Set ℓ ] (is-prop X)
 
+
+
 -- Example 12.1.2
 -- Any contractible type is a proposition by Exercise 10.1
+-- AH> Restating/proving here for easier reference and better naming than ex-10-1:
+is-contr⇒is-prop : ∀ (A : Set ℓ) → is-contr A → is-prop A
+is-contr⇒is-prop A (c , cntr) x y = 
+  (cntr x ⁻¹ ○ cntr y) , λ { refl → left-inv (cntr x) }
+
+
 -- In particular the unit type is a proposition, so is the empty type
 is-prop-∅ : is-prop ∅
 is-prop-∅ = λ x y → 10-1.ex-10-1 x y ((ex-falso x) , (ex-falso y))
@@ -44,35 +52,45 @@ is-prop-∅ = λ x y → 10-1.ex-10-1 x y ((ex-falso x) , (ex-falso y))
 is-prop-𝟙 : is-prop 𝟙
 is-prop-𝟙 = λ {𝟙.⋆ 𝟙.⋆ → 10-1.ex-10-1 𝟙.⋆ 𝟙.⋆ (⋆ , (λ { 𝟙.⋆ → refl })) }
 
+-- AH> I would really prefer we use Agda stdlib's ⊤ and ⊥ over 𝟙 and ∅,
+--     and yes I am fully aware of the irony in asserting this simply 
+--     because 𝟙 does not render in my emacs font.
+is-prop-⊥ : is-prop ⊥ 
+is-prop-⊥ () 
+is-prop-⊤ : is-prop ⊤
+is-prop-⊤ = is-contr⇒is-prop ⊤ ⊤-contr 
+
+----------------------------------------
 -- Proposition 12.1.3
+
 -- Let A be a type, The following are equivalent
 -- (i) Type A is a proposition
 -- (ii) Any two terms of type A can be identified, i.e. there is a dependent function of type
---           is-prop' A := Π_{x y : A} x ≡ y
+--           is-prop′ A := Π_{x y : A} x ≡ y
 -- (iii) The type A is contractible as soon as it is inhabited, i.e., there is a function of type
 --           A → is-contr A
 -- (iv) the map const_⋆ : A → 𝟙 is an embedding
 
-is-prop' : Set ℓ → Set ℓ
-is-prop' A = ∀ (x y : A) → x ≡ y
-
-module 12•1•3 {A : Set} where
+is-prop′ : Set ℓ → Set ℓ
+is-prop′ A = ∀ (x y : A) → x ≡ y
+                                                                               
+module _ {A : Set} where
 -- The proof proceeds by showing (i) → (ii) → (iii) → (iv) → i
 
-  i→ii : is-prop A → is-prop' A
-  i→ii pa = λ x y → is-contr.center (pa x y)
+  is-prop⇒is-prop′ : is-prop A → is-prop′ A
+  is-prop⇒is-prop′ pa = λ x y → is-contr.center (pa x y)
 
-  ii→iii : is-prop' A → (A → is-contr A)
-  ii→iii pa = λ x → x , pa x
+  is-prop′⇒contractibleIfInhabited : is-prop′ A → (A → is-contr A)
+  is-prop′⇒contractibleIfInhabited pa = λ x → x , pa x
 
-  lem : {X Y : Set} → {f : X → Y} → (X → is-emb f) → is-emb f
-  lem = λ x → {!!}
+  lemmer : {X Y : Set} → {f : X → Y} → (X → is-emb f) → is-emb f
+  lemmer = λ x → {!!}
 
-  iii→iv : (A → is-contr A) → is-emb {A = A} (const 𝟙.⋆)
-  iii→iv f = thm•11•4•2 (const 𝟙.⋆ , 10-3.const-tt-is-equiv {A = A} {!!})
+  contractibleIfInhabited→const⋆-embedding : (A → is-contr A) → is-emb {A = A} (const 𝟙.⋆)
+  contractibleIfInhabited→const⋆-embedding f = thm•11•4•2 (const 𝟙.⋆ , 10-3.const-tt-is-equiv {A = A} {!!})
 
-  iv→i : is-emb {A = A} (const 𝟙.⋆) → is-prop A
-  iv→i (Embed ap-equiv) = λ x y → (ap-equiv x y .proj₁ .proj₁ refl) , (λ e → {!ap-equiv x y .fst .snd!})
+  const⋆-embedding→is-prop : is-emb {A = A} (const 𝟙.⋆) → is-prop A
+  const⋆-embedding→is-prop (Embed ap-equiv) = λ x y → (ap-equiv x y .fst .fst refl) , (λ e → {!ap-equiv x y .fst .snd!})
 
 
 -- Proposition 12.1.4
@@ -80,7 +98,7 @@ module 12•1•3 {A : Set} where
 -- if and only if there is a map g : Q → P
 prop•12•1•4 : {P Q : Set} → is-prop P → is-prop Q → ((P ≃ Q) ↔ (P ↔ Q))
 prop•12•1•4 {P = P} {Q = Q} prop-p prop-q =
-        (λ e → e .proj₁ , e .snd .proj₁ .proj₁)
+        (λ e → e .fst , e .snd .fst .fst)
         , λ { (f , g) → f ,
                has-inverse⇒is-equiv (g , (λ x → is-contr.center (prop-q (f (g x)) (id x))) ,
                                          (λ x → is-contr.center (prop-p (g (f x)) (id x))) ) }

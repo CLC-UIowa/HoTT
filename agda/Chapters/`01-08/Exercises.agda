@@ -1,5 +1,15 @@
 module Chapters.`01-08.Exercises where 
 
+import Data.Empty
+open import Prelude using (_↔_)
+open import Data.Nat hiding (_!; _<_ ; _⊔_)
+open import Data.Product
+import Data.Unit
+open import Function hiding (_↔_)
+open import Relation.Binary
+open import Relation.Binary.PropositionalEquality hiding (J)
+open import Level using (Level)
+open import Agda.Primitive using (lsuc ; _⊔_ ; Setω)
 open import Data.Nat.Properties
 open import Chapters.`01-08.Reading renaming (𝟙 to ⊤ ; ind𝟙 to ind⊤)
 

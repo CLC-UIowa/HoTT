@@ -2,12 +2,12 @@ module Chapters.`01-08.Reading where
 
 import Data.Empty
 open import Prelude using (_↔_)
-open import Data.Nat hiding (_!; _<_ ; _⊔_) public
-open import Data.Product public
+open import Data.Nat hiding (_!; _<_ ; _⊔_)
+open import Data.Product
 import Data.Unit
-open import Function hiding (_↔_) public
+open import Function hiding (_↔_)
 open import Relation.Binary
-open import Relation.Binary.PropositionalEquality hiding (J) public
+open import Relation.Binary.PropositionalEquality hiding (J)
 open import Level using (Level)
 open import Agda.Primitive using (lsuc ; _⊔_ ; Setω)
 

@@ -433,8 +433,8 @@ record is-emb {A B : Set} (f : A → B) : Set where
   map : A → B
   map = f
 
-_↪[_] : Set → Set → Set -- becuase A ↪ B is already defined in prelude
-A ↪[ B ] = Σ[ f ∈ (A → B) ] is-emb f
+_↪_ : Set → Set → Set
+A ↪ B = Σ[ f ∈ (A → B) ] is-emb f
 
 -- Theorem 11.4.1 Any Equivalence is an embedding
 thm•11•4•2 : (e : A ≃ B) → (is-emb (fst e))
