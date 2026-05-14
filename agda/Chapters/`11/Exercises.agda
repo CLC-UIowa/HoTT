@@ -101,8 +101,8 @@ module 11•3 {A B : Set} {f g : A → B} where
 is-equiv-∼ : {A B : Set ℓ} {f g : A → B} → (f ∼ g) → is-equiv f → is-equiv g
 is-equiv-∼ f∼g is-equiv-f = has-inverse⇒is-equiv (has-inverse-htpy (is-equiv⇒has-inverse is-equiv-f) f∼g)
 
-ap-comp-∼ : {A B C : Set ℓ} (f : A → B) (g : B → C) {x y : A} → (Paths.ap g) ∘ (Paths.ap {x = x} {y = y} f) ∼ Paths.ap (g ∘ f)
-ap-comp-∼ f g = λ z → Paths.ap-comp f g z
+ap-comp-∼ : {A B C : Set ℓ} (f : A → B) (g : B → C) {x y : A} → (ap g) ∘ (ap {x = x} {y = y} f) ∼ ap (g ∘ f)
+ap-comp-∼ f g = λ z → ap-comp f g z
 
 has-inverse-has-inverse : {A B : Set ℓ} {f : A → B} (has-inv-f : has-inverse f) → has-inverse (fst (has-inv-f))
 has-inverse-has-inverse {f = f} (g , g-inv-prf) = f , ((snd g-inv-prf) , (fst g-inv-prf))
@@ -134,19 +134,19 @@ module 11•4 {A B X : Set} {f : A → X} {g : B → X} {h : A → B} {H : f ∼
       forward : is-emb f → is-emb h
       forward is-emb-f = Embed emb
         where -- SB> Sorry, I couldn't figure out how to put "where" syntax inside the lambda, so I did this nonsense instead
-          emb : (x y : A) → is-equiv (Paths.ap h)
+          emb : (x y : A) → is-equiv (ap h)
           emb x y = emb'
             where
-              is-equiv-ap-comp : is-equiv (Paths.ap (g ∘ h))
+              is-equiv-ap-comp : is-equiv (ap (g ∘ h))
               is-equiv-ap-comp = is-emb.ap-equiv ((_↔_.to $ 11•3.ex H) is-emb-f) x y
 
-              is-equiv-comp-ap : is-equiv ((Paths.ap g) ∘ (Paths.ap h))
+              is-equiv-comp-ap : is-equiv ((ap g) ∘ (ap h))
               is-equiv-comp-ap = is-equiv-∼ (sym-∼ (ap-comp-∼ h g)) is-equiv-ap-comp
 
-              is-equiv-ap-g : is-equiv (Paths.ap {x = h x} {y = h y} g)
+              is-equiv-ap-g : is-equiv (ap {x = h x} {y = h y} g)
               is-equiv-ap-g = is-emb.ap-equiv is-emb-g (h x) (h y)
 
-              emb' : is-equiv (Paths.ap h)
+              emb' : is-equiv (ap h)
               emb' = is-equiv-decomp is-equiv-ap-g is-equiv-comp-ap
 
       backward : is-emb h → is-emb f
@@ -155,19 +155,19 @@ module 11•4 {A B X : Set} {f : A → X} {g : B → X} {h : A → B} {H : f ∼
           is-emb-ap-comp : is-emb (g ∘ h)
           is-emb-ap-comp = Embed emb'
             where
-              emb' : (x y : A) → is-equiv (Paths.ap (g ∘ h))
+              emb' : (x y : A) → is-equiv (ap (g ∘ h))
               emb' x y = is-equiv-ap-comp
                 where
-                  is-equiv-ap-g : is-equiv (Paths.ap {x = h x} {y = h y} g)
+                  is-equiv-ap-g : is-equiv (ap {x = h x} {y = h y} g)
                   is-equiv-ap-g = is-emb.ap-equiv is-emb-g (h x) (h y)
 
-                  is-equiv-comp-ap : is-equiv ((Paths.ap g) ∘ (Paths.ap h))
+                  is-equiv-comp-ap : is-equiv ((ap g) ∘ (ap h))
                   is-equiv-comp-ap = is-equiv-comp is-equiv-ap-g (is-emb.ap-equiv is-emb-h x y)
 
-                  is-equiv-ap-comp : is-equiv (Paths.ap (g ∘ h))
+                  is-equiv-ap-comp : is-equiv (ap (g ∘ h))
                   is-equiv-ap-comp = is-equiv-∼ (ap-comp-∼ h g) is-equiv-comp-ap
 
-          emb : (x y : A) → is-equiv (Paths.ap f)
+          emb : (x y : A) → is-equiv (ap f)
           emb x y = is-emb.ap-equiv ((_↔_.from $ 11•3.ex H) is-emb-ap-comp) x y
 
   ex-b-aux : (is-equiv h) → (is-emb g → is-emb f)
@@ -256,7 +256,7 @@ module 11•5 {A B C : Set} (f : A ↪ B) (g : B ↪ C) where
 module 11•8 {A : Set ℓ}  where
   open PathReasoning
   part-a : {𝐁 𝐂 : A → Set ℓ}(f g : (x : A) →  𝐁 x → 𝐂 x) → ((x : A) → (f x) ∼ (g x)) → (tot f ∼ tot g)
-  part-a f g f∼g (a , Ba) = Paths.ap (λ y → (a , y)) (f∼g a Ba)
+  part-a f g f∼g (a , Ba) = ap (λ y → (a , y)) (f∼g a Ba)
 
   part-b : {𝐁 𝐂 𝐃 : A → Set ℓ}(f : (x : A) →  𝐁 x → 𝐂 x) (g : (x : A) →  𝐂 x → 𝐃 x)
          → tot (λ x → g x ∘ (f x)) ∼ (tot g ∘ tot f)
@@ -273,7 +273,7 @@ module 11•8 {A : Set ℓ}  where
         r x = fst (retr-f x)
 
         lem : retraction (tot f)
-        lem = (tot r) , (λ { (x , Bx) → Paths.ap (λ y → (x , y)) ((retr-f x) .snd Bx) })
+        lem = (tot r) , (λ { (x , Bx) → ap (λ y → (x , y)) ((retr-f x) .snd Bx) })
 
         lem2 : is-contr (Σ[ x ∈ A ] a ≡ x) → is-contr (Σ A 𝐁)
         lem2 = 10-2.retract-is-contractible (tot f) lem
@@ -292,7 +292,7 @@ module 11•8 {A : Set ℓ}  where
       f̅ x = sec-f x .fst
 
       lem : section (tot f)
-      lem = (tot f̅ ) , λ { ( x , Bx ) → Paths.ap (λ y → (x , y)) (sec-f x .snd Bx) }
+      lem = (tot f̅ ) , λ { ( x , Bx ) → ap (λ y → (x , y)) (sec-f x .snd Bx) }
 
       id-equiv : is-equiv {A = 𝐁 x} id
       id-equiv = (id , (λ x₁ → refl)) , (id , (λ x₁ → refl))
@@ -306,14 +306,14 @@ module 11•8 {A : Set ℓ}  where
 
 module 11•9 {A B : Set} {f : A → B} where
   ex : (∀ (x y : A) → section (ap {x = x} {y = y} f)) → is-emb f
-  ex sec-ap-f = Embed λ x y → 11•8.part-e x (λ y → Paths.ap {x = x} {y = y} f) (sec-ap-f x) y
+  ex sec-ap-f = Embed λ x y → 11•8.part-e x (λ y → ap {x = x} {y = y} f) (sec-ap-f x) y
 
 
 -- We say that map f : A → B is path split when
 -- f has a section
 -- and the map ap f (x , y) : x ≡ y → f x ≡ f y for each x y has a section
 is-path-split : {A B : Set ℓ} → (A → B) → Set ℓ
-is-path-split {A = A} {B = B} f = section f × ∀ (x y : A) → section (Paths.ap {x = x} {y = y} f)
+is-path-split {A = A} {B = B} f = section f × ∀ (x y : A) → section (ap {x = x} {y = y} f)
 
 module 11•10 {A B : Set} {f : A → B} where
   -- show that the following is equivalent
