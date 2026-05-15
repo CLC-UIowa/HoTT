@@ -368,7 +368,7 @@ module 11•11 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : 
   fib-triangle x (a , fa≡x) = (h a , tr (λ a' → a' ≡ x) (H a) fa≡x  )
 
   vert1 : (Σ[ x ∈ X ] (fib f x)) → A
-  vert1 = fst $ sym-≃ $ fst $ 10-8.domain-≃-Σ-fib' f
+  vert1 = fst $ sym-≃ $ fst $ 10-8.domain-≃-Σ-fib' f -- Applying 10.8
 
   is-equiv-vert1 : is-equiv vert1
   is-equiv-vert1 = snd $ sym-≃ $ fst $ 10-8.domain-≃-Σ-fib' f
@@ -406,11 +406,15 @@ module 11•11 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : 
   is-equiv-top↔is-equiv-bottom = id , id -- lol
 
   is-equiv-h↔is-equiv-tot-fib-triangle : is-equiv h ↔ (is-equiv $ tot fib-triangle)
-  is-equiv-h↔is-equiv-tot-fib-triangle = {!!} -- Simply need to chain ↔ from previous lemmas
+  is-equiv-h↔is-equiv-tot-fib-triangle = -- This is just chaining ↔ from previous lemmas. Do we have a better way to do this? (If not, we should implement it)
+    (_↔_.from is-equiv-tot-fib-triangle↔is-equiv-top) ∘ (_↔_.from is-equiv-top↔is-equiv-bottom) ∘ (_↔_.to is-equiv-h↔is-equiv-bottom)
+    , (_↔_.from is-equiv-h↔is-equiv-bottom) ∘ (_↔_.to is-equiv-top↔is-equiv-bottom) ∘ (_↔_.to is-equiv-tot-fib-triangle↔is-equiv-top)
 
   is-equiv-tot-fib-triangle↔is-equiv-fam-fib-triangle : (is-equiv $ tot fib-triangle) ↔ is-equiv-fam fib-triangle
-  is-equiv-tot-fib-triangle↔is-equiv-fam-fib-triangle = 11•1•3.thm fib-triangle
+  is-equiv-tot-fib-triangle↔is-equiv-fam-fib-triangle = 11•1•3.thm fib-triangle -- Applying thm 11.1.13
 
   -- More ↔ chaining
   is-equiv-h↔is-equiv-fam-fib-triangle : is-equiv h ↔ is-equiv-fam fib-triangle
-  is-equiv-h↔is-equiv-fam-fib-triangle = {!!}
+  is-equiv-h↔is-equiv-fam-fib-triangle =
+    (_↔_.to is-equiv-tot-fib-triangle↔is-equiv-fam-fib-triangle) ∘ (_↔_.to is-equiv-h↔is-equiv-tot-fib-triangle) -- Again just chaining
+    , (_↔_.from is-equiv-h↔is-equiv-tot-fib-triangle) ∘ (_↔_.from is-equiv-tot-fib-triangle↔is-equiv-fam-fib-triangle)
