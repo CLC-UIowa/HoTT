@@ -63,18 +63,55 @@ is-prop-⊤ = is-contr⇒is-prop ⊤ ⊤-contr
 --           A → is-contr A
 -- (iv) the map const_⋆ : A → ⊤ is an embedding
 
-is-prop′ : Set ℓ → Set ℓ
-is-prop′ A = ∀ (x y : A) → x ≡ y
 
 module _ {A : Set} where
 -- The proof proceeds by showing (i) → (ii) → (iii) → (iv) → i
   open is-contr
 
+  is-prop′ : Set ℓ → Set ℓ
+  is-prop′ A = ∀ (x y : A) → x ≡ y
+  
+  -- AH> I am going to deviate from the book here and prove directly that
+  --     is-prop A ⇔ is-prop′ A. We can then use this fact to complete the last step
+  --     of Prop 12.1.3. The proof that is-prop and is-prop′ are equivalent
+  --     follows from HoTT Book lemmas 3.3.4 and 3.11.10.
+  -- 
+  --     First I'm going to use the HoTT book def'n of is-set, which deviates from Rijke's.
+  --     A "set", discussed later in ch. 12, is a type for which all proofs of 
+  --     equality are equal. In other words, they're sets for which the UIP holds.
+  is-set′ : Set ℓ → Set ℓ
+  is-set′ A = ∀ (x y : A) (p q : x ≡ y) → p ≡ q 
+
+  -- (i → ii)
   -- AH> the simple intuition here is that if (x ≡ y) is contractible,
   --     it's inhabited! So we just take the center of contraction.
   is-prop⇒is-prop′ : is-prop A → is-prop′ A
   is-prop⇒is-prop′ isProp x y = isProp x y .center
 
+  -- AH> The reverse direction is more complicated. To make matters harder,
+  -- let's prove a more important lemma: that if A is a mere prop, then
+  -- A is also a set.
+  -- The proof is some HoTT nonsense that goes like this:
+  -- Define g(y) as "post-composing" y with x. 
+  -- Then prove that any proof of a ≡ b is equal to (g a) ⁻¹ ○ (g b);
+  -- it follows now that 
+  --   - lem x y p : p = (g x) ⁻¹ ○ (g y) 
+  --   - lem x y q : q = (g x) ⁻¹ ○ (g y) 
+  is-prop′⇒is-set′ : is-prop′ A → is-set′ A 
+  is-prop′⇒is-set′ isProp x y p q = lem x y p ○ (lem x y q) ⁻¹ 
+      where
+      g : (y : A) → x ≡ y 
+      g y = isProp x y
+  
+      lem : ∀ (a b : A) (p : a ≡ b) → p ≡ (g a) ⁻¹ ○ g b
+      lem a b refl = (left-inv (g a)) ⁻¹ 
+
+  -- This direction now falls out easily
+  is-prop′⇒is-prop : is-prop′ A → is-prop A
+  is-prop′⇒is-prop isProp x y = 
+    isProp x y , λ { q → is-prop′⇒is-set′ isProp x y (isProp x y) q }
+
+  -- (ii → iii)
   -- AH> Intuitively, is-prop′ says "all my elements are equal (but I may have
   --     none)" and is-contr says "I'm a prop AND I'm inhabited"; the proof is
   --     simply to let the inhabitant `a` be the center and let
@@ -83,9 +120,12 @@ module _ {A : Set} where
   is-prop′⇒contractibleIfInhabited : is-prop′ A → (A → is-contr A)
   is-prop′⇒contractibleIfInhabited isProp a = (a , isProp a)
 
+
+  -- This is a simple trick that will "give us" an X in the next proof step.
   lemmer : {X Y : Set} → {f : X → Y} → (X → is-emb f) → is-emb f
   lemmer {f = f} m = Embed λ x y → m x .is-emb.ap-equiv x y
 
+  -- (iii → iv)
   -- Helpers:
   --  - thm•11•4•2 : (e : A ≃ B) → (is-emb (fst e))
   --  - const-tt-is-equiv : is-contr A → is-equiv {ℓ} {A} (const tt)
@@ -111,19 +151,15 @@ module _ {A : Set} where
     lemmer {f = λ (x : A) → tt}
       (λ a → thm•11•4•2 ((λ x → tt) , (10-3.const-tt-is-equiv (f a))))
 
-  -- AH> An alternative route to proving (iv) to (i) is to use the below
-  -- proof with a proof that is-prop′ implies is-prop...
+  -- (iv → i)
+  -- AH> Here we deviate from Rijke. It's *much simpler* to prove that,
+  --     if (λ (x : A) → tt) is an embedding, that all x, y : A are equal.
   const⋆-embedding⇒is-prop′  : is-emb {A = A} (λ (x : A) → tt) → is-prop′ A
   const⋆-embedding⇒is-prop′ (Embed ap-equiv) x y = ap-equiv x y .fst .fst refl
 
-  -- However this is not so simple...
-  is-prop′⇒is-prop : is-prop′ A → is-prop A
-  is-prop′⇒is-prop isProp x y = isProp x y , λ { refl → {!!} }
-
+  -- AH> Now use the implication from is-prop′ A to is-prop A to complete the proof.
   const⋆-embedding⇒is-prop : is-emb {A = A} (λ (x : A) → tt) → is-prop A
-  const⋆-embedding⇒is-prop (Embed ap-equiv) x y with ap-equiv x y
-  ... | (f , sec) , retr = f refl ,
-    λ { refl → {!sec refl!} }
+  const⋆-embedding⇒is-prop emb = is-prop′⇒is-prop (const⋆-embedding⇒is-prop′ emb)
 
 
 -- Proposition 12.1.4

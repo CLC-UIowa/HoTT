@@ -127,6 +127,7 @@ module Paths where
   apd : {B : A → Set ℓ} (f : (x : A) → B x) (p : x ≡ y) → tr B p (f x) ≡ f y
   apd f refl = refl
 
+
   -------------------------------------------------------------------------------
   -- The groupoidal structure of types
   instance
@@ -145,25 +146,20 @@ module Paths where
         right-identity = λ { refl → refl } ;
         assoc = λ { refl refl refl → refl } }
 
-  -- left-inv : {A : Set ℓ} {x y : A} (p : x ≡ y) → p ⁻¹ ○ p ≡ refl
-  -- left-inv {x = x} {y} refl = refl
-
-  -- right-inv : {A : Set ℓ} {x y : A} (p : x ≡ y) → p ○ p ⁻¹ ≡ refl
-  -- right-inv {x = x} {y} refl = refl
-
-  -- involution : {A : Set ℓ} {x y : A} (p : x ≡ y) → (p ⁻¹) ⁻¹ ≡ p
-  -- involution {x = x} {y} refl = refl
-
-  -- left-identity : {A : Set ℓ} {x y : A} (p : x ≡ y) → refl ○ p ≡ p
-  -- left-identity {x = x} {y}  refl = refl
-
-  -- right-identity : {A : Set ℓ} {x y : A} (p : x ≡ y) → p ○ refl ≡ p
-  -- right-identity {x = x} {y} refl = refl
-
-  -- assoc : {A : Set ℓ} {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → (p ○ q) ○ r ≡ p ○ (q ○ r)
-  -- assoc refl refl refl = refl
-
 open Paths public
+
+--------------------------------------------------------------------------------
+-- Some laws about transport. (Lemma 2.11.2 in HoTT book).
+
+module _ {ℓ} {A : Set ℓ} (a x₁ x₂ : A) where
+  post-comp-law : (p : x₁ ≡ x₂) (q : a ≡ x₁) → tr (λ x → a ≡ x) p q ≡ q ○ p
+  post-comp-law refl q = (right-identity q) ⁻¹
+  
+  pre-comp-law : (p : x₁ ≡ x₂) (q : x₁ ≡ a) → tr (λ x → x ≡ a) p q ≡ p ⁻¹ ○ q
+  pre-comp-law refl q = refl
+
+  refl-law : (p : x₁ ≡ x₂) (q : x₁ ≡ x₁) → tr (λ x → x ≡ x) p q ≡ p ⁻¹ ○ q ○ p 
+  refl-law refl q = (right-identity q) ⁻¹ 
 
 -----------------------------------------------------------------------------
 -- Pointwise equivalence of functions (homotopy equivalence)
