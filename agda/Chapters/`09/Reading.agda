@@ -198,3 +198,20 @@ pairEqv {s = s} {t} = has-inverse⇒is-equiv
                           (p : s ≡ t) →
                           eq-pair (pair-eq p) ≡ p
     eq-pair-retraction refl = refl
+
+
+--------------------------------------------------------------------------------
+-- ≃ is an eqv relation, so we can employ equational reasoning syntax
+
+refl-≃ : {A : Set ℓ₁} → A ≃ A 
+refl-≃ = id , has-inverse⇒is-equiv (id , (refl-∼ , refl-∼)) 
+
+-- sym-≃ : {A : Set ℓ₁} {B : Set ℓ₂} → A ≃ B → B ≃ A
+-- sym-≃ (f , eqv@((f⁻¹ , sec) , (f⁻¹′ , retr))) with is-equiv⇒equalSplits  eqv 
+-- ... | eq-splits = f⁻¹ , 
+--   has-inverse⇒is-equiv (f , 
+--     ((begin {!!}) , {!!}))
+
+
+module ≃-Reasoning where
+
