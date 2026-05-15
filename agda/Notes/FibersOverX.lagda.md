@@ -37,10 +37,16 @@ Analogously, the "canonical projection function" for us type theorists
 is π₁ : Σ A B → A. When we say that P x is the "fiber over x", we mean the *fiber of
 π₁ at x*.
 
-Let's prove that fib π₁ x ≃ P x.
+Let's prove that fib π₁ x ≃ P x. This is also proven as Ex. 10.7 and Corollary 12.2.4.
 
 ```
-module _ {ℓ₁ ℓ₂} {A : Set ℓ₁} (P : A → Set ℓ₂) where
+module _ {ℓ₁} {A : Set ℓ₁} (P : A → Set ℓ₁) where
   fibOverX : ∀ (x : A) → fib (fst {B = P})  x ≃ P x
-  fibOverX x = {!!} 
+  fibOverX x = f , has-inverse⇒is-equiv (f⁻¹ , (refl-∼ , (λ { (y , refl) → refl }))) 
+    where
+      f : fib fst x → P x 
+      f ((a , Pa) , refl) = Pa
+      
+      f⁻¹ : P x → fib (fst {B = P}) x 
+      f⁻¹ px = (x , px) , refl 
 ``` 

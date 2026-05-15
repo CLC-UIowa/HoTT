@@ -148,23 +148,6 @@ tot[_]_ : {𝐂 : A → Set ℓ} {𝐃 : B → Set ℓ} (f : A → B) (g : (x : 
      → Σ A 𝐂  → Σ[ y ∈ B ] (𝐃 y)
 tot[ f ] g = λ (x , z) → (f x , g x z)
 
-has-inverse-comp : {f : B → C} {g : A → B} → has-inverse f → has-inverse g → has-inverse (f ∘ g)
-has-inverse-comp {f = f} {g = g} (f̅ , f∘f̅~id , f̅∘f~id) (g̅ , g∘g̅~id , g̅∘g~id) = g̅ ∘ f̅ , ((λ x →  ap f (g∘g̅~id (f̅ x)) ○ f∘f̅~id x) , λ x → ap g̅ (f̅∘f~id (g x)) ○ g̅∘g~id x )
-
-is-equiv-comp : {f : B → C} {g : A → B} → is-equiv f → is-equiv g → is-equiv (f ∘ g)
-is-equiv-comp {f = f} {g = g} equiv-f equiv-g = prf
-  where
-    has-inverse-f : has-inverse f
-    has-inverse-f = is-equiv⇒has-inverse equiv-f
-
-    has-inverse-g : has-inverse g
-    has-inverse-g = is-equiv⇒has-inverse equiv-g
-
-    has-inverse-f∘g : has-inverse (f ∘ g)
-    has-inverse-f∘g = has-inverse-comp has-inverse-f has-inverse-g
-
-    prf : is-equiv (f ∘ g)
-    prf = has-inverse⇒is-equiv has-inverse-f∘g
 
 has-inverse-htpy : {f : A → B} {g : A → B} → has-inverse f → f ∼ g → has-inverse g
 has-inverse-htpy (f̅ , (f∘f̅~id , f̅∘f~id)) f∼g = f̅ , ((λ x →  ((f∼g ·ᵣ f̅) x)⁻¹ ○ f∘f̅~id x) , λ x →  ((f̅  ·ₗ f∼g)  x) ⁻¹ ○ f̅∘f~id x)
@@ -634,17 +617,6 @@ module 11•6•1 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
 -- (v) The total space Σ_{(x , y) Σ_{x : A} 𝐁 x} Σ_{z : 𝐂 x} D x y z is contractible
 -- (vi) The type family (x , y) ↦ Σ_{z : 𝐂 x} D x y z is an identity system at (a , b) : Σ_{x : A} 𝐁 x
 
-
-compose-≃ : A ≃ B → B ≃ C → A ≃ C
-compose-≃ e1 e2 = (fst e2 ∘ fst e1) , (is-equiv-comp (snd e2) (snd e1))
-
-sym-≃ : A ≃ B → B ≃ A
-sym-≃ (f , is-eq-f) with is-equiv⇒has-inverse is-eq-f
-... | (f̅ , is-eq-f̅) =  f̅ , ((f , (is-eq-f̅ .snd)) , (f , (is-eq-f̅ .fst)))
-
-refl-≃ : A ≃ A
-refl-≃ = id , ((id , (λ x → refl)) , (id , λ x → refl))
-
 module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 : (x : A) → 𝐁 x → 𝐂 x → Set ℓ) (a : A) (b : 𝐁 a) (c : 𝐂 a) (d : 𝐃 a b c) (c-ident-system : is-unary-ident-system {𝐁 = 𝐂} {a = a} c) where
   i↔ii : {f : (y : 𝐁 a) → (b ≡ y) → 𝐃 a y c} → (∀ (x : 𝐁 a) → is-equiv (f x)) ↔ is-contr (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
   i↔ii {f = f} = 11•2•2.i↔ii {𝐁 = λ y → 𝐃 a y c} b d f
@@ -705,7 +677,7 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
        lem2 = {!!}
 
        lem3 : (Σ[ p ∈ Σ A 𝐁 ] (Σ[ z ∈ 𝐂 (fst p) ] (𝐃 (fst p) (snd p) z))) ≃ (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
-       lem3 = compose-≃ lem1 lem2
+       lem3 = trans-≃ lem1 lem2
 
 
 ex•11•6•2 : {A B : Set ℓ} {f : A → B} (b : B)(s1 s2 : Σ[ x ∈ A ] (f x ≡ b)) → (s1 ≡ s2) ≃ fib (ap f) ((snd s1) ○ (snd s2)⁻¹)

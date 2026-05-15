@@ -2,7 +2,6 @@
 module Chapters.`09.Reading where
 
 open import Prelude
-open HomReasoning
 
 open import Relation.Binary.PropositionalEquality
     using (trans-assoc ; trans-reflʳ ; trans-symˡ ; trans-symʳ)
@@ -71,10 +70,13 @@ is-equiv⇒equalSplits {f = f} ((g , G) , (h , H)) = begin
   g          ∼⟨ (H ·ᵣ g) ⁻¹ ⟩
   h ∘ f ∘ g  ∼⟨ h ·ₗ G ⟩
   h ∎
+  where
+    open HomReasoning
 
 is-equiv⇒has-inverse : is-equiv f → has-inverse f
 is-equiv⇒has-inverse {f = f} p@((g , G) , (h , H)) = g , G , L
   where
+    open HomReasoning
     L : (g ∘ f) ∼ id
     L = begin
           g ∘ f ∼⟨ is-equiv⇒equalSplits p ·ᵣ f ⟩
@@ -88,6 +90,7 @@ equivalence-inverse-equivalence : (p : is-equiv f) →
 equivalence-inverse-equivalence {f = f} p@((g , G) , (h , H)) =
   has-inverse⇒is-equiv (f , L , G)
   where
+    open HomReasoning
     L : g ∘ f ∼ id
     L = begin
       g ∘ f ∼⟨ is-equiv⇒equalSplits p ·ᵣ f ⟩
@@ -201,17 +204,53 @@ pairEqv {s = s} {t} = has-inverse⇒is-equiv
 
 
 --------------------------------------------------------------------------------
--- ≃ is an eqv relation, so we can employ equational reasoning syntax
+-- -- ≃ is an eqv relation
 
-refl-≃ : {A : Set ℓ₁} → A ≃ A 
-refl-≃ = id , has-inverse⇒is-equiv (id , (refl-∼ , refl-∼)) 
+has-inverse-comp : {f : B → C} {g : A → B} → 
+                   has-inverse f → has-inverse g → has-inverse (f ∘ g)
+has-inverse-comp {f = f} {g = g} 
+  (f̅ , f∘f̅~id , f̅∘f~id) (g̅ , g∘g̅~id , g̅∘g~id) = 
+  g̅ ∘ f̅ , 
+  ((λ x →  ap f (g∘g̅~id (f̅ x)) ○ f∘f̅~id x) , 
+  λ x → ap g̅ (f̅∘f~id (g x)) ○ g̅∘g~id x )
 
--- sym-≃ : {A : Set ℓ₁} {B : Set ℓ₂} → A ≃ B → B ≃ A
--- sym-≃ (f , eqv@((f⁻¹ , sec) , (f⁻¹′ , retr))) with is-equiv⇒equalSplits  eqv 
--- ... | eq-splits = f⁻¹ , 
---   has-inverse⇒is-equiv (f , 
---     ((begin {!!}) , {!!}))
+is-equiv-comp : {f : B → C} {g : A → B} → 
+                is-equiv f → 
+                is-equiv g → 
+                is-equiv (f ∘ g)
+is-equiv-comp {f = f} {g = g} equiv-f equiv-g =
+  has-inverse⇒is-equiv (has-inverse-comp has-inverse-f has-inverse-g)
+  where
+    has-inverse-f : has-inverse f
+    has-inverse-f = is-equiv⇒has-inverse equiv-f
 
+    has-inverse-g : has-inverse g
+    has-inverse-g = is-equiv⇒has-inverse equiv-g
 
-module ≃-Reasoning where
+trans-≃ : A ≃ B → B ≃ C → A ≃ C
+trans-≃ e1 e2 = (fst e2 ∘ fst e1) , (is-equiv-comp (snd e2) (snd e1))
+
+sym-≃ : A ≃ B → B ≃ A
+sym-≃ (f , is-eq-f) with is-equiv⇒has-inverse is-eq-f
+... | (f̅ , is-eq-f̅) =  f̅ , ((f , (is-eq-f̅ .snd)) , (f , (is-eq-f̅ .fst)))
+
+refl-≃ : A ≃ A
+refl-≃ = id , ((id , (λ x → refl)) , (id , λ x → refl))
+
+--------------------------------------------------------------------------------
+-- Equational reasoning over ≃ equivalence
+
+module ≃-Reasoning {ℓ₁} where
+  -- Usage:
+  -- eq : A ≃ B
+  -- eq = begin
+  --   foo ≃⟨ ? ⟩
+  --   ...
+  --   ?   ≃⟨ ? ⟩
+  --   bar ∎
+  open import Relation.Binary.Reasoning.Syntax using (module ≃-syntax ; module begin-syntax ; module end-syntax)
+  open import Relation.Binary.Reasoning.Base.Single (_≃_ {ℓ₁ = ℓ₁})
+    refl-≃ 
+    trans-≃ renaming (∼-go to ≃-go) public
+  open ≃-syntax _IsRelatedTo_ _IsRelatedTo_ ≃-go sym-≃ public
 
