@@ -2,7 +2,7 @@ module Chapters.`12.Reading where
 
 open import Prelude
 open import Chapters.`01-08.Exercises
-open import Chapters.`01-08.Reading using (Eqℕ; toEqℕ)
+open import Chapters.`01-08.Reading using (Eqℕ; toEqℕ; is-decidable; _⊎_; inr; inl; has-decidable-equality; ex-falso)
 open import Chapters.`09.Reading
 open import Chapters.`09.Exercises
 open import Chapters.`10.Reading
@@ -188,7 +188,7 @@ is-subtype {A = A} 𝐁 = ∀ (x : A) → is-prop (𝐁 x)
 -- Lemma 12.2.2
 -- Let A B by types, let e : A ≃ B then we have
 -- is-prop A ↔ is-prop B
-lem•12•2•2 : (A ≃ B) → is-prop A ↔ is-prop B
+lem•12•2•2 : {A B : Set ℓ} → (A ≃ B) → is-prop A ↔ is-prop B
 lem•12•2•2 {A = A} {B = B} (f , is-equiv-f) = fwd , bwk  where
   fwd : is-prop A → is-prop B
   fwd prop-A x y = 10-3.ex-10-3-ii-iii⇒i (ap f̅) (prop-A (f̅ x) (f̅ y)) lem2
@@ -287,6 +287,66 @@ module _ where
                        (q ○ q ⁻¹) ○ p ≡⟨ (right-inv q) ⋆ₗ p ⟩
                        refl ○ p ≡⟨ left-identity {{PathGroupoid}} _ ⟩
                        p  ∎)
+
+-- Theorem 12.3.4
+-- Let A be a type, and let R : A → A → 𝓤 be a binary relation on A satisfying
+-- (i) Each R(x, y) is a proposition
+-- (ii) R is reflexive, as witnessed by ρ : Π_{x : A} R(x, x)
+-- (iii) There is a map  R(x, y) → x ≡ y for each x and y
+-- Then any family of maps
+--        Π_{x y: A} x = y → R (x, y)
+-- is a family of equivalences. Consequently, the type A is a set
+
+module 12•3•4 {A : Set ℓ} {R : A → A → Set ℓ}
+  (prop-R : ∀ (x y : A) → is-prop (R x y))
+  (ρ : ∀ (x : A) → R x x)
+  (f : ∀ (x y : A) → R x y → x ≡ y) where
+
+  ind-eq : (x : A) → R x x → ∀ (y : A) → (x ≡ y) → R x y
+  ind-eq x = {!!}
+
+  lem : ∀ (x y : A) → is-equiv (f x y)
+  lem x y = {!tot (f x)!}
+
+  equiv : ∀ (x y : A) → (x ≡ y) ≃ (R x y)
+  equiv x y = sym-≃ (f x y , lem x y)
+
+  thm : is-set A
+  thm x y = _↔_.from (lem•12•2•2 (equiv x y)) (prop-R x y)
+
+-- Theorem 12.3.5
+-- Any type with decidable equality is a set
+has-decidable-equality⇒is-set : ∀ {A : Set} → has-decidable-equality A → is-set A
+has-decidable-equality⇒is-set {A = A} d = 12•3•4.thm {A = A} {R = R} R-is-prop R-refl R⇒identity
+  where
+    R' : ∀ (x y : A) → is-decidable (x ≡ y) → Set
+    R' x y (inl p) = ⊤
+    R' x y (inr p) = ⊥
+
+    R'-is-prop : ∀ (x y : A) → ∀ (q : is-decidable (x ≡ y)) → is-prop (R' x y q)
+    R'-is-prop x y (inl x₁) = is-prop-⊤
+    R'-is-prop x y (inr x₁) = is-prop-⊥
+
+    R : ∀ (x y : A) → Set
+    R x y = R' x y (d x y)
+
+    R-is-prop : ∀ (x y : A) → is-prop (R x y)
+    R-is-prop x y with d x y
+    ... | inl p = λ { tt tt → refl , (λ { refl → refl }) }
+    ... | inr p = λ { () y }
+
+    R-refl : ∀ x → R x x
+    R-refl x with d x x
+    ... | inl x₁ = tt
+    ... | inr p = p refl
+
+    f : ∀ x y → (q : is-decidable (x ≡ y)) → R' x y q → x ≡ y
+    f x y (inl p) = λ r → p
+    f x y (inr p) = λ r → ex-falso r
+
+    R⇒identity : (x y : A) → R x y → x ≡ y
+    R⇒identity x y r with d x y
+    ... | inl p = p
 
 --------------------------------------------------------------------
 -- § 12.4 General truncation levels

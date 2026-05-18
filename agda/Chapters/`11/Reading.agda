@@ -408,7 +408,7 @@ module 11•3•1 where
 
 -- Embeddings are homotopical analogue of the set theoritic notion of injective map
 -- Def 11.4.1
-record is-emb {A B : Set} (f : A → B) : Set where
+record is-emb {A B : Set ℓ} (f : A → B) : Set ℓ where
   constructor Embed
   field
     ap-equiv : (x y : A) → is-equiv (ap {x = x} {y = y} f)
@@ -416,7 +416,7 @@ record is-emb {A B : Set} (f : A → B) : Set where
   map : A → B
   map = f
 
-_↪_ : Set → Set → Set
+_↪_ : Set ℓ → Set ℓ → Set ℓ
 A ↪ B = Σ[ f ∈ (A → B) ] is-emb f
 
 -- Theorem 11.4.1 Any Equivalence is an embedding
