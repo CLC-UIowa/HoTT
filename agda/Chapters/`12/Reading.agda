@@ -2,6 +2,7 @@ module Chapters.`12.Reading where
 
 open import Prelude
 open import Chapters.`01-08.Exercises
+open import Chapters.`01-08.Reading using (Eqℕ; toEqℕ)
 open import Chapters.`09.Reading
 open import Chapters.`09.Exercises
 open import Chapters.`10.Reading
@@ -70,17 +71,17 @@ module _ {A : Set} where
 
   is-prop′ : Set ℓ → Set ℓ
   is-prop′ A = ∀ (x y : A) → x ≡ y
-  
+
   -- AH> I am going to deviate from the book here and prove directly that
   --     is-prop A ⇔ is-prop′ A. We can then use this fact to complete the last step
   --     of Prop 12.1.3. The proof that is-prop and is-prop′ are equivalent
   --     follows from HoTT Book lemmas 3.3.4 and 3.11.10.
-  -- 
+  --
   --     First I'm going to use the HoTT book def'n of is-set, which deviates from Rijke's.
-  --     A "set", discussed later in ch. 12, is a type for which all proofs of 
+  --     A "set", discussed later in ch. 12, is a type for which all proofs of
   --     equality are equal. In other words, they're sets for which the UIP holds.
   is-set′ : Set ℓ → Set ℓ
-  is-set′ A = ∀ (x y : A) (p q : x ≡ y) → p ≡ q 
+  is-set′ A = ∀ (x y : A) (p q : x ≡ y) → p ≡ q
 
   -- (i → ii)
   -- AH> the simple intuition here is that if (x ≡ y) is contractible,
@@ -92,23 +93,23 @@ module _ {A : Set} where
   -- let's prove a more important lemma: that if A is a mere prop, then
   -- A is also a set.
   -- The proof is some HoTT nonsense that goes like this:
-  -- Define g(y) as "post-composing" y with x. 
+  -- Define g(y) as "post-composing" y with x.
   -- Then prove that any proof of a ≡ b is equal to (g a) ⁻¹ ○ (g b);
-  -- it follows now that 
-  --   - lem x y p : p = (g x) ⁻¹ ○ (g y) 
-  --   - lem x y q : q = (g x) ⁻¹ ○ (g y) 
-  is-prop′⇒is-set′ : is-prop′ A → is-set′ A 
-  is-prop′⇒is-set′ isProp x y p q = lem x y p ○ (lem x y q) ⁻¹ 
+  -- it follows now that
+  --   - lem x y p : p = (g x) ⁻¹ ○ (g y)
+  --   - lem x y q : q = (g x) ⁻¹ ○ (g y)
+  is-prop′⇒is-set′ : is-prop′ A → is-set′ A
+  is-prop′⇒is-set′ isProp x y p q = lem x y p ○ (lem x y q) ⁻¹
       where
-      g : (y : A) → x ≡ y 
+      g : (y : A) → x ≡ y
       g y = isProp x y
-  
+
       lem : ∀ (a b : A) (p : a ≡ b) → p ≡ (g a) ⁻¹ ○ g b
-      lem a b refl = (left-inv (g a)) ⁻¹ 
+      lem a b refl = (left-inv (g a)) ⁻¹
 
   -- This direction now falls out easily
   is-prop′⇒is-prop : is-prop′ A → is-prop A
-  is-prop′⇒is-prop isProp x y = 
+  is-prop′⇒is-prop isProp x y =
     isProp x y , λ { q → is-prop′⇒is-set′ isProp x y (isProp x y) q }
 
   -- (ii → iii)
@@ -219,22 +220,24 @@ lem•12•2•2 {A = A} {B = B} (f , is-equiv-f) = fwd , bwk  where
 -- (ii) the fiber fib f b is a proposition for each b : B
 module 12•2•3 {f : A → B} where
   i→ii : is-emb f → ((b : B) → is-prop (fib f b))
-  i→ii (Embed p) b (a , fa≡b) (a′ , fa′≡b) = _↔_.to (lem•12•2•2 (lem2 a b fa≡b)) {!!} (a , fa≡b) (a′ , fa′≡b)
+  i→ii (Embed p) b (a , fa≡b) (a′ , fa′≡b) = _↔_.to (lem•12•2•2 (lem2 a b fa≡b)) ({!!}  ) (a , fa≡b) (a′ , fa′≡b)
     where
-      fwd : is-emb f → (∀ y → is-contr (Σ[ x ∈ A ] (f x ≡ f y)))
-      fwd ef y = {!!}
+      fwd : is-emb f → (∀ x → is-contr (Σ[ y ∈ A ] (f x ≡ f y)))
+      fwd ef x = {!10-3.ex-10-3-i-iii⇒ii (ap f) ? ?  !}
 
-      lem : is-emb f ↔ (∀ y → is-contr (Σ[ x ∈ A ] (f x ≡ f y)))
-      lem = fwd , {!!}
-
-      lem2 : ∀ y b → (p : f y ≡ b) → fib f (f y) ≃ fib f b
-      lem2 = {!!}
+      bwk : (∀ x → is-contr (Σ[ y ∈ A ] (f x ≡ f y))) → is-emb f
+      bwk ctr = Embed (λ x y → 10-3.ex-10-3-i-ii⇒iii (ap f) {!!} {!!})
 
 
+      lem : is-emb f ↔ (∀ x → is-contr (Σ[ y ∈ A ] (f x ≡ f y)))
+      lem = fwd , bwk
+
+      lem2 : ∀ y b → (e : f y ≡ b) → fib f (f y) ≃ fib f b
+      lem2 y b refl = id , (id , (λ x → refl)) , id , (λ x → refl)
 
 
   ii→i : ((b : B) → is-prop (fib f b)) → is-emb f
-  ii→i p = Embed (λ x y → {!p (f y) !})
+  ii→i p = Embed (λ x y → 10-3.ex-10-3-i-ii⇒iii (ap f) {!!} {! p (f y)!})
 
 
 -- Corollary 12.2.4: Consider a family B of types over A. The following are equivalent
@@ -245,7 +248,45 @@ module 12•2•3 {f : A → B} where
 --------------------------------------------------------------------
 -- § 12.3 Sets
 
+-- Definition 12.3.1
+-- A type A is said to be a *set* if its identity types are propositions
+is-set : Set ℓ → Set ℓ
+is-set A = ∀ (x y : A) → is-prop (x ≡ y)
 
+-- Example 12.3.2
+-- The type of natural numbers is a set
+is-set-ℕ : is-set ℕ
+is-set-ℕ = λ x y →  _↔_.from (lem•12•2•2 (toEqℕ x y , 11•3•1.thm x y)) (lem x y)
+  where
+    lem : (x y : ℕ) → is-prop (Eqℕ x y)
+    lem zero zero Chapters.`01-08.Reading.⋆ Chapters.`01-08.Reading.⋆ = refl , (λ { refl → refl })
+    lem zero (suc y) () e2
+    lem (suc x) zero e1 ()
+    lem (suc x) (suc y) e1 e2 = lem x y e1 e2
+
+-- Proposition 12.3.3
+-- Consider a type A. The following are equivalent
+-- (i) A type A is a set
+-- (ii) The type A satisfies axiom K i.e. if and only if its comes equipped with a term of type
+--      axiom-K (A) := Π_{x : A} Π_{p : x = x} refl_x = p
+axiom-K : Set ℓ → Set ℓ
+axiom-K A = ∀ (x : A) → ∀ (p : x ≡ x) → refl {x = x} ≡ p
+
+module _ where
+  set⇒axiom-K : is-set A → axiom-K A
+  set⇒axiom-K = λ z x p → is-contr.center (z x x refl p)
+
+  axiom-K⇒set : axiom-K A → is-set A
+  axiom-K⇒set axiomK x y p q = is-prop′⇒is-prop lem p q
+    where
+      open PathReasoning
+      lem : ∀ (p q : x ≡ y) → p ≡ q
+      lem p q = sym (begin q  ≡⟨ (right-identity {{PathGroupoid}} _) ⁻¹ ⟩
+                       q ○ refl ≡⟨ (q ⋆ᵣ axiomK y (q ⁻¹ ○ p)) ⟩
+                       q ○ (q ⁻¹ ○ p) ≡⟨ sym (assoc q (q ⁻¹) p) ⟩
+                       (q ○ q ⁻¹) ○ p ≡⟨ (right-inv q) ⋆ₗ p ⟩
+                       refl ○ p ≡⟨ left-identity {{PathGroupoid}} _ ⟩
+                       p  ∎)
 
 --------------------------------------------------------------------
 -- § 12.4 General truncation levels
