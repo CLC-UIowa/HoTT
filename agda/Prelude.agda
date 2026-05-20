@@ -236,6 +236,35 @@ module Homotopies where
 
 open Homotopies public
 
+--------------------------------------------------------------------------------
+-- Some properties we ought to name descriptively, even if Rijke doesn't
+
+module _ where 
+  private variable 
+    ℓ : Level
+    A : Set ℓ 
+
+  -- A type A is irrelevant if all of its inhabitants are equal.
+  -- The HoTT book calls this a "proposition" or "mere prop".
+  Irrelevant : Set ℓ → Set ℓ
+  Irrelevant A = ∀ (x y : A) → x ≡ y
+
+  -- A type A satisfies the UIP when all of its identity proofs are equal.
+  -- The HoTT book calls this a "set".
+  UIP : Set ℓ → Set ℓ
+  UIP A = ∀ (x y : A) (p q : x ≡ y) → p ≡ q
+
+  -- Axiom K, which we do without in Agda, is another way of stating the UIP.
+  Axiom-K : Set ℓ → Set  ℓ 
+  Axiom-K A = ∀ (x : A) (p : x ≡ x) → p ≡ refl
+
+  -- Axiom K and UIP are equivalent
+  K⇒UIP : Axiom-K A → UIP A
+  K⇒UIP k x y refl q = k x q ⁻¹ 
+
+  UIP⇒K : UIP A → Axiom-K A
+  UIP⇒K uip x p  = uip x x p refl 
+
 
 -----------------------------------------------------------------------------
 -- Reasoning syntax over _≡_

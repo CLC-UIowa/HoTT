@@ -65,29 +65,40 @@ is-prop-⊤ = is-contr⇒is-prop ⊤ ⊤-contr
 -- (iv) the map const_⋆ : A → ⊤ is an embedding
 
 
-module _ {A : Set} where
+module _ where
+  -- private variable
+  --   A : Set ℓ
 -- The proof proceeds by showing (i) → (ii) → (iii) → (iv) → i
   open is-contr
 
-  is-prop′ : Set ℓ → Set ℓ
-  is-prop′ A = ∀ (x y : A) → x ≡ y
+  -- AH> Rijke calls this is-prop′:
+  --   is-prop′ : Set ℓ → Set ℓ
+  --   is-prop′ A = ∀ (x y : A) → x ≡ y
+  -- which sucks because it has a better, more descriptive name in the Prelude:
+  -- Irrelevant : Set ℓ → Set ℓ
+  -- Irrelevant A = ∀ (x y : A) → x ≡ y
 
   -- AH> I am going to deviate from the book here and prove directly that
-  --     is-prop A ⇔ is-prop′ A. We can then use this fact to complete the last step
-  --     of Prop 12.1.3. The proof that is-prop and is-prop′ are equivalent
+  --       is-prop A ⇔ is-prop′ A.
+  --     that is,
+  --       is-prop A ⇔ Irrelevant A 
+  --     We can then use this fact to complete the last step
+  --     of Prop 12.1.3. The proof that is-prop and Irrelevant are equivalent
   --     follows from HoTT Book lemmas 3.3.4 and 3.11.10.
   --
   --     First I'm going to use the HoTT book def'n of is-set, which deviates from Rijke's.
   --     A "set", discussed later in ch. 12, is a type for which all proofs of
   --     equality are equal. In other words, they're sets for which the UIP holds.
-  is-set′ : Set ℓ → Set ℓ
-  is-set′ A = ∀ (x y : A) (p q : x ≡ y) → p ≡ q
+  --     To avoid confusion, I'll call a spade a spade, and simply name this the UIP,
+  --     which is defined in the prelude.    
+  --       UIP : Set ℓ → Set ℓ
+  --       UIP A = ∀ (x y : A) (p q : x ≡ y) → p ≡ q
 
   -- (i → ii)
   -- AH> the simple intuition here is that if (x ≡ y) is contractible,
   --     it's inhabited! So we just take the center of contraction.
-  is-prop⇒is-prop′ : is-prop A → is-prop′ A
-  is-prop⇒is-prop′ isProp x y = isProp x y .center
+  is-prop⇒Irrelevant : is-prop A → Irrelevant A
+  is-prop⇒Irrelevant isProp x y = isProp x y .center
 
   -- AH> The reverse direction is more complicated. To make matters harder,
   -- let's prove a more important lemma: that if A is a mere prop, then
@@ -98,28 +109,28 @@ module _ {A : Set} where
   -- it follows now that
   --   - lem x y p : p = (g x) ⁻¹ ○ (g y)
   --   - lem x y q : q = (g x) ⁻¹ ○ (g y)
-  is-prop′⇒is-set′ : is-prop′ A → is-set′ A
-  is-prop′⇒is-set′ isProp x y p q = lem x y p ○ (lem x y q) ⁻¹
+  Irrelevant⇒UIP : Irrelevant A → UIP A
+  Irrelevant⇒UIP {A = A} isProp x y p q = lem x y p ○ (lem x y q) ⁻¹
       where
-      g : (y : A) → x ≡ y
-      g y = isProp x y
+      g : (z : A) → x ≡ z
+      g z = isProp x z
 
       lem : ∀ (a b : A) (p : a ≡ b) → p ≡ (g a) ⁻¹ ○ g b
       lem a b refl = (left-inv (g a)) ⁻¹
 
   -- This direction now falls out easily
-  is-prop′⇒is-prop : is-prop′ A → is-prop A
-  is-prop′⇒is-prop isProp x y =
-    isProp x y , λ { q → is-prop′⇒is-set′ isProp x y (isProp x y) q }
+  Irrelevant⇒is-prop : Irrelevant A → is-prop A
+  Irrelevant⇒is-prop isProp x y =
+    isProp x y , λ { q → Irrelevant⇒UIP isProp x y (isProp x y) q }
 
   -- (ii → iii)
-  -- AH> Intuitively, is-prop′ says "all my elements are equal (but I may have
+  -- AH> Intuitively, Irrelevant says "all my elements are equal (but I may have
   --     none)" and is-contr says "I'm a prop AND I'm inhabited"; the proof is
   --     simply to let the inhabitant `a` be the center and let
   --       isProp a : ∀ (y : A) → a ≡ y
   --     be the contraction.
-  is-prop′⇒contractibleIfInhabited : is-prop′ A → (A → is-contr A)
-  is-prop′⇒contractibleIfInhabited isProp a = (a , isProp a)
+  Irrelevant⇒contractibleIfInhabited : Irrelevant A → (A → is-contr A)
+  Irrelevant⇒contractibleIfInhabited isProp a = (a , isProp a)
 
 
   -- This is a simple trick that will "give us" an X in the next proof step.
@@ -148,19 +159,19 @@ module _ {A : Set} where
   --     which proves that A ≃ ⊤.
   contractibleIfInhabited→const⋆-embedding :
     (A → is-contr A) → is-emb (λ (x : A) → tt)
-  contractibleIfInhabited→const⋆-embedding f =
+  contractibleIfInhabited→const⋆-embedding {A = A} f =
     lemmer {f = λ (x : A) → tt}
       (λ a → thm•11•4•2 ((λ x → tt) , (10-3.const-tt-is-equiv (f a))))
 
   -- (iv → i)
   -- AH> Here we deviate from Rijke. It's *much simpler* to prove that,
   --     if (λ (x : A) → tt) is an embedding, that all x, y : A are equal.
-  const⋆-embedding⇒is-prop′  : is-emb {A = A} (λ (x : A) → tt) → is-prop′ A
-  const⋆-embedding⇒is-prop′ (Embed ap-equiv) x y = ap-equiv x y .fst .fst refl
+  const⋆-embedding⇒Irrelevant  : is-emb {A = A} (λ (x : A) → tt) → Irrelevant A
+  const⋆-embedding⇒Irrelevant (Embed ap-equiv) x y = ap-equiv x y .fst .fst refl
 
-  -- AH> Now use the implication from is-prop′ A to is-prop A to complete the proof.
+  -- AH> Now use the implication from Irrelevant A to is-prop A to complete the proof.
   const⋆-embedding⇒is-prop : is-emb {A = A} (λ (x : A) → tt) → is-prop A
-  const⋆-embedding⇒is-prop emb = is-prop′⇒is-prop (const⋆-embedding⇒is-prop′ emb)
+  const⋆-embedding⇒is-prop emb = Irrelevant⇒is-prop (const⋆-embedding⇒Irrelevant emb)
 
 
 -- Proposition 12.1.4
@@ -277,7 +288,7 @@ module _ where
   set⇒axiom-K = λ z x p → is-contr.center (z x x refl p)
 
   axiom-K⇒set : axiom-K A → is-set A
-  axiom-K⇒set axiomK x y p q = is-prop′⇒is-prop lem p q
+  axiom-K⇒set axiomK x y p q = Irrelevant⇒is-prop lem p q
     where
       open PathReasoning
       lem : ∀ (p q : x ≡ y) → p ≡ q
