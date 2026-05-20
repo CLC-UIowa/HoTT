@@ -81,7 +81,7 @@ module _ where
   -- AH> I am going to deviate from the book here and prove directly that
   --       is-prop A ⇔ is-prop′ A.
   --     that is,
-  --       is-prop A ⇔ Irrelevant A 
+  --       is-prop A ⇔ Irrelevant A
   --     We can then use this fact to complete the last step
   --     of Prop 12.1.3. The proof that is-prop and Irrelevant are equivalent
   --     follows from HoTT Book lemmas 3.3.4 and 3.11.10.
@@ -90,7 +90,7 @@ module _ where
   --     A "set", discussed later in ch. 12, is a type for which all proofs of
   --     equality are equal. In other words, they're sets for which the UIP holds.
   --     To avoid confusion, I'll call a spade a spade, and simply name this the UIP,
-  --     which is defined in the prelude.    
+  --     which is defined in the prelude.
   --       UIP : Set ℓ → Set ℓ
   --       UIP A = ∀ (x y : A) (p q : x ≡ y) → p ≡ q
 
@@ -288,34 +288,79 @@ module _ where
 
 -- Theorem 12.3.4
 -- Let A be a type, and let R : A → A → 𝓤 be a binary relation on A satisfying
--- (i) Each R(x, y) is a proposition
--- (ii) R is reflexive, as witnessed by ρ : Π_{x : A} R(x, x)
+--   (i) R(x, y) is a proposition for each x y
+--  (ii) R is reflexive, as witnessed by ρ : Π_{x : A} R(x, x)
 -- (iii) There is a map  R(x, y) → x ≡ y for each x and y
 -- Then any family of maps
 --        Π_{x y: A} x = y → R (x, y)
 -- is a family of equivalences. Consequently, the type A is a set
 
-module 12•3•4 {A : Set ℓ} {R : A → A → Set ℓ}
+module set-characterization {A : Set ℓ} {R : A → A → Set ℓ}
   (prop-R : ∀ (x y : A) → is-prop (R x y))
   (ρ : ∀ (x : A) → R x x)
   (f : ∀ (x y : A) → R x y → x ≡ y) where
 
-  ind-eq : (x : A) → R x x → ∀ (y : A) → (x ≡ y) → R x y
-  ind-eq x = {!!}
 
-  lem : ∀ (x y : A) → is-equiv (f x y)
-  lem x y = {!tot (f x)!}
+  -- Define the family of maps as follows
+  ind-eq : ∀ (x y : A) → (x ≡ y) → R x y
+  ind-eq x y = g x (ρ x) y
+    where
+    g : (x : A) → R x x → ∀ (y : A) → (x ≡ y) → R x y
+    g x rxx y refl = rxx
+
+  -- Because R x y is a proposition -- forall r r' : R x y, is-contr (r ≡ r')
+  -- We have that that R x y is a retract of x = y
+  retract-f : ∀ x y → retraction (f x y)
+  retract-f x y = (ind-eq x y) , (λ rxy → helper x y rxy )
+    where
+    open is-contr
+    helper : ∀ x y → ∀ (rxy : R x y) → ind-eq x y (f x y rxy) ≡ id rxy
+    helper x y rxy with f x y rxy
+    ... | refl = is-contr.center (prop-R x y (ρ x) rxy)
+
+
+  -- if f is a retraction, then tot f also is a retraction
+  open PathReasoning
+  retract-tot-f : ∀ x → retraction (tot (f x))
+  retract-tot-f x =
+    tot (ind-eq x) ,
+    λ s → begin
+      tot (ind-eq x) (tot (f x) s) ≡⟨ (11•8.part-b (f x) (ind-eq x) ⁻¹) s ⟩
+      tot (λ y → ind-eq x y ∘ f x y) s ≡⟨ 11•8.part-a (λ y → ind-eq x y ∘ f x y) (λ x → id ∘ id)
+                                          (λ x₁ x₂ → is-contr.center (prop-R x x₁ (ind-eq x x₁ (f x x₁ x₂)) x₂)) s ⟩
+      s ∎
+
+  is-contr-eq : ∀ x → is-contr (Σ[ y ∈ A ] (x ≡ y))
+  is-contr-eq x = thm-10∙1∙4 x
+
+  -- thus we can show that Σ[ y ∈ A ] R x y is contractible,
+  -- because tot f is a retraction and Σ[ y ] x ≡ y is contractible for each x
+  is-contr-R : ∀ (x : A) → is-contr (Σ[ y ∈ A ] R x y)
+  is-contr-R x =  10-2.retract-is-contractible (tot (f x)) (retract-tot-f x) (is-contr-eq x)
+
+  -- part A
+  lem2 : (x y : A) → is-equiv (ind-eq x y)
+  lem2 x = _↔_.from (11•2•2.i↔ii x (ρ x) (ind-eq x)) (is-contr-R x)
+
+  -- we have that tot (f x) is a equivalence, as domain and codomain are contractible
+  lem3 : (x : A) → is-equiv (tot (f x))
+  lem3 x = 10-3.ex-10-3-i-ii⇒iii (tot (f x)) (is-contr-R x) (is-contr-eq x)
+
+  -- hence f is a family of equivalences
+  lem : ∀ (x : A) → ((y : A) → is-equiv (f x y))
+  lem x y =  _↔_.to (11•1•3.thm (f x)) (lem3 x) y
 
   equiv : ∀ (x y : A) → (x ≡ y) ≃ (R x y)
   equiv x y = sym-≃ (f x y , lem x y)
 
+  -- thus A is a set, by using lem•12•2•2 and f is a family of equivalences
   thm : is-set A
   thm x y = _↔_.from (lem•12•2•2 (equiv x y)) (prop-R x y)
 
 -- Theorem 12.3.5
 -- Any type with decidable equality is a set
 has-decidable-equality⇒is-set : ∀ {A : Set} → has-decidable-equality A → is-set A
-has-decidable-equality⇒is-set {A = A} d = 12•3•4.thm {A = A} {R = R} R-is-prop R-refl R⇒identity
+has-decidable-equality⇒is-set {A = A} d = set-characterization.thm {A = A} {R = R} R-is-prop R-refl R⇒identity
   where
     R' : ∀ (x y : A) → is-decidable (x ≡ y) → Set
     R' x y (inl p) = ⊤

@@ -18,7 +18,7 @@ module 11•1a where
   ex = (λ ()) , Embed (λ ())
 
 
-module 11•1b where
+module 11•1b {A B : Set ℓ} where
   -- show that inl : A → A + B and inr : B → A + B are embeddings
   -- for any two types A and B
 
@@ -51,15 +51,15 @@ module 11•1c where
       ... | ()
 
 
-module 11•2 where
+module 11•2 {A B : Set ℓ} (e : A ≃ B) where
   -- consider an equivalence e : A ≃ B.
   -- Construct and equivalence
   -- p ↦ p̃ : (e(x) = y) ≃ x = e⁻¹(y)
   -- for every x : A and y : B, such that, the triangle (see text)
   -- commutes for every p : e (x) = y
   -- G is the homotopy that witnesses e ∘ e⁻¹ ~ id
-{-          ap_e (p̃)
-     e(x) ======== e (e⁻¹ y)
+{-          ap_f (p̃)
+     f(x) ======== f (f⁻¹ y)
       \                ||
        \               ||
         \              ||
@@ -73,34 +73,48 @@ module 11•2 where
                    y
 
 -}
-  G : {A B : Set ℓ} (e : A ≃ B) → (fst e) ∘ (sym-≃ e .fst) ∼ id
-  G e x = e .snd .fst .snd x
+  f : A → B
+  f = e .fst
 
-  lem' : {A B : Set ℓ} (e : A ≃ B) → (sym-≃ (sym-≃ e)) .fst ∼ e .fst
-  lem' e = λ x → refl
+  has-inverse-f : has-inverse f
+  has-inverse-f = is-equiv⇒has-inverse (e .snd)
 
+  f̅ : B → A
+  f̅ = has-inverse-f .fst
+
+  G : f ∘ f̅ ∼ id
+  G = has-inverse-f .snd .fst
+
+  H : f̅ ∘ f ∼ id
+  H = has-inverse-f .snd .snd
+
+  g : ∀ {x y} → (f x ≡ y) → x ≡ f̅ y
+  g {x = x} refl = (H ⁻¹) x
+
+  g̅ : ∀ {x y} → (x ≡ f̅ y) → f x ≡ y
+  g̅ {y = y} refl = G y
+
+  g∘g̅~id : ∀{x y} → g {x} {y} ∘ g̅ ∼ id
+  g∘g̅~id = λ { refl → {!!} }
+
+  g̅∘g~id : ∀{x y} → g̅ {x} {y} ∘ g ∼ id
+  g̅∘g~id = λ { refl → {!!} }
 
 
   open PathReasoning
-  -- G' : {A B : Set ℓ} (e : A ≃ B) → (sym-≃ e .fst) ∘ (fst e) ∘ (sym-≃ e .fst) ∼ (sym-≃ e .fst)
-  -- G' e x = begin (sym-≃ e .fst ∘ fst e ∘ sym-≃ e .fst) x  ≡⟨ refl ⟩
-  --                (sym-≃ e .fst ∘ (fst e ∘ sym-≃ e .fst)) x  ≡⟨ {!G e x!} ⟩
-  --                (sym-≃ e .fst ∘ id) x ≡⟨ refl ⟩
-  --                sym-≃ e .fst x ∎
+  comm : ∀ x y → ∀ (p : f x ≡ y) → p ⁻¹ ○ (ap f (g p)) ○ G y ≡ refl
+  comm x y refl = begin
+       ap f ((H x) ⁻¹) ○ G (f x) ≡⟨ sym (right-identity {{PathGroupoid}} _) ⟩
+       ap f ((H x) ⁻¹) ○ G (f x) ○ refl ≡⟨ {!!} ⟩
+       refl ∎
+
+  comm' : ∀ x y → ∀ (p : f x ≡ y) → ap f (g p) ≡ p ○ (G y) ⁻¹
+  comm' x y refl = {!!}
 
 
-  lem : {A B : Set ℓ} → (x : A) (y : B) (e : A ≃ B) → (((fst e) x) ≡ y) ≃ (x ≡ (fst (sym-≃ e)) y)
-  lem x y e = (λ { refl → sym (begin fst (sym-≃ e) (fst e x) ≡⟨ {!e .snd .snd .snd x!} ⟩
-                          x ∎) } )
-            , {!!}
+  lem : ∀ x y → is-equiv (g {x = x} {y = y})
+  lem x y = has-inverse⇒is-equiv (g̅ , ((λ { refl → begin ( g (G y) ≡⟨ {!!} ⟩ refl ∎) }) , λ { refl → {!!} }))
 
-
-
-
-    -- (λ e1 → sym (begin  fst (sym-≃ e) y ≡⟨ Paths.ap (λ y → fst (sym-≃ e) y) (sym e1) ⟩
-    --                               fst (sym-≃ e) (fst e x) ≡⟨ {!  e .snd .snd .snd x !} ⟩
-    --                               x ∎) ) , (((λ e1 → {!!}) , {!!})
-    --              , {!!})
 
 module 11•3 {A B : Set} {f g : A → B} where
   -- show that (f ∼ g) → (is-emb f ↔ is-emb g)
