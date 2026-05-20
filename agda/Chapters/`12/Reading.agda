@@ -100,23 +100,8 @@ module _ where
   is-prop⇒Irrelevant : is-prop A → Irrelevant A
   is-prop⇒Irrelevant isProp x y = isProp x y .center
 
-  -- AH> The reverse direction is more complicated. To make matters harder,
-  -- let's prove a more important lemma: that if A is a mere prop, then
-  -- A is also a set.
-  -- The proof is some HoTT nonsense that goes like this:
-  -- Define g(y) as "post-composing" y with x.
-  -- Then prove that any proof of a ≡ b is equal to (g a) ⁻¹ ○ (g b);
-  -- it follows now that
-  --   - lem x y p : p = (g x) ⁻¹ ○ (g y)
-  --   - lem x y q : q = (g x) ⁻¹ ○ (g y)
-  Irrelevant⇒UIP : Irrelevant A → UIP A
-  Irrelevant⇒UIP {A = A} isProp x y p q = lem x y p ○ (lem x y q) ⁻¹
-      where
-      g : (z : A) → x ≡ z
-      g z = isProp x z
-
-      lem : ∀ (a b : A) (p : a ≡ b) → p ≡ (g a) ⁻¹ ○ g b
-      lem a b refl = (left-inv (g a)) ⁻¹
+  -- AH> Irrelevant types satisfy the UIP (defined in Prelude)
+  -- Irrelevant⇒UIP : Irrelevant A → UIP A
 
   -- This direction now falls out easily
   Irrelevant⇒is-prop : Irrelevant A → is-prop A
@@ -177,13 +162,12 @@ module _ where
 -- Proposition 12.1.4
 -- A map f : P → Q between to propositions P and Q is an equivalence
 -- if and only if there is a map g : Q → P
-prop•12•1•4 : {P Q : Set} → is-prop P → is-prop Q → ((P ≃ Q) ↔ (P ↔ Q))
-prop•12•1•4 {P = P} {Q = Q} prop-p prop-q =
+propositionalEquivalence : {P Q : Set} → is-prop P → is-prop Q → ((P ≃ Q) ↔ (P ↔ Q))
+propositionalEquivalence {P = P} {Q = Q} prop-p prop-q =
         (λ e → e .fst , e .snd .fst .fst)
         , λ { (f , g) → f ,
                has-inverse⇒is-equiv (g , (λ x → is-contr.center (prop-q (f (g x)) (id x))) ,
                                          (λ x → is-contr.center (prop-p (g (f x)) (id x))) ) }
-
 
 --------------------------------------------------------------------
 -- § 12.2 Subtypes
@@ -191,8 +175,11 @@ prop•12•1•4 {P = P} {Q = Q} prop-p prop-q =
 -- There is some correspondence between proposition on types and subsets in set theory
 
 -- Definition 12.2.1
--- A type family B over A is said to be a subtype of A if for each x : A, B x is a proposition
--- When B is a subtype of A, we also say that B x is a _property_ of x : A
+-- A type family B over A is said to be a subtype of A if for each x : A, B x is a proposition.
+-- When B is a subtype of A, we also say that B x is a _property_ of x : A.
+-- AH> For fun, see "Five stages of accepting constructive mathematics" by Andrej Baujer:
+--     https://www.ams.org/journals/bull/2017-54-03/S0273-0979-2016-01556-4/S0273-0979-2016-01556-4.pdf
+--     In particular, Theorem 2.1. Can you spot why we assert the property 𝐁 is a prop?
 is-subtype : {A : Set} → (A → Set) → Set
 is-subtype {A = A} 𝐁 = ∀ (x : A) → is-prop (𝐁 x)
 

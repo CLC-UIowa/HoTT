@@ -254,6 +254,27 @@ module _ where
   UIP : Set ℓ → Set ℓ
   UIP A = ∀ (x y : A) (p q : x ≡ y) → p ≡ q
 
+  -- Irrelevant types satisfy the UIP 
+  Irrelevant⇒UIP : Irrelevant A → UIP A
+  Irrelevant⇒UIP {A = A} irr x y p q = lem x y p ○ (lem x y q) ⁻¹
+      where
+      g : (z : A) → x ≡ z
+      g z = irr x z
+
+      lem : ∀ (a b : A) (p : a ≡ b) → p ≡ (g a) ⁻¹ ○ g b
+      lem a b refl = (left-inv (g a)) ⁻¹
+
+  -- A type A is decidable if A is either inhabited or it (constructively) doesn't.
+  Decidable : Set ℓ → Set ℓ 
+  Decidable A = A + ¬ A
+
+  -- the Law of Excluded Middle in HoTT is a statement about propositions.
+  -- HoTT book §3.4:
+  --  "Although LEM is not a consequence of the basic type theory ..., it may be
+  --   consistently assumed as an axiom."
+  LEM : Set ℓ → Set ℓ 
+  LEM A = Irrelevant A → Decidable A
+
   -- Axiom K, which we do without in Agda, is another way of stating the UIP.
   Axiom-K : Set ℓ → Set  ℓ 
   Axiom-K A = ∀ (x : A) (p : x ≡ x) → p ≡ refl
@@ -264,6 +285,9 @@ module _ where
 
   UIP⇒K : UIP A → Axiom-K A
   UIP⇒K uip x p  = uip x x p refl 
+
+  K↔UIP : Axiom-K A ↔ UIP A
+  K↔UIP = K⇒UIP , UIP⇒K 
 
 
 -----------------------------------------------------------------------------
