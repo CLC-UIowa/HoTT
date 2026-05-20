@@ -393,3 +393,31 @@ has-decidable-equality⇒is-set {A = A} d = set-characterization.thm {A = A} {R 
 
 --------------------------------------------------------------------
 -- § 12.4 General truncation levels
+
+data 𝕋 : Set where
+  -𝟚T : 𝕋
+  succT : 𝕋 → 𝕋
+
+-𝟙T : 𝕋
+-𝟙T = succT -𝟚T
+
+𝟘T :  𝕋
+𝟘T = succT -𝟙T
+
+nat-inj : ℕ → 𝕋
+nat-inj zero = 𝟘T
+nat-inj (suc n) = succT (nat-inj n)
+
+-- Def 12.4.1
+
+is-trunc : 𝕋 → Set ℓ → Set ℓ
+is-trunc -𝟚T A = is-contr A
+is-trunc (succT T) A = ∀ (x y : A) → is-trunc T (x ≡ y)
+
+-- for any type A, we say that A is k-truncated, or a k-type
+-- if there is a term of type is-trunc_k (A)
+
+-- Given a universe 𝓤, we define universe 𝓤≤k of k-truncated types by
+--    𝓤≤k := Σ[x ∈ 𝓤] is-trunc k X
+𝓤≤[_] : 𝕋 → (ℓ : Level) →  Set (lsuc ℓ)
+𝓤≤[ k ] ℓ = Σ[ X ∈ Set ℓ ] is-trunc k X
