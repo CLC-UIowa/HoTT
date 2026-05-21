@@ -416,8 +416,28 @@ is-trunc (succT T) A = ∀ (x y : A) → is-trunc T (x ≡ y)
 
 -- for any type A, we say that A is k-truncated, or a k-type
 -- if there is a term of type is-trunc_k (A)
+trunc-type : (ℓ : Level) → 𝕋 → Set (lsuc ℓ)
+trunc-type ℓ k = Σ[ X ∈ Set ℓ ] is-trunc k X
 
 -- Given a universe 𝓤, we define universe 𝓤≤k of k-truncated types by
 --    𝓤≤k := Σ[x ∈ 𝓤] is-trunc k X
 𝓤≤[_] : 𝕋 → (ℓ : Level) →  Set (lsuc ℓ)
 𝓤≤[ k ] ℓ = Σ[ X ∈ Set ℓ ] is-trunc k X
+
+-- Proposition 12.4.3
+-- is A is a k-type, then A is also a k+1 type
+k-type⇒k+1-type : (k : 𝕋) → (A : Set ℓ) → is-trunc k A → is-trunc (succT k) A
+k-type⇒k+1-type -𝟚T A A-is-contr = is-contr⇒is-prop A A-is-contr
+k-type⇒k+1-type (succT k) A A-is-k-trunc = λ x y → k-type⇒k+1-type _ _ (A-is-k-trunc x y)
+
+-- Corollary 12.4.4
+-- If A is a k-type then its identity types are also k-types
+k-type⇒identity-k-types : (k : 𝕋) → (A : Set ℓ) → is-trunc k A → ∀ (x y : A) → is-trunc k (x ≡ y)
+k-type⇒identity-k-types k A A-is-k-type = k-type⇒k+1-type k A A-is-k-type
+
+
+-- Proposition 12.4.5
+-- if e : A ≃ B is an equivalence, and B is a k-type then so is A
+k-type-closed-under-equivalence : (k : 𝕋) (e : A ≃ B) → is-trunc k B → is-trunc k A
+k-type-closed-under-equivalence -𝟚T (f , f-equiv) B-k-type = 10-3.ex-10-3-ii-iii⇒i f B-k-type f-equiv
+k-type-closed-under-equivalence (succT k) (f , f-equiv) B-k-type = {!!}

@@ -102,14 +102,17 @@ module 11•2 {A B : Set ℓ} (e : A ≃ B) where
 
 
   open PathReasoning
-  comm : ∀ x y → ∀ (p : f x ≡ y) → p ⁻¹ ○ (ap f (g p)) ○ G y ≡ refl
-  comm x y refl = begin
-       ap f ((H x) ⁻¹) ○ G (f x) ≡⟨ sym (right-identity {{PathGroupoid}} _) ⟩
-       ap f ((H x) ⁻¹) ○ G (f x) ○ refl ≡⟨ {!!} ⟩
-       refl ∎
 
   comm' : ∀ x y → ∀ (p : f x ≡ y) → ap f (g p) ≡ p ○ (G y) ⁻¹
-  comm' x y refl = {!!}
+  comm' x y refl = begin
+                   ap f ((H ⁻¹) x) ≡⟨ {!!} ⟩
+                   ((G ⁻¹ ∘ f) x) ∎
+
+  comm : ∀ x y → ∀ (p : f x ≡ y) → p ⁻¹ ○ (ap f (g p)) ○ G y ≡ refl
+  comm x y refl = begin
+       ap f ((H ⁻¹) x) ○ G (f x) ≡⟨ ((comm' x y refl) ⋆ₗ G (f x)) ⟩
+       sym (G (f x)) ○ G (f x) ≡⟨ left-inv {{PathGroupoid}} (G (f x)) ⟩
+       refl ∎
 
 
   lem : ∀ x y → is-equiv (g {x = x} {y = y})
@@ -268,11 +271,11 @@ module 11•5 {A B C : Set} (f : A ↪ B) (g : B ↪ C) where
           -- TODO: refactor, or not
           has-inverse-f : has-inverse (fst f)
           has-inverse-f =
-            (f-inv , (λ x → `sec (is-emb.ap-equiv (snd g) (fst f (f-inv x)) x) (is-equiv-g∘f .fst .snd (fst g x))) , λ x →
-                                                                                                                            f .snd .is-emb.ap-equiv (f-inv (fst f x)) (id x) .snd .fst
-                                                                                                                            (g .snd .is-emb.ap-equiv (f .fst (f-inv (fst f x)))
-                                                                                                                             (f .fst (id x)) .fst .fst
-                                                                                                                             (is-equiv-g∘f .fst .snd (fst g (fst f x)))))
+            (f-inv ,  (λ x → `sec (is-emb.ap-equiv (snd g) (fst f (f-inv x)) x) (is-equiv-g∘f .fst .snd (fst g x)))
+                     , λ x → f .snd .is-emb.ap-equiv (f-inv (fst f x)) (id x) .snd .fst
+                               (g .snd .is-emb.ap-equiv (f .fst (f-inv (fst f x)))
+                               (f .fst (id x)) .fst .fst
+                               (is-equiv-g∘f .fst .snd (fst g (fst f x)))))
 
           is-equiv-f : is-equiv (fst f)
           is-equiv-f = has-inverse⇒is-equiv has-inverse-f
