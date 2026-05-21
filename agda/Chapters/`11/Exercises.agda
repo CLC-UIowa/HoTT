@@ -213,7 +213,7 @@ module 11•4 {A B X : Set} {f : A → X} {g : B → X} {h : A → B} {H : f ∼
   ex-b-aux is-equiv-h = backward
     where
       is-emb-h : is-emb h
-      is-emb-h = thm•11•4•2 (h , is-equiv-h)
+      is-emb-h = Equiv⇒Embedding (h , is-equiv-h)
 
       backward : is-emb g → is-emb f
       backward is-emb-g = (_↔_.from $ ex-a is-emb-g) is-emb-h
@@ -365,7 +365,7 @@ module 11•10 {A B : Set} {f : A → B} where
   i→ii : is-equiv f → is-path-split f
   i→ii is-equiv-f = (is-equiv-f .fst) , λ x y → fst (lem .is-emb.ap-equiv x y)
       where
-        lem = thm•11•4•2 (f , is-equiv-f)
+        lem = Equiv⇒Embedding (f , is-equiv-f)
 
 
   ii→i : is-path-split f → is-equiv f

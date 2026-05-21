@@ -124,7 +124,7 @@ module _ where
 
   -- (iii → iv)
   -- Helpers:
-  --  - thm•11•4•2 : (e : A ≃ B) → (is-emb (fst e))
+  --  - Equiv⇒Embedding : (e : A ≃ B) → (is-emb (fst e))
   --  - const-tt-is-equiv : is-contr A → is-equiv {ℓ} {A} (const tt)
   -- AH> N.b. I prefer writing (λ (x : A) → tt) over (const tt), here,
   --     as we are making a statement about the type A (the domain).
@@ -146,7 +146,7 @@ module _ where
     (A → is-contr A) → is-emb (λ (x : A) → tt)
   contractibleIfInhabited→const⋆-embedding {A = A} f =
     lemmer {f = λ (x : A) → tt}
-      (λ a → thm•11•4•2 ((λ x → tt) , (10-3.const-tt-is-equiv (f a))))
+      (λ a → Equiv⇒Embedding ((λ x → tt) , (10-3.const-tt-is-equiv (f a))))
 
   -- (iv → i)
   -- AH> Here we deviate from Rijke. It's *much simpler* to prove that,
@@ -196,7 +196,7 @@ lem•12•2•2 {A = A} {B = B} (f , is-equiv-f) = fwd , bwk  where
       is-equiv-f̅ = equivalence-inverse-equivalence is-equiv-f
 
       lem : is-contr-map (ap {x = x} {y = y} f̅)
-      lem = thm•10•4•6 (ap {x = x} {y = y} f̅) (is-emb.ap-equiv (thm•11•4•2 (f̅ , is-equiv-f̅)) x y)
+      lem = thm•10•4•6 (ap {x = x} {y = y} f̅) (is-emb.ap-equiv (Equiv⇒Embedding (f̅ , is-equiv-f̅)) x y)
 
       lem2 : is-equiv (ap f̅)
       lem2 = is-contr-map-equiv lem
@@ -205,7 +205,7 @@ lem•12•2•2 {A = A} {B = B} (f , is-equiv-f) = fwd , bwk  where
   bwk : is-prop B → is-prop A
   bwk prop-B x y = 10-3.ex-10-3-ii-iii⇒i (ap f) (prop-B (f x) (f y)) lem2  where
     lem : is-contr-map (ap f)
-    lem = thm•10•4•6 (ap {x = x} {y = y} f) (is-emb.ap-equiv (thm•11•4•2 (f , is-equiv-f)) x y)
+    lem = thm•10•4•6 (ap {x = x} {y = y} f) (is-emb.ap-equiv (Equiv⇒Embedding (f , is-equiv-f)) x y)
 
     lem2 : is-equiv (ap f)
     lem2 = is-contr-map-equiv lem

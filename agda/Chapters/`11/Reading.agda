@@ -420,8 +420,8 @@ _↪_ : Set ℓ → Set ℓ → Set ℓ
 A ↪ B = Σ[ f ∈ (A → B) ] is-emb f
 
 -- Theorem 11.4.1 Any Equivalence is an embedding
-thm•11•4•2 : (e : A ≃ B) → (is-emb (fst e))
-thm•11•4•2 {A = A} {B = B} (f , f-equiv) = Embed lem•11•4•1
+Equiv⇒Embedding : (e : A ≃ B) → (is-emb (fst e))
+Equiv⇒Embedding {A = A} {B = B} (f , f-equiv) = Embed lem•11•4•1
   where
 
     -- if we show that Σ_{y : A} f x ≡ f y is an equivalence
