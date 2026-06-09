@@ -425,6 +425,10 @@ is-trunc (succT T) A = ∀ (x y : A) → is-trunc T (x ≡ y)
 trunc-type : (ℓ : Level) → 𝕋 → Set (lsuc ℓ)
 trunc-type ℓ k = Σ[ X ∈ Set ℓ ] is-trunc k X
 
+-- A map f : A → B is k-truncated if its fibers are k-truncated
+is-trunc-map : ∀ {A B : Set ℓ} → 𝕋 → (A → B) → Set ℓ 
+is-trunc-map {B = B} k f = ∀ (b : B) → is-trunc k (fib f b)
+
 -- Given a universe 𝓤, we define universe 𝓤≤k of k-truncated types by
 --    𝓤≤k := Σ[x ∈ 𝓤] is-trunc k X
 𝓤≤[_] : 𝕋 → (ℓ : Level) →  Set (lsuc ℓ)
@@ -459,5 +463,8 @@ k+1-domain f isEmb k k+1-B x y =
 -- - (i) The map f is (k +1)-truncated
 -- - (ii) For each x, y : A, the map (ap f) is k-truncated.
 
-
-
+module _ {A B : Set ℓ} (f : A → B) (k : 𝕋) where
+-- AH> I want to move onto Ch. 13
+  postulate
+    k+1-truncated⇒ap-k-truncated : 
+      is-trunc-map (succT k) f → (x y : A) → is-trunc-map k (ap {x = x} {y} f)
