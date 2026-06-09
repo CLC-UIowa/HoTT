@@ -187,7 +187,22 @@ is-subtype {A = A} 𝐁 = ∀ (x : A) → is-prop (𝐁 x)
 -- Let A B by types, let e : A ≃ B then we have
 -- is-prop A ↔ is-prop B
 
--- A reusable, descriptively named version that implies Lemma 12.2.2
+-- A reusable, descriptively named version that implies Lemma 12.2.2.
+-- The proof gist:
+-- if f : A → B is an equivalence, its section f⁻¹ is an equivalence,
+-- and therefore an embedding. In other words, (ap f⁻¹) is an equivalence.
+-- Ex 10.3 states that if g : A → B is an equivalence and B is contractible,
+-- then so is A. 
+-- Hence we let 
+--   A := x ≡ y
+--   B := f⁻¹ x ≡ f⁻¹ y
+--   g := (ap f⁻¹) : x ≡ y → f⁻¹ x ≡ f⁻¹ y.
+-- to yield a goal
+--    10-3.ex-10-3-ii-iii⇒i (ap f⁻¹) : 
+--      is-Contr (f⁻¹ x ≡ f⁻¹ y) → is-equiv (ap f⁻¹) → is-contr (x ≡ y)
+-- The first argument follows from A being a prop; the second follows
+-- from f⁻¹ being an embedding.
+-- 
 ≃-is-prop : ∀ {A B : Set ℓ} → (A ≃ B) → is-prop A → is-prop B
 ≃-is-prop eqv@(f , (f⁻¹ , sec) , retr) isProp x y  = 
   10-3.ex-10-3-ii-iii⇒i (ap f⁻¹) (isProp (f⁻¹ x) (f⁻¹ y)) (ap-equiv x y) 
