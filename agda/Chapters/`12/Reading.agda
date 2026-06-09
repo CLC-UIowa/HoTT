@@ -17,7 +17,7 @@ open import Chapters.`11.Exercises
 private
   variable
     ℓ ℓ₁ ℓ₂ ℓ₃ : Level
-    A B : Set
+    A B : Set ℓ
     𝐁 : A → Set
 
 --------------------------------------------------------------------
@@ -186,37 +186,28 @@ is-subtype {A = A} 𝐁 = ∀ (x : A) → is-prop (𝐁 x)
 -- Lemma 12.2.2
 -- Let A B by types, let e : A ≃ B then we have
 -- is-prop A ↔ is-prop B
+
+-- A reusable, descriptively named version that implies Lemma 12.2.2
+≃-is-prop : ∀ {A B : Set ℓ} → (A ≃ B) → is-prop A → is-prop B
+≃-is-prop eqv@(f , (f⁻¹ , sec) , retr) isProp x y  = 
+  10-3.ex-10-3-ii-iii⇒i (ap f⁻¹) (isProp (f⁻¹ x) (f⁻¹ y)) (ap-equiv x y) 
+  where
+    f⁻¹-isEquiv : is-equiv f⁻¹
+    f⁻¹-isEquiv = equivalence-inverse-equivalence ((f⁻¹ , sec) , retr)  
+    
+    f⁻¹-isEmbedding : is-emb f⁻¹ 
+    f⁻¹-isEmbedding = Equiv⇒Embedding (f⁻¹ , f⁻¹-isEquiv) 
+    open is-emb f⁻¹-isEmbedding
+
 lem•12•2•2 : {A B : Set ℓ} → (A ≃ B) → is-prop A ↔ is-prop B
-lem•12•2•2 {A = A} {B = B} (f , is-equiv-f) = fwd , bwk  where
-  fwd : is-prop A → is-prop B
-  fwd prop-A x y = 10-3.ex-10-3-ii-iii⇒i (ap f̅) (prop-A (f̅ x) (f̅ y)) lem2
-    where
-      f̅ = is-equiv-f .fst .fst
-      is-equiv-f̅ : is-equiv f̅
-      is-equiv-f̅ = equivalence-inverse-equivalence is-equiv-f
-
-      lem : is-contr-map (ap {x = x} {y = y} f̅)
-      lem = thm•10•4•6 (ap {x = x} {y = y} f̅) (is-emb.ap-equiv (Equiv⇒Embedding (f̅ , is-equiv-f̅)) x y)
-
-      lem2 : is-equiv (ap f̅)
-      lem2 = is-contr-map-equiv lem
-
-
-  bwk : is-prop B → is-prop A
-  bwk prop-B x y = 10-3.ex-10-3-ii-iii⇒i (ap f) (prop-B (f x) (f y)) lem2  where
-    lem : is-contr-map (ap f)
-    lem = thm•10•4•6 (ap {x = x} {y = y} f) (is-emb.ap-equiv (Equiv⇒Embedding (f , is-equiv-f)) x y)
-
-    lem2 : is-equiv (ap f)
-    lem2 = is-contr-map-equiv lem
-
+lem•12•2•2 {A = A} {B = B} eqv = ≃-is-prop eqv , ≃-is-prop (sym-≃ eqv)
 
 
 -- Theorem 12.2.3
 -- Consider a map f : A → B. The following are equivalent
 -- (i) map f is an embedding
 -- (ii) the fiber fib f b is a proposition for each b : B
-module 12•2•3 {f : A → B} where
+module 12•2•3 {A B : Set ℓ} {f : A → B} where
   i→ii : is-emb f → ((b : B) → is-prop (fib f b))
   i→ii (Embed p) b (a , fa≡b) (a′ , fa′≡b) = _↔_.to (lem•12•2•2 (lem2 a b fa≡b)) ({!!}  ) (a , fa≡b) (a′ , fa′≡b)
     where
@@ -438,6 +429,20 @@ k-type⇒identity-k-types k A A-is-k-type = k-type⇒k+1-type k A A-is-k-type
 
 -- Proposition 12.4.5
 -- if e : A ≃ B is an equivalence, and B is a k-type then so is A
-k-type-closed-under-equivalence : (k : 𝕋) (e : A ≃ B) → is-trunc k B → is-trunc k A
+k-type-closed-under-equivalence : {A B : Set ℓ} → (k : 𝕋) (e : A ≃ B) → is-trunc k B → is-trunc k A
 k-type-closed-under-equivalence -𝟚T (f , f-equiv) B-k-type = 10-3.ex-10-3-ii-iii⇒i f B-k-type f-equiv
 k-type-closed-under-equivalence (succT k) (f , f-equiv) B-k-type = {!!}
+
+-- Corollary 12.4.6: if f : A → B is an embedding, and B is a (k + 1)-type, then so is A.
+k+1-domain : {A B : Set ℓ} (f : A → B) → is-emb f → (k : 𝕋) → 
+             is-trunc (succT k) B → is-trunc (succT k) A
+k+1-domain f isEmb k k+1-B x y = 
+  k-type-closed-under-equivalence k (ap f , isEmb .is-emb.ap-equiv x y) (k+1-B (f x) (f y)) 
+
+-- Theorem 12.4.7
+-- Let f : A → B. The following are equivalent:
+-- - (i) The map f is (k +1)-truncated
+-- - (ii) For each x, y : A, the map (ap f) is k-truncated.
+
+
+
