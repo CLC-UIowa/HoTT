@@ -31,7 +31,7 @@ private
 tot : (∀ (x : A) → 𝐁 x → 𝐂 x) → Σ A 𝐁 → Σ A 𝐂
 tot f (x , y) = x , f x y
 
-
+---------------------------------------
 -- Lemma 11.1.2 For any family of maps 𝑓 : Π_(𝑥:𝐴) 𝐵 𝑥 → 𝐶 𝑥 and any
 -- 𝑡 : Σ_(𝑥:𝐴) 𝐶 𝑥, there is an equivalence
 -- fib_(tot f) (t) ≃ fib_(f (pr₁ t)) (pr₂ t)
@@ -39,7 +39,7 @@ tot f (x , y) = x , f x y
 fib-tot-equiv : (f : ∀ (x : A) → 𝐁 x → 𝐂 x) →
                 (t : Σ A 𝐂) →
                 fib (tot f) t ≃ fib (f (fst t)) (snd t)
-fib-tot-equiv f t = ϕ , ϕ-is-equiv
+fib-tot-equiv f t = ϕ , (ψ , 𝔾) , (ψ , ℍ)
   where
   ϕ : fib (tot f) t → fib (f (fst t)) (snd t)
   ϕ ((x , y) , refl) = y , refl
@@ -54,9 +54,7 @@ fib-tot-equiv f t = ϕ , ϕ-is-equiv
   ℍ : ψ ∘ ϕ  ∼ id
   ℍ (x , refl) = refl
 
-  ϕ-is-equiv : is-equiv ϕ
-  ϕ-is-equiv = (ψ , 𝔾) , (ψ , ℍ)
-
+---------------------------------------
 -- lemma 11.1.3
 -- let 𝑓 : Π_(𝑥:𝐴) 𝐵 𝑥 → 𝐶 𝑥 be a family of maps
 -- The following are equivalent
@@ -88,6 +86,7 @@ module 11•1•3 {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (f : (x : A) → �
   thm = (λ tot-equiv x → is-contr-map-equiv (_↔_.to lem1 (thm•10•4•6 (tot f) tot-equiv) x)) ,
                      λ fx-equiv → is-contr-map-equiv (_↔_.from lem1 (λ a → thm•10•4•6 (f a) (fx-equiv a)))
 
+---------------------------------------
 -- Lemma 11.1.4
 -- Consider a map 𝑓 : 𝐴 → 𝐵, and let 𝐶 be a type family over 𝐵.
 -- If 𝑓 is an equivalence,then the map
@@ -137,6 +136,7 @@ module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
   lem : is-equiv f → is-equiv σ
   lem = (λ equiv-f → is-contr-map-equiv ((lem2 (thm•10•4•6 f equiv-f))))
 
+---------------------------------------
 -- Definition 11.1.5
 -- Consider a map f : A → B and a family of maps
 --     g : (x : A) → C x → D (f x)
@@ -191,6 +191,7 @@ is-equiv-decomp' is-equiv-g is-equiv-f∘g =
       (is-equiv⇒has-inverse is-equiv-g)
       (is-equiv⇒has-inverse is-equiv-f∘g))
 
+---------------------------------------
 -- Theorem 11.1.6
 -- suppose g is a family of maps over f,
 -- then the following are equivalent
@@ -243,13 +244,14 @@ module 11•1•6 {A B : Set ℓ} {𝐂 : A → Set ℓ} (𝐃 : B → Set ℓ) 
 
 
 
-
+--------------------------------------------------------------------
 -- § 11.2 The fundamental theorem
 -- The fundamental theorem describes what are the necessary and sufficient conditions on a type family 𝐁
 -- over a type A equipped with a point a : A
 -- to obtain an equivalence (a ≡ x) ≃ 𝐁 x for each x : A
 
 
+---------------------------------------
 -- Def 11.2.1 Unary Identity System
 -- Let A be a type equipped with the term a : A.
 -- A (unary) identity system on A at a consists of
@@ -266,6 +268,7 @@ is-unary-ident-system : {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {a : 
 is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} {a = a} b =
   (P : (x : A) (y : 𝐁 x) → Set ℓ) → section {B = P a b} (rfl-ident-system {𝐁 = 𝐁} {P = P} b)
 
+---------------------------------------
 -- Thm 11.2.2 (The fundamental theoerm of identity types)
 -- Let A be a type equipped with a : A
 -- Let B be a type family over A equipped with a point b : B a
@@ -367,8 +370,8 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
   i↔iii = _↔_.to ii↔iii ∘ (_↔_.to i↔ii) , (_↔_.from i↔ii) ∘ _↔_.from ii↔iii
 
 
---------------------------------------------------------------------
--- §11.3: Equality on the natural numers
+-------------------------------------------------------------------------------
+-- §11.3: Equality on the natural numbers
 
 
 -- Thm 11.3.1 For each m, n : ℕ, the cannonical map
@@ -406,7 +409,7 @@ module 11•3•1 where
 -- §11.4: Embeddings
 
 
--- Embeddings are homotopical analogue of the set theoritic notion of injective map
+-- Embeddings are homotopical analogue of the set theoretic notion of injective map
 -- Def 11.4.1
 record is-emb {A B : Set ℓ} (f : A → B) : Set ℓ where
   constructor Embed
@@ -454,8 +457,9 @@ Equiv⇒Embedding {A = A} {B = B} (f , f-equiv) = Embed lem•11•4•1
     lem•11•4•1 x y = _↔_.from (11•2•2.i↔ii x refl (λ y → ap {x = x} {y = y} f)) (lem x) y
 
 
---------------------------------------------------------------------
+---------------------------------------
 -- §11.5: Disjointness of coproducts
+
 -- Characterize the identity types of a co-product
 -- open import Chapters.`01-08.Reading using (_⊎_; inl; inr)
 open import Data.Sum.Base using (_⊎_; inj₁; inj₂)
@@ -490,6 +494,7 @@ refl-Eq-copr (inj₁ x) = refl
 refl-Eq-copr (inj₂ x) = refl
 
 
+---------------------------------------
 -- Proposition 11.5.4
 -- For any s : A + B the total space
 -- Σ_{t : A + B} Eq-copr_{A, B}(s , t)
@@ -583,8 +588,6 @@ thm•11•5•1 s t = _↔_.from (11•2•2.i↔ii s (refl-Eq-copr s) (λ x �
 --------------------------------------------------------------------
 -- §11.6: The structure identity principle
 
-
-
 -- rfl-ident-system :
 --   {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x) → Set ℓ} {a : A}
 --   (b : 𝐁 a) → ((x : A) (y : 𝐁 x) → P x y) → P a b
@@ -594,7 +597,7 @@ thm•11•5•1 s t = _↔_.from (11•2•2.i↔ii s (refl-Eq-copr s) (λ x �
 -- is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} {a = a} b =
 --   (P : (x : A) (y : 𝐁 x) → Set ℓ) → section {B = P a b} (rfl-ident-system {𝐁 = 𝐁} {P = P} b)
 
-
+---------------------------------------
 -- Def 11.6.1
 -- Dependent identity system
 module 11•6•1 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 : (x : A) → 𝐁 x → 𝐂 x → Set ℓ)
@@ -604,7 +607,7 @@ module 11•6•1 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
   is-dep-ident-system : Set (lsuc ℓ)
   is-dep-ident-system = is-unary-ident-system {A = 𝐁 a} {𝐁 = λ y → 𝐃 a y c} {a = b} d
 
-
+---------------------------------------
 -- Thm 11.6.2
 -- Structure identity principle
 -- The following are equivalent
@@ -679,6 +682,8 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
        lem3 : (Σ[ p ∈ Σ A 𝐁 ] (Σ[ z ∈ 𝐂 (fst p) ] (𝐃 (fst p) (snd p) z))) ≃ (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
        lem3 = trans-≃ lem1 lem2
 
+---------------------------------------
+-- ? 
 
 ex•11•6•2 : {A B : Set ℓ} {f : A → B} (b : B)(s1 s2 : Σ[ x ∈ A ] (f x ≡ b)) → (s1 ≡ s2) ≃ fib (ap f) ((snd s1) ○ (snd s2)⁻¹)
 ex•11•6•2 {A = A} {B = B} {f = f} b (x , p) (y , q) = {!  !}
