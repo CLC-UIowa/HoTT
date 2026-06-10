@@ -63,7 +63,7 @@ fib-tot-equiv f t = ϕ , (ψ , 𝔾) , (ψ , ℍ)
 module 11•1•3 {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (f : (x : A) → 𝐁 x → 𝐂 x) where
   -- is-contr-map {B = B} f = ∀ (b : B) → is-contr (fib f b)
   -- 10.3.5 is-contr-map-equiv (f : A → B) : is-contr-map f → is-equiv f
-  -- thm•10•4•6 (f : A → B) : is-equiv f → is-contr-map f
+  -- is-equiv⇒is-contr-map (f : A → B) : is-equiv f → is-contr-map f
 
   -- Due to lemma 11•1•2 we know that the fibers are equivalent
   lem : (x : A) (c : 𝐂 x) → fib (tot f) (x , c) ≃ fib (f x) c
@@ -74,17 +74,19 @@ module 11•1•3 {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (f : (x : A) → �
   lem0 : (x : A) (c : 𝐂 x) → is-contr (fib (tot f) (x , c)) ↔ is-contr (fib (f x) c)
   lem0 x c with lem x c
   ... | (ϕ , ϕ-is-equiv) =
-      (λ p → 10-3.ex-10-3-i-iii⇒ii ϕ p ϕ-is-equiv) , λ p → 10-3.ex-10-3-ii-iii⇒i ϕ p ϕ-is-equiv
+      (λ p → 10-3.contr-domain⇒contr-codomain ϕ p ϕ-is-equiv) , λ p → 10-3.contr-codomain⇒contr-domain ϕ p ϕ-is-equiv
 
   -- Hence, we know that (tot f) is a contractible map if and only if f x is a contractible map for each x
   lem1 : is-contr-map (tot f) ↔ ((x : A) → is-contr-map (f x))
   lem1 = (λ ctr-map a ca → _↔_.to (lem0 a ca) (ctr-map (a , ca))) , λ { x (a , ca) → _↔_.from (lem0 a ca) (x a ca) }
 
   -- Thus, we know that (tot f) is an equivalence if and only if f x is an equivalence for each x : A
-  -- by using thm•10•4•6 and lem 10.3.5
-  thm : is-equiv (tot f) ↔ ((x : A) → is-equiv (f x))
-  thm = (λ tot-equiv x → is-contr-map-equiv (_↔_.to lem1 (thm•10•4•6 (tot f) tot-equiv) x)) ,
-                     λ fx-equiv → is-contr-map-equiv (_↔_.from lem1 (λ a → thm•10•4•6 (f a) (fx-equiv a)))
+  -- by using is-equiv⇒is-contr-map and lem 10.3.5
+  is-equiv-tot↔-is-equiv-fx : is-equiv (tot f) ↔ ((x : A) → is-equiv (f x))
+  is-equiv-tot↔-is-equiv-fx = (λ tot-equiv x → is-contr-map-equiv (_↔_.to lem1 (is-equiv⇒is-contr-map (tot f) tot-equiv) x)) ,
+                     λ fx-equiv → is-contr-map-equiv (_↔_.from lem1 (λ a → is-equiv⇒is-contr-map (f a) (fx-equiv a)))
+
+open 11•1•3 using (is-equiv-tot↔-is-equiv-fx) public 
 
 ---------------------------------------
 -- Lemma 11.1.4
@@ -119,7 +121,7 @@ module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
   -- we first show that  ϕ is a contractible if and only if f is a contractible for each t : Σ B 𝐂
   lem1 : ((b , c) : Σ B 𝐂) → is-contr (fib σ (b , c)) ↔ is-contr (fib f b)
   lem1 t with lem0 t
-  ... | g , g-is-equiv = (λ p → 10-3.ex-10-3-i-iii⇒ii g p g-is-equiv ) , λ p → 10-3.ex-10-3-ii-iii⇒i g p g-is-equiv
+  ... | g , g-is-equiv = (λ p → 10-3.contr-domain⇒contr-codomain g p g-is-equiv ) , λ p → 10-3.contr-codomain⇒contr-domain g p g-is-equiv
 
 
   -- Next show that σ is a contractible map if and only if f is a contractible map for each t : Σ B 𝐂
@@ -134,7 +136,7 @@ module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
 
   -- finally, we show that if f is an equivalence then  σ is an equivalence
   lem : is-equiv f → is-equiv σ
-  lem = (λ equiv-f → is-contr-map-equiv ((lem2 (thm•10•4•6 f equiv-f))))
+  lem = (λ equiv-f → is-contr-map-equiv ((lem2 (is-equiv⇒is-contr-map f equiv-f))))
 
 ---------------------------------------
 -- Definition 11.1.5
@@ -201,7 +203,7 @@ module 11•1•6 {A B : Set ℓ} {𝐂 : A → Set ℓ} (𝐃 : B → Set ℓ) 
               (g : (x : A) → 𝐂 x → 𝐃 (f x)) where
 
   lem1 : is-equiv (tot g) ↔ ((x : A) → is-equiv (g x))
-  lem1 = 11•1•3.thm g
+  lem1 = is-equiv-tot↔-is-equiv-fx  g
 
 
   {- We have a commuting triangle
@@ -286,7 +288,7 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
   -- All of these are equivalent
 
   lem1 : is-equiv (tot f) ↔ (∀ (x : A) → is-equiv (f x))
-  lem1 = 11•1•3.thm f
+  lem1 = is-equiv-tot↔-is-equiv-fx f
 
   lem2 : is-contr (Σ[ x ∈ A ] (a ≡ x))
   lem2 = thm-10∙1∙4 a
@@ -296,8 +298,8 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
   -- thus using lem1 and lem2 we obtain the result
 
   i↔ii : (∀ (x : A) → is-equiv (f x)) ↔ is-contr (Σ A 𝐁)
-  i↔ii = (λ x → 10-3.ex-10-3-i-iii⇒ii (tot f) lem2 ((_↔_.from lem1 x)))
-            , λ x → _↔_.to lem1 (10-3.ex-10-3-i-ii⇒iii (tot f) lem2 x)
+  i↔ii = (λ x → contr-domain⇒contr-codomain (tot f) lem2 ((_↔_.from lem1 x)))
+            , λ x → _↔_.to lem1 (contr-domains⇒is-equiv (tot f) lem2 x)
 
 
   {- We have the following diagram that commutes (why?)
@@ -422,39 +424,34 @@ record is-emb {A B : Set ℓ} (f : A → B) : Set ℓ where
 _↪_ : Set ℓ → Set ℓ → Set ℓ
 A ↪ B = Σ[ f ∈ (A → B) ] is-emb f
 
+-- AH> The helper we will want most of the time
+emb-injective : {f : A → B} → is-emb f → (x y : A) → f x ≡ f y → x ≡ y
+emb-injective {f = f} (Embed ap-equiv) x y = `sec (ap-equiv x y) 
+
 -- Theorem 11.4.1 Any Equivalence is an embedding
 Equiv⇒Embedding : (e : A ≃ B) → (is-emb (fst e))
-Equiv⇒Embedding {A = A} {B = B} (f , f-equiv) = Embed lem•11•4•1
+Equiv⇒Embedding {A = A} {B = B} (f , f-equiv) = 
+  Embed (λ x y → from (11•2•2.i↔ii x refl (λ y → ap {x = x} {y = y} f)) (is-contr-total-space x) y)
   where
-
-    -- if we show that Σ_{y : A} f x ≡ f y is an equivalence
-    -- then we can use theorem 11.2.2 to prove what we want
-
-    -- but first observe that
-    -- inv : (f x ≡ f y) → (f y ≡ f x)
-    -- is an equivalence
-    open import Chapters.`09.Exercises
-    lem0 : (x y : A) → is-equiv (9-1.inv (f x) (f y))
-    lem0 x y = 9-1.inv-is-equiv B (f x) (f y)
-
+    open _↔_
     -- we have that the fiber `fib f (f x)` is contractible for each x
     -- by theorem 10.4.6
-    lem1 : is-contr-map f
-    lem1 = thm•10•4•6 f f-equiv
+    f-contr-map : is-contr-map f
+    f-contr-map = is-equiv⇒is-contr-map f f-equiv
 
     -- tot "uncurries" a function i.e. goes from ∀ x → f x → g x  to (x , f x)  → (x , g x)
     -- so tot (λ y → 9-1.inv (f x) (f y)) : ∀ (x : A) → Σ_{y} inv (f x) (f y) → Σ_{y} (f y) (f x)
 
-    lem11 : (x : A) → is-equiv (tot (λ y → 9-1.inv (f x) (f y)))
-    lem11 = λ x → _↔_.from (11•1•3.thm (λ y → 9-1.inv (f x) (f y))) (lem0 x)
+    is-equiv-tot : (x : A) → is-equiv (tot (λ y → sym {x = f x} {y = f y}))
+    is-equiv-tot x = from (is-equiv-tot↔-is-equiv-fx (λ y → sym {x = f x} {f y})) (λ _ → sym-equiv)
 
     -- if the function f is an equivalence and its domain is contractible, then the co-domain is contractible
-    lem : (x : A) → is-contr (Σ[ y ∈ A ] (f x ≡ f y))
-    lem x = 10-3.ex-10-3-ii-iii⇒i {B = Σ[ y ∈ A ] (f y ≡ f x)}
-                                    (tot (λ y → 9-1.inv (f x) (f y))) (lem1 (f x)) (lem11 x)
+    is-contr-total-space : (x : A) → is-contr (Σ[ y ∈ A ] (f x ≡ f y))
+    is-contr-total-space x = contr-codomain⇒contr-domain {B = Σ[ y ∈ A ] (f y ≡ f x)}
+            (tot (λ y → sym {x = f x} {y = f y})) (f-contr-map (f x)) (is-equiv-tot x)
 
-    lem•11•4•1 : (x y : A) → is-equiv (ap {x = x} {y = y} f)
-    lem•11•4•1 x y = _↔_.from (11•2•2.i↔ii x refl (λ y → ap {x = x} {y = y} f)) (lem x) y
+    -- lem•11•4•1 : (x y : A) → is-equiv (ap {x = x} {y = y} f)
+    -- lem•11•4•1 x y = _↔_.from (11•2•2.i↔ii x refl (λ y → ap {x = x} {y = y} f)) (lem x) y
 
 
 ---------------------------------------
@@ -571,12 +568,12 @@ module 11•5•4 {A B : Set} where
   -- and Σ_{t : A + B} Eq-copr_{A, B}(inr y , t) is contractible after inducting on s
   prop : (s : A ⊎ B) → is-contr (Σ[ t ∈ A ⊎ B ] Eq-copr[ A , B ] s t)
   prop (inj₁ x) with lem•11•5•4-helper1 x | lem•11•5•4-helper2 x
-  ... | (f , f-eq) | (g , g-eq) = 10-3.ex-10-3-ii-iii⇒i (g ∘ f) (thm-10∙1∙4 x) equiv-g∘f where
+  ... | (f , f-eq) | (g , g-eq) = 10-3.contr-codomain⇒contr-domain (g ∘ f) (thm-10∙1∙4 x) equiv-g∘f where
     equiv-g∘f : is-equiv (g ∘ f)
     equiv-g∘f = is-equiv-comp g-eq f-eq
 
   prop (inj₂ y) with lem•11•5•4-helper1b y | lem•11•5•4-helper2b y
-  ... | (f , f-eq) | (g , g-eq) = 10-3.ex-10-3-ii-iii⇒i (g ∘ f) (thm-10∙1∙4 y) equiv-g∘f where
+  ... | (f , f-eq) | (g , g-eq) = 10-3.contr-codomain⇒contr-domain (g ∘ f) (thm-10∙1∙4 y) equiv-g∘f where
     equiv-g∘f : is-equiv (g ∘ f)
     equiv-g∘f = is-equiv-comp g-eq f-eq
 
@@ -642,7 +639,7 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
 
   ii↔v : {f : (x : A) → (a ≡ x) → 𝐂 x}
        → is-contr ((Σ[ y ∈ 𝐁 a ] 𝐃 a y c)) ↔ is-contr (Σ[ p ∈ (Σ[ x ∈ A ] 𝐁 x) ] (Σ[ z ∈ 𝐂 (fst p) ] 𝐃 (fst p) (snd p) z))
-  ii↔v {f = f} = (λ x → 10-3.ex-10-3-ii-iii⇒i (λ x → lem3 .fst x) x (lem3 .snd)) , λ x → 10-3.ex-10-3-i-iii⇒ii (λ x → lem3 .fst x) x (lem3 .snd)
+  ii↔v {f = f} = (λ x → 10-3.contr-codomain⇒contr-domain (λ x → lem3 .fst x) x (lem3 .snd)) , λ x → 10-3.contr-domain⇒contr-codomain (λ x → lem3 .fst x) x (lem3 .snd)
      where
        fwd : (Σ[ p ∈ Σ A 𝐁 ] (Σ[ z ∈ 𝐂 (fst p) ] (𝐃 (fst p) (snd p) z))) → (Σ[ q ∈ Σ[ x ∈ A ] 𝐂 x ] (Σ[ y ∈ 𝐁 (fst q) ] 𝐃 (fst q) y (snd q) ))
        fwd ((a , b) , c , d) = (a , c) , (b , d)
@@ -705,4 +702,4 @@ ex•11•6•2 {A = A} {B = B} {f = f} b (x , p) (y , q) = {!  !}
     lem3 = g , equiv-g
 
     lem2 : is-contr (Σ[ q ∈ f x ≡ b ] (refl ≡ (trans p (sym q))))
-    lem2 = 10-3.ex-10-3-ii-iii⇒i g lem4 equiv-g
+    lem2 = 10-3.contr-codomain⇒contr-domain g lem4 equiv-g

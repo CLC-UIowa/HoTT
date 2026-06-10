@@ -247,8 +247,9 @@ module 10-3 where
   f-section↔g-section = 9-4.9-4a.f-section↔g-section
   f-retraction↔h-retraction = 9-4.9-4b.f-retraction↔h-retraction
 
-  ex-10-3-i-ii⇒iii : (f : A → B) →  is-contr A → is-contr B → is-equiv f
-  ex-10-3-i-ii⇒iii {A = A} {B = B} f (a , prf-cA) (b , prf-cB)  = f-sec , f-retr
+  
+  contr-domains⇒is-equiv : (f : A → B) →  is-contr A → is-contr B → is-equiv f
+  contr-domains⇒is-equiv {A = A} {B = B} f (a , prf-cA) (b , prf-cB)  = f-sec , f-retr
     where
       is-equiv-const-tt-B : is-equiv {A = B} (const tt)
       is-equiv-const-tt-B = const-tt-is-equiv (b , prf-cB)
@@ -293,9 +294,9 @@ module 10-3 where
   -- Exercise 10.2 allows us to conclude that B is contractible.
   -}
 
-  ex-10-3-i-iii⇒ii : {A B : Set ℓ}(f : A → B) →  is-contr A → is-equiv f → is-contr B
-  ex-10-3-i-iii⇒ii {A = A} {B = B} f ctr-A eq-f = 10-2.retract-is-contractible (`sec eq-f) (lem f eq-f) ctr-A
-
+  contr-domain⇒contr-codomain : {A B : Set ℓ}(f : A → B) →  is-contr A → is-equiv f → is-contr B
+  contr-domain⇒contr-codomain {A = A} {B = B} f ctr-A eq-f = 10-2.retract-is-contractible (`sec eq-f) (lem f eq-f) ctr-A
+  
   {-
   -- A is a retract of B because f : A → B is an equivalence and therefore has a
   -- retraction.
@@ -303,8 +304,11 @@ module 10-3 where
   -- Use exercise 10.2 to conclude that A is contractible.
   -}
 
-  ex-10-3-ii-iii⇒i : {A B : Set ℓ}(f : A → B) →  is-contr B → is-equiv f → is-contr A
-  ex-10-3-ii-iii⇒i {A = A} {B = B} f ctr-B eq-f = 10-2.retract-is-contractible f (snd eq-f) ctr-B
+  contr-codomain⇒contr-domain : {A B : Set ℓ}(f : A → B) →  is-contr B → is-equiv f → is-contr A
+  contr-codomain⇒contr-domain {A = A} {B = B} f ctr-B eq-f = 10-2.retract-is-contractible f (snd eq-f) ctr-B
+
+open 10-3 hiding (lem) public 
+  
 -------------------------------------------------------------------------------
 -- #10.4 Show that Finₖ is not contractible for all k ≠ 1.
 
@@ -544,7 +548,7 @@ module 10-7 where
 
     open PathReasoning
     i⇒ii-lemma : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (fib (pr₁ {B = B}) x)
-    i⇒ii-lemma {A = A} {B = B} pr-equiv x = thm•10•4•6 (pr₁ {A = A} {B = B}) pr-equiv x
+    i⇒ii-lemma {A = A} {B = B} pr-equiv x = is-equiv⇒is-contr-map (pr₁ {A = A} {B = B}) pr-equiv x
 
     i⇒ii : (is-equiv (pr₁ {A = A} {B = B})) → (x : A) → is-contr (B x)
     i⇒ii {A = A} {B = B} is-equiv-pr x with i⇒ii-lemma is-equiv-pr x

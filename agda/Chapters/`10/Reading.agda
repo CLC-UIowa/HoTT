@@ -236,8 +236,8 @@ See that, mapping HAEs to coh-invertibility, f maps to f, g maps to g′, η map
 
 -- Prop 10.4.2: Any coherently invertible map has contractible fibers
 
-coh-invertible⇒is-contr-map : ∀ (f : A → B) → is-coh-invertible f → is-contr-map f
-coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; 𝔾 = 𝔾 ; ℍ = ℍ ; 𝕂 = 𝕂 } y =
+is-coh-invertible⇒is-contr-map : ∀ (f : A → B) → is-coh-invertible f → is-contr-map f
+is-coh-invertible⇒is-contr-map {A = A} {B = B} f record { g′ = g′ ; 𝔾 = 𝔾 ; ℍ = ℍ ; 𝕂 = 𝕂 } y =
   ((g′ y) , (𝔾 y)) , contr
    where
       𝕂' : (x : A) → (𝔾 (f x)) ≡ (ap f (ℍ x)) ○ refl
@@ -316,8 +316,9 @@ module 10•4•4 (f : A → A) (H : f ∼ id) where
     ap f (H x) ∎
 
 -- Lem 10.4.5: has-inverse f → is-coh-invertible f.
-lem•10•4•5 : (f : A → B) → has-inverse f → is-coh-invertible f
-lem•10•4•5 {A = A} {B = B} f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾′ ; ℍ = H ; 𝕂 =  K }
+
+has-inverse⇒is-coh-invertible : (f : A → B) → has-inverse f → is-coh-invertible f
+has-inverse⇒is-coh-invertible {A = A} {B = B} f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾′ ; ℍ = H ; 𝕂 =  K }
 -- NB: we do not use G directly and work with the "improved" homotopy for the same reason
 -- we used the improved concatination in the proof of the theorem 10.2.3
   where
@@ -350,32 +351,20 @@ lem•10•4•5 {A = A} {B = B} f (g , G , H) = record { g′ = g ; 𝔾 = 𝔾
        lem₂ : {x y : A} (p : x ≡ y) → ap (f ∘ g ∘ f) p ≡ (ap f (ap (g ∘ f) p))
        lem₂ refl = refl
 
-
+ 
 -- Thm 10.4.6: Any equivalence is a contractible map.
-thm•10•4•6 : (f : A → B) →  is-equiv f → is-contr-map f
-thm•10•4•6 f = lem3 ∘ lem2 ∘ lem1
-  where
-    lem1 : is-equiv f → has-inverse f -- Proposition 9.2.7
-    lem1 = is-equiv⇒has-inverse {f = f}
+is-equiv⇒is-contr-map : (f : A → B) →  is-equiv f → is-contr-map f
+is-equiv⇒is-contr-map f = 
+  (is-coh-invertible⇒is-contr-map f) ∘ 
+  (has-inverse⇒is-coh-invertible f) ∘ 
+  (is-equiv⇒has-inverse {f = f})
 
-    lem2 : has-inverse f → is-coh-invertible f -- lemma 10.4.5
-    lem2 = lem•10•4•5 f
-
-    lem3 : is-coh-invertible f → is-contr-map f -- proposition 10.4.2
-    lem3 = coh-invertible⇒is-contr-map f
-
-ex•9•2•3 : is-equiv {A = A} {B = A} id
-ex•9•2•3 = (id , (λ x → refl)) , (id , (λ x → refl))
+is-equiv-id : is-equiv {A = A} {B = A} id
+is-equiv-id = (id , refl-∼) , (id , refl-∼)
 
 
 -- Cor 10.4.7: for any a : A, the type Σ_{x : A} (x ≡ a) is contractible
 -- AH> We already proved this in thm-10∙1∙4.
 -- AI> NB in thm-10∙1∙4 we had shown Σ_{x : A} (a ≡ x)
-cor•10•4•7 : (a : A) → is-contr (Σ[ x ∈ A ] (x ≡ a))
-cor•10•4•7 a = lem2 a
-  where
-   lem : is-equiv {A = A} {B = A} id → is-contr-map id
-   lem = thm•10•4•6 id
-
-   lem2 : is-contr-map {A = A} {B = A} id
-   lem2 = lem ex•9•2•3
+is-contr-based-paths : (a : A) → is-contr (Σ[ x ∈ A ] (x ≡ a))
+is-contr-based-paths a = is-equiv⇒is-contr-map id is-equiv-id a

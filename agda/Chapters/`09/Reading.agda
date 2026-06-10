@@ -41,6 +41,10 @@ is-equiv f = section f × retraction f
 `retr : {f : A → B} → is-equiv f → B → A
 `retr = fst ∘ snd
 
+-- AH> sym : x ≡ y → y ≡ x is an equivalence
+sym-equiv : ∀ {x y : A} → is-equiv (sym {x = x} {y})
+sym-equiv = (sym , involution) , (sym , involution) 
+
 _≃_ : Set ℓ₁ → Set ℓ₂ → Set (ℓ₁ ⊔ ℓ₂)
 A ≃ B = Σ[ f ∈ (A → B) ] is-equiv f
 
@@ -235,7 +239,7 @@ sym-≃ (f , is-eq-f) with is-equiv⇒has-inverse is-eq-f
 ... | (f̅ , is-eq-f̅) =  f̅ , ((f , (is-eq-f̅ .snd)) , (f , (is-eq-f̅ .fst)))
 
 refl-≃ : A ≃ A
-refl-≃ = id , ((id , (λ x → refl)) , (id , λ x → refl))
+refl-≃ = id , ((id , refl-∼) , (id , λ x → refl))
 
 --------------------------------------------------------------------------------
 -- Equational reasoning over ≃ equivalence

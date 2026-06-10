@@ -198,14 +198,14 @@ is-subtype {A = A} 𝐁 = ∀ (x : A) → is-prop (𝐁 x)
 --   B := f⁻¹ x ≡ f⁻¹ y
 --   g := (ap f⁻¹) : x ≡ y → f⁻¹ x ≡ f⁻¹ y.
 -- to yield a goal
---    10-3.ex-10-3-ii-iii⇒i (ap f⁻¹) : 
+--    10-3.contr-codomain⇒contr-domain (ap f⁻¹) : 
 --      is-Contr (f⁻¹ x ≡ f⁻¹ y) → is-equiv (ap f⁻¹) → is-contr (x ≡ y)
 -- The first argument follows from A being a prop; the second follows
 -- from f⁻¹ being an embedding.
 -- 
 ≃-is-prop : ∀ {A B : Set ℓ} → (A ≃ B) → is-prop A → is-prop B
 ≃-is-prop eqv@(f , (f⁻¹ , sec) , retr) isProp x y  = 
-  10-3.ex-10-3-ii-iii⇒i (ap f⁻¹) (isProp (f⁻¹ x) (f⁻¹ y)) (ap-equiv x y) 
+  10-3.contr-codomain⇒contr-domain (ap f⁻¹) (isProp (f⁻¹ x) (f⁻¹ y)) (ap-equiv x y) 
   where
     f⁻¹-isEquiv : is-equiv f⁻¹
     f⁻¹-isEquiv = equivalence-inverse-equivalence ((f⁻¹ , sec) , retr)  
@@ -227,21 +227,21 @@ module 12•2•3 {A B : Set ℓ} {f : A → B} where
   i→ii (Embed p) b (a , fa≡b) (a′ , fa′≡b) = _↔_.to (lem•12•2•2 (lem2 a b fa≡b)) ({!!}  ) (a , fa≡b) (a′ , fa′≡b)
     where
       fwd : is-emb f → (∀ x → is-contr (Σ[ y ∈ A ] (f x ≡ f y)))
-      fwd ef x = {!10-3.ex-10-3-i-iii⇒ii (ap f) ? ?  !}
+      fwd ef x = {!10-3.contr-domain⇒contr-codomain (ap f) ? ?  !}
 
       bwk : (∀ x → is-contr (Σ[ y ∈ A ] (f x ≡ f y))) → is-emb f
-      bwk ctr = Embed (λ x y → 10-3.ex-10-3-i-ii⇒iii (ap f) {!!} {!!})
+      bwk ctr = Embed (λ x y → 10-3.contr-domains⇒is-equiv (ap f) {!!} {!!})
 
 
       lem : is-emb f ↔ (∀ x → is-contr (Σ[ y ∈ A ] (f x ≡ f y)))
       lem = fwd , bwk
 
       lem2 : ∀ y b → (e : f y ≡ b) → fib f (f y) ≃ fib f b
-      lem2 y b refl = id , (id , (λ x → refl)) , id , (λ x → refl)
+      lem2 y b refl = id , (id , refl-∼) , id , refl-∼
 
 
   ii→i : ((b : B) → is-prop (fib f b)) → is-emb f
-  ii→i p = Embed (λ x y → 10-3.ex-10-3-i-ii⇒iii (ap f) {!!} {! p (f y)!})
+  ii→i p = Embed (λ x y → 10-3.contr-domains⇒is-equiv (ap f) {!!} {! p (f y)!})
 
 
 -- Corollary 12.2.4: Consider a family B of types over A. The following are equivalent
@@ -350,7 +350,7 @@ module set-characterization {A : Set ℓ} {R : A → A → Set ℓ}
 
   -- we have that tot (f x) is a equivalence, as domain and codomain are contractible
   lem3 : (x : A) → is-equiv (tot (f x))
-  lem3 x = 10-3.ex-10-3-i-ii⇒iii (tot (f x)) (is-contr-R x) (is-contr-eq x)
+  lem3 x = 10-3.contr-domains⇒is-equiv (tot (f x)) (is-contr-R x) (is-contr-eq x)
 
   -- hence f is a family of equivalences
   lem : ∀ (x : A) → ((y : A) → is-equiv (f x y))
@@ -449,7 +449,7 @@ k-type⇒identity-k-types k A A-is-k-type = k-type⇒k+1-type k A A-is-k-type
 -- Proposition 12.4.5
 -- if e : A ≃ B is an equivalence, and B is a k-type then so is A
 k-type-closed-under-equivalence : {A B : Set ℓ} → (k : 𝕋) (e : A ≃ B) → is-trunc k B → is-trunc k A
-k-type-closed-under-equivalence -𝟚T (f , f-equiv) B-k-type = 10-3.ex-10-3-ii-iii⇒i f B-k-type f-equiv
+k-type-closed-under-equivalence -𝟚T (f , f-equiv) B-k-type = 10-3.contr-codomain⇒contr-domain f B-k-type f-equiv
 k-type-closed-under-equivalence (succT k) (f , f-equiv) B-k-type = {!!}
 
 -- Corollary 12.4.6: if f : A → B is an embedding, and B is a (k + 1)-type, then so is A.
