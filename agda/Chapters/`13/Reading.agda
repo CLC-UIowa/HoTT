@@ -68,12 +68,9 @@ module _ (f : (x : A) → 𝐁 x) where
     HtpyInduction : Set _
     HtpyInduction = retraction htpy-eval
 
-  -- AH> Proposition 13.1.1 now asks to prove that the three characterizations
-  --     above are equivalent, but ultimately, it's the first characterization that
-  --     we axiomatize. It seems more reasonable to prove that (1) ⇒ (2) and (1) ⇒ (3).
-  --     That's how we'll use it, in practice!
-  FunExt⇒HtpyContractible : FunctionExtensionality → HtpyContractible
-  FunExt⇒HtpyContractible fn = {!!} , {!!}    
+  -- It follows from the fundamental theorem of identity types that these three
+  -- characterizations are equivalent.
+  -- TODO: Refactor said theorem to be used here.
 
 
 ----------------------------------------
@@ -86,8 +83,11 @@ module _ (f : (x : A) → 𝐁 x) where
 postulate
   Fun-Ext : ∀ (f : (x : A) → 𝐁 x) → FunctionExtensionality f
 
-¬P-prop : ∀ (P : Set ℓ) → is-prop P → is-prop (¬ P)
-¬P-prop P isProp f g = fun-ext f (Fun-Ext f) g (λ p → ⊥-elim (f p) ) , {!!} 
+-- ¬ P is a prop for any type P. (Requires functional extensionality, as we
+--  have to prove f ≡ g for f , g : P → ⊥.
+¬P-prop : ∀ (P : Set ℓ) → is-prop (¬ P)
+¬P-prop P f g = Irrelevant⇒is-prop 
+  (λ f g → fun-ext f (Fun-Ext f) g (λ p → ⊥-elim (f p) )) f g
 
 ----------------------------------------
 -- Thm 13.2.1
