@@ -95,11 +95,11 @@ postulate
 module _ (C : (x : A) → 𝐁 x → Set ℓ) where 
   choice : ((x : A) → (Σ[ y ∈ 𝐁 x ] (C x y))) →  
            Σ[ f ∈ ((x : A) → 𝐁 x) ] ((x : A) → C x (f x))
-  choice h = (fst ∘ h) , (snd ∘ h)
+  choice h = fst ∘ h , snd ∘ h
 
   choice⁻¹ : (Σ[ f ∈ ((x : A) → 𝐁 x) ] ((x : A) → C x (f x))) → 
              (x : A) → (Σ[ y ∈ 𝐁 x ] (C x y))
-  choice⁻¹ (f , h) x  = (f x) , (h x)    
+  choice⁻¹ (f , h) =  < f , h >
 
   choice-equiv : is-equiv choice
   choice-equiv = has-inverse⇒is-equiv (choice⁻¹ , refl-∼ , refl-∼)

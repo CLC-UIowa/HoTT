@@ -5,7 +5,7 @@ open import Agda.Primitive public
 open import Data.Bool using (true ; false ; Bool ; not) public
 open import Data.Product
     renaming (proj₁ to fst ; proj₂ to snd)
-    using (_×_ ; Σ ; Σ-syntax ; ∃ ; ∃-syntax ; _,_) public
+    using (_×_ ; Σ ; Σ-syntax ; ∃ ; ∃-syntax ; _,_ ; <_,_>) public
 open import Data.Sum
     using (inj₁ ; inj₂ ; [_,_])
     renaming (_⊎_ to _+_) public
