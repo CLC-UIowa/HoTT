@@ -23,28 +23,21 @@ private
 -- Proposition 13.1.1
 
 -- We've three equivalent characterizations of the function extensionality principle.
--- AH> The proof of equivalence folloes from the fundamental theorem of identity types,
---     which I'd still like to clean up to be more reusable. I'm not a fan of these
---     large implication chain theorems, as they're difficult to name and reuse.
-module _ (f : (x : A) → 𝐁 x) where
+module _ {ℓ₁ ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} where
 
-  htpy-eq : (g : (x : A) → 𝐁 x) → f ≡ g → f ∼ g 
-  htpy-eq g refl = refl-∼ 
+  htpy-eq : (f : (x : A) → 𝐁 x) (g : (x : A) → 𝐁 x) → f ≡ g → f ∼ g 
+  htpy-eq f g refl = refl-∼ 
  
   -- ------------------------------
   -- 1. The *function extensionality principle* 
   -- asserts that the function htpy-eq g is an equivalence for any g.
   FunctionExtensionality : Set _
-  FunctionExtensionality = ∀ (g : (x : A) → 𝐁 x) → is-equiv (htpy-eq g)
-
-  -- AH> How you would actually use this axiom
-  fun-ext : FunctionExtensionality → (g : (x : A) → 𝐁 x) → (f ∼ g) → f ≡ g
-  fun-ext fn g = `sec (fn g)  
+  FunctionExtensionality = ∀ (f : (x : A) → 𝐁 x) (g : (x : A) → 𝐁 x) → is-equiv (htpy-eq f g)
 
   -- ------------------------------
   -- 2. The total space Σ[ g ∈ ((x : A) → 𝐁 x) ] is contractible
-  HtpyContractible : Set _
-  HtpyContractible = is-contr (Σ[ g ∈ ((x : A) → 𝐁 x) ] (f ∼ g))
+  HtpyContractible : (f g : (x : A) → 𝐁 x) → Set _
+  HtpyContractible f g = is-contr (Σ[ g ∈ ((x : A) → 𝐁 x) ] (f ∼ g))
 
   -- ------------------------------
   -- 3. The principle of *homotopy induction*: 
@@ -60,7 +53,7 @@ module _ (f : (x : A) → 𝐁 x) where
   --        I'm not sure the significance we gain from this added identity...
   --        To me, it feels sufficient to have simply asked that we have
   --        the witness htpy-ind?
-  module _ {ℓ} (P : (g : (x : A) → 𝐁 x) → f ∼ g → Set ℓ) where
+  module _ {ℓ} (f : (x : A) → 𝐁 x) (P : (g : (x : A) → 𝐁 x) → f ∼ g → Set ℓ) where
     htpy-eval : ((g : (x : A) → 𝐁 x) → (H : f ∼ g) → P g H) → 
                P f refl-∼
     htpy-eval s = s f refl-∼ 
@@ -68,9 +61,10 @@ module _ (f : (x : A) → 𝐁 x) where
     HtpyInduction : Set _
     HtpyInduction = retraction htpy-eval
 
-  -- It follows from the fundamental theorem of identity types that these three
-  -- characterizations are equivalent.
-  -- TODO: Refactor said theorem to be used here.
+-- data FunExtProof {ℓ} : Set ℓ where 
+
+--   function-extensionality : ∀ (f : (x : A) → 𝐁 x) → FunctionExtensionality f → FunExtProof
+
 
 
 ----------------------------------------
@@ -79,18 +73,54 @@ module _ (f : (x : A) → 𝐁 x) where
 
 ----------------------------------------
 -- Axiom 13.1.3 (Function Extensionality)
+-- and Proof of 13.1.1
 
 postulate
-  Fun-Ext : ∀ (f : (x : A) → 𝐁 x) → FunctionExtensionality f
+  Fun-Ext : FunctionExtensionality {A = A} {𝐁 = 𝐁}
 
+-- AH> The straightforward use of this axiom
+fun-ext : (f g : (x : A) → 𝐁 x)  → (f ∼ g) → f ≡ g
+fun-ext f g = `sec (Fun-Ext f g)  
+
+-- We bundle the equivalent forms of functional extensionality
+-- by invoking the fundamental theorem of identity types.
+fun-ext-proof : (f : (x : A) → 𝐁 x) → IdFundProof f refl-∼ (htpy-eq f) 
+fun-ext-proof f = familyEquivalence (Fun-Ext f)
+
+-- All forms
+fun-ext-forms : (f : (x : A) → 𝐁 x) → IdFund f refl-∼ (htpy-eq f)
+fun-ext-forms f = fund-thm-id f refl-∼ (htpy-eq f) (fun-ext-proof f) 
+
+-- (ii) The total space Σ[ g ∈ (x : A) → 𝐁 x ] (f ∼ g) is contractible.
+fun-ext-HtpyContractible : ∀ (f g : (x : A) → 𝐁 x) → HtpyContractible f g
+fun-ext-HtpyContractible f g = fun-ext-forms f .space-contractible 
+
+
+-- (iii) The principle of homotopy induction
+-- AH> Good luck proving this! It's "true" in the text, but
+--     I suspect differences between the formalization of an "identity system"
+--     and my def'n of HtpyInduction are mechanically incongruent.
+--     Problems arise in that the inductive-hypothesis provided by the identity
+--     system is not strong (that is, generalized) enough to prove HptyInduction f P.
+fun-ext-induction : ∀ {ℓ} {A : Set ℓ} {𝐁 : A → Set ℓ} → 
+                    (f : (x : A) → 𝐁 x) (P : (g : (x : A) → 𝐁 x) → f ∼ g → Set ℓ) → 
+                    HtpyInduction f P 
+fun-ext-induction f P with fun-ext-forms f .id-system P
+... | ih , sec = ih , {!sec!}
+  -- λ h → 
+  -- fun-ext (ih (h f refl-∼)) h 
+  -- (λ k → fun-ext (ih (h f refl-∼) k) (h k) 
+  --   (λ H → {!sec (h f refl-∼)!}))
+           
+----------------------------------------
 -- ¬ P is a prop for any type P. (Requires functional extensionality, as we
 --  have to prove f ≡ g for f , g : P → ⊥.
 ¬P-prop : ∀ (P : Set ℓ) → is-prop (¬ P)
-¬P-prop P f g = Irrelevant⇒is-prop 
-  (λ f g → fun-ext f (Fun-Ext f) g (λ p → ⊥-elim (f p) )) f g
+¬P-prop P f g = 
+  Irrelevant⇒is-prop (λ f g → fun-ext f g (λ p → ⊥-elim (f p)) ) f g
 
 ----------------------------------------
--- Thm 13.2.1
+-- Thm 13.2.1 (Axiom of choice)
 
 module _ (C : (x : A) → 𝐁 x → Set ℓ) where 
   choice : ((x : A) → (Σ[ y ∈ 𝐁 x ] (C x y))) →  

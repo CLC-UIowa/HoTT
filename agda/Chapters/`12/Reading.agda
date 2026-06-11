@@ -354,7 +354,7 @@ module set-characterization {A : Set ℓ} {R : A → A → Set ℓ}
 
   -- hence f is a family of equivalences
   lem : ∀ (x : A) → ((y : A) → is-equiv (f x y))
-  lem x y =  _↔_.to (11•1•3.thm (f x)) (lem3 x) y
+  lem x y =  _↔_.to (is-equiv-tot↔-is-equiv-fx (f x)) (lem3 x) y
 
   equiv : ∀ (x y : A) → (x ≡ y) ≃ (R x y)
   equiv x y = sym-≃ (f x y , lem x y)

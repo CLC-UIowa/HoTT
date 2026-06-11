@@ -393,13 +393,14 @@ record IdFund
        family-equivalence : (∀ (x : A) → is-equiv (f x))
        space-contractible : is-contr (Σ[ x ∈ A ] (𝐁 x)) 
        id-system : is-unary-ident-system A 𝐁 b 
+
+open IdFund public 
  
 module _ {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
      (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) where
 
      open 11•2•2 a b f
      open _↔_
-     open IdFund
 
      fund-thm-id : IdFundProof a b f → IdFund a b f
      fund-thm-id (familyEquivalence eqv) .family-equivalence = eqv
