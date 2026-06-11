@@ -266,8 +266,8 @@ rfl-ident-system :
   (b : 𝐁 a) → ((x : A) (y : 𝐁 x) → P x y) → P a b
 rfl-ident-system {a = a} b h = h a b
 
-is-unary-ident-system : {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {a : A} (b : 𝐁 a) → Set (lsuc ℓ)
-is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} {a = a} b =
+is-unary-ident-system : {ℓ : Level} (A : Set ℓ) (𝐁 : A → Set ℓ) {a : A} (b : 𝐁 a) → Set (lsuc ℓ)
+is-unary-ident-system {ℓ = ℓ} A 𝐁 {a = a} b =
   (P : (x : A) (y : 𝐁 x) → Set ℓ) → section {B = P a b} (rfl-ident-system {𝐁 = 𝐁} {P = P} b)
 
 ---------------------------------------
@@ -296,7 +296,7 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
   -- Recall from Ex 10.3 that if you have two of the three then third can be derived
   --  (i) is-contr A (ii) is-contr B (iii) is-equiv f
   -- thus using lem1 and lem2 we obtain the result
-
+  
   i↔ii : (∀ (x : A) → is-equiv (f x)) ↔ is-contr (Σ A 𝐁)
   i↔ii = (λ x → contr-domain⇒contr-codomain (tot f) lem2 ((_↔_.from lem1 x)))
             , λ x → _↔_.to lem1 (contr-domains⇒is-equiv (tot f) lem2 x)
@@ -325,7 +325,7 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
 
   open 9-4
 
-  ii↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system {ℓ = ℓ} b
+  ii↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system {ℓ = ℓ} A 𝐁 b
   ii↔iii = forward , backward
     where -- (left-inv (tot-prf (a , b)))
       ev-pair : ∀ {P : (x : A) (y : 𝐁 x) → Set ℓ} → ((t : Σ A 𝐁) → P (fst t) (snd t)) → (x : A) → (y : 𝐁 x) → P x y
@@ -349,7 +349,7 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
       Contr⇒SI-inst = Contr⇒SI.SI {ℓ₁ = ℓ} {A = Σ A 𝐁}
       SI⇒Contr-inst = SI⇒Contr.Contr {A = Σ A 𝐁}
 
-      forward : is-contr (Σ A 𝐁) → is-unary-ident-system {A = A} {𝐁 = 𝐁} {a = a} b
+      forward : is-contr (Σ A 𝐁) → is-unary-ident-system A 𝐁 {a = a} b
       forward contr P =
         _↔_.to 9-4a-inst
           ((snd
@@ -358,7 +358,7 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
               {B = λ a,b → P (fst a,b) (snd a,b)}))
 
       -- Now just do the same thing, but backward
-      backward : is-unary-ident-system {A = A} {𝐁 = 𝐁} {a = a} b → is-contr (Σ A 𝐁)
+      backward : is-unary-ident-system A 𝐁 {a = a} b → is-contr (Σ A 𝐁)
       backward hyp =
         SI⇒Contr-inst
           (_↔_.to (section↔SI)
@@ -368,9 +368,49 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
                   (hyp λ x y → P' (x , y))))
 
   -- for convenience
-  i↔iii : (∀ (x : A) → is-equiv (f x)) ↔ is-unary-ident-system {ℓ = ℓ} {A = A} {𝐁 = 𝐁} b
+  i↔iii : (∀ (x : A) → is-equiv (f x)) ↔ is-unary-ident-system A 𝐁 b
   i↔iii = _↔_.to ii↔iii ∘ (_↔_.to i↔ii) , (_↔_.from i↔ii) ∘ _↔_.from ii↔iii
 
+--------------------------------------------------------------------------------
+-- Packaging up the fundamental theorem.
+-- 1. Build an inhabitant of IdFundProof
+-- 2. Use the function `fund-thm-id` to get a record of all equivalent formulations
+-- 3. Project from that record the property you need
+
+data IdFundProof
+     {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
+     (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) : Set (lsuc ℓ) where
+     
+     familyEquivalence : (∀ (x : A) → is-equiv (f x)) → IdFundProof a b f
+     spaceContractible : is-contr (Σ[ x ∈ A ] (𝐁 x)) → IdFundProof a b f
+     idSystem : is-unary-ident-system A 𝐁 b → IdFundProof a b f
+
+record IdFund
+       {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
+     (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x): Set (lsuc ℓ) where
+     
+     field
+       family-equivalence : (∀ (x : A) → is-equiv (f x))
+       space-contractible : is-contr (Σ[ x ∈ A ] (𝐁 x)) 
+       id-system : is-unary-ident-system A 𝐁 b 
+ 
+module _ {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
+     (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) where
+
+     open 11•2•2 a b f
+     open _↔_
+     open IdFund
+
+     fund-thm-id : IdFundProof a b f → IdFund a b f
+     fund-thm-id (familyEquivalence eqv) .family-equivalence = eqv
+     fund-thm-id (familyEquivalence eqv) .space-contractible = i↔ii .to eqv
+     fund-thm-id (familyEquivalence eqv) .id-system = ii↔iii .to (i↔ii .to eqv)  
+     fund-thm-id (spaceContractible c) .family-equivalence = i↔ii .from c
+     fund-thm-id (spaceContractible c) .space-contractible = c
+     fund-thm-id (spaceContractible c) .id-system = ii↔iii .to c
+     fund-thm-id (idSystem i) .family-equivalence = i↔iii .from i
+     fund-thm-id (idSystem i) .space-contractible = ii↔iii .from i
+     fund-thm-id (idSystem i) .id-system = i
 
 -------------------------------------------------------------------------------
 -- §11.3: Equality on the natural numbers
@@ -599,10 +639,10 @@ thm•11•5•1 s t = _↔_.from (11•2•2.i↔ii s (refl-Eq-copr s) (λ x �
 -- Dependent identity system
 module 11•6•1 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 : (x : A) → 𝐁 x → 𝐂 x → Set ℓ)
                (a : A) (b : 𝐁 a) (c : 𝐂 a)
-               (c-ident-system : is-unary-ident-system {𝐁 = 𝐂} {a = a} c)
+               (c-ident-system : is-unary-ident-system A 𝐂 {a = a} c)
                (d : 𝐃 a b c) where
   is-dep-ident-system : Set (lsuc ℓ)
-  is-dep-ident-system = is-unary-ident-system {A = 𝐁 a} {𝐁 = λ y → 𝐃 a y c} {a = b} d
+  is-dep-ident-system = is-unary-ident-system (𝐁 a) (λ y → 𝐃 a y c) {a = b} d
 
 ---------------------------------------
 -- Thm 11.6.2
@@ -617,7 +657,7 @@ module 11•6•1 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
 -- (v) The total space Σ_{(x , y) Σ_{x : A} 𝐁 x} Σ_{z : 𝐂 x} D x y z is contractible
 -- (vi) The type family (x , y) ↦ Σ_{z : 𝐂 x} D x y z is an identity system at (a , b) : Σ_{x : A} 𝐁 x
 
-module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 : (x : A) → 𝐁 x → 𝐂 x → Set ℓ) (a : A) (b : 𝐁 a) (c : 𝐂 a) (d : 𝐃 a b c) (c-ident-system : is-unary-ident-system {𝐁 = 𝐂} {a = a} c) where
+module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 : (x : A) → 𝐁 x → 𝐂 x → Set ℓ) (a : A) (b : 𝐁 a) (c : 𝐂 a) (d : 𝐃 a b c) (c-ident-system : is-unary-ident-system A 𝐂 {a = a} c) where
   i↔ii : {f : (y : 𝐁 a) → (b ≡ y) → 𝐃 a y c} → (∀ (x : 𝐁 a) → is-equiv (f x)) ↔ is-contr (Σ[ y ∈ 𝐁 a ] 𝐃 a y c)
   i↔ii {f = f} = 11•2•2.i↔ii {𝐁 = λ y → 𝐃 a y c} b d f
 
@@ -633,7 +673,7 @@ module 11•6•2 {ℓ : Level} {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (𝐃 
 
   v↔vi : {f : (q : Σ[ x ∈ A ] 𝐁 x) → ((a , b) ≡ q) → Σ[ z ∈ 𝐂 (fst q) ] 𝐃 (fst q) (snd q) z} →
     is-contr (Σ[ p ∈ (Σ[ x ∈ A ] 𝐁 x) ] (Σ[ z ∈ 𝐂 (fst p) ] 𝐃 (fst p) (snd p) z))
-       ↔ is-unary-ident-system {A = Σ[ x ∈ A ] 𝐁 x} {𝐁 = λ q → Σ[ z ∈ 𝐂 (fst q) ] 𝐃 (fst q) (snd q) z} {a = (a , b)} (f (a , b) refl)
+       ↔ is-unary-ident-system (Σ[ x ∈ A ] 𝐁 x) (λ q → Σ[ z ∈ 𝐂 (fst q) ] 𝐃 (fst q) (snd q) z) {a = (a , b)} (f (a , b) refl)
   v↔vi {f = f} = 11•2•2.ii↔iii (a , b) (f (a , b) refl) f
 
 

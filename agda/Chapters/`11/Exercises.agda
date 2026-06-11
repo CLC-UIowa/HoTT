@@ -428,7 +428,7 @@ module 11•11 {A B X : Set ℓ} {f : A → X} {g : B → X} {h : A → B} {H : 
     , (_↔_.from is-equiv-h↔is-equiv-bottom) ∘ (_↔_.to is-equiv-top↔is-equiv-bottom) ∘ (_↔_.to is-equiv-tot-fib-triangle↔is-equiv-top)
 
   is-equiv-tot-fib-triangle↔is-equiv-fam-fib-triangle : (is-equiv $ tot fib-triangle) ↔ is-equiv-fam fib-triangle
-  is-equiv-tot-fib-triangle↔is-equiv-fam-fib-triangle = 11•1•3.thm fib-triangle -- Applying thm 11.1.13
+  is-equiv-tot-fib-triangle↔is-equiv-fam-fib-triangle = is-equiv-tot↔-is-equiv-fx fib-triangle -- Applying thm 11.1.13
 
   -- More ↔ chaining
   is-equiv-h↔is-equiv-fam-fib-triangle : is-equiv h ↔ is-equiv-fam fib-triangle
