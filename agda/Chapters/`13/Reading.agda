@@ -60,51 +60,134 @@ module _ {ℓ₁ ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} where
     HtpyInduction : Set _
     HtpyInduction = section htpy-eval
 
--- data FunExtProof {ℓ} : Set ℓ where 
+----------------------------------------
+-- A proof that the three forms above are equivalent.
+-- The gist: Applying an assumption of FunctionExtensionality
+-- to the fundamental theorem of identity types yields 
+-- each three forms immediately. N.b. one could have just as 
+-- well proven another condition of the fund. thm., but 
+-- function extensionality is the condition we axiomitize.
 
---   function-extensionality : ∀ (f : (x : A) → 𝐁 x) → FunctionExtensionality f → FunExtProof
+module FunExt {ℓ₁ ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂}
+       (Fun-Ext : FunctionExtensionality {A = A} {𝐁 = 𝐁}) where
+  -- AH> The straightforward use of this axiom
+  fun-ext : (f g : (x : A) → 𝐁 x)  → (f ∼ g) → f ≡ g
+  fun-ext f g = `sec (Fun-Ext f g)  
+
+  -- We bundle the equivalent forms of functional extensionality
+  -- by invoking the fundamental theorem of identity types.
+  fun-ext-proof : (f : (x : A) → 𝐁 x) → IdFundProof f refl-∼ (htpy-eq f) 
+  fun-ext-proof f = familyEquivalence (Fun-Ext f)
+
+  -- All forms
+  fun-ext-forms : (f : (x : A) → 𝐁 x) → IdFund f refl-∼ (htpy-eq f)
+  fun-ext-forms f = fund-thm-id f refl-∼ (htpy-eq f) (fun-ext-proof f) 
+
+  -- (ii) The total space Σ[ g ∈ (x : A) → 𝐁 x ] (f ∼ g) is contractible.
+  fun-ext-HtpyContractible : ∀ (f g : (x : A) → 𝐁 x) → HtpyContractible f g
+  fun-ext-HtpyContractible f g = fun-ext-forms f .space-contractible 
 
 
+  -- (iii) The principle of homotopy induction
+  fun-ext-induction : (f : (x : A) → 𝐁 x) (P : (g : (x : A) → 𝐁 x) → f ∼ g → Set _) → 
+                      HtpyInduction f P 
+  fun-ext-induction f P = fun-ext-forms f .id-system P
 
 ----------------------------------------
--- Theorem 13.1.2
+-- Theorem 13.1.2: The weak function extensionality principle
+-- 
+-- The following are equivalent:
+--   (i) the function extensionality principle holds in 𝓤: 
+--       for every type family B over A in 𝓤, and any
+--       f, g : (x : A) → B x, the map
+--         htpy-eq : (f ≡ g) → (f ∼ g)
+--       is an equivalence.
+--  (ii) The *weak function extensionality principle* holds in 𝓤:
+--       for every type family B over A in 𝓤, one has
+--       ((x : A) → is-contr (B x)) → is-contr ((x : A) → B x)
+-- AH> Note that this universe nonsense is present because 
+--     the two statements are equivalent in *full generality* over
+--     A and B. That is, we do not fix A and B when proving the bi-implication.
+
+module _ where 
+  open is-contr 
+  WeakFunctionExtensionality : Setω
+  WeakFunctionExtensionality = 
+    ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} → 
+    ((x : A) → is-contr (B x)) → is-contr ((x : A) → B x)
+
+  -- Function extensionality (let's call it "strong") implies weak
+  -- function extensionality.
+  -- The gist: 
+  -- Given f : ((x : A) → is-contr (B x)), we have 
+  --   center ∘ f : B x 
+  -- Use this as your center of contraction when proving is-contr ((x : A) → B).
+  -- Now your goal is to prove (∀ g. center ∘ f ≡ g). 
+  -- Applying function extensionality yields a goal of:
+  --   center ∘ f ∼ g 
+  -- giving us an (x : A) to work with. Since (f x) is a contraction,
+  -- we have 
+  --   contraction (f x) : (y : B x) → center (f x) ≡ y 
+  -- so let y equal (g x) and we prove
+  --  center (f x) ≡ g x 
+  -- as desired. 
+  strong⇒weak : (∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} → FunctionExtensionality {A = A} {𝐁 = B}) → 
+                 WeakFunctionExtensionality
+  strong⇒weak ext f = 
+    center ∘ f , 
+    λ g → (fun-ext (center ∘ f) g) (λ x → (contraction ∘ f) x (g x)) 
+    where open FunExt ext 
+
+  -- Weak function extensionality implies strong.
+  -- The gist:
+  -- Prove the second condition of the fund. thm. of identity types:
+  -- that the total space, Σ[ g ∈ (((x : A) → B x) → f ∼ g) ], is contractible.
+  -- FunctionExtensionality then follows as an eqv. condition.
+  weak⇒strong : WeakFunctionExtensionality → 
+                (∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} → FunctionExtensionality {A = A} {𝐁 = B})
+  weak⇒strong wk {A = A} {B} f = id-fund .family-equivalence
+    where 
+      id-fund    : IdFund f refl-∼ (htpy-eq f)
+      id-fund-pf : IdFundProof f refl-∼ (htpy-eq f)
+
+      id-fund    = fund-thm-id f refl-∼ (htpy-eq f) id-fund-pf
+      id-fund-pf = spaceContractible
+        -- The gist:
+        -- The goal is to prove:
+        --   is-contr (Σ[ h ∈ ((x : A) → B x)) ] (f ∼ h))
+        -- The proof is to construct an equivalence between i and r, below, so that
+        -- contr-codomain⇒contr-domain may be applied to i, which shifts the goal from proving
+        --   is-contr (Σ[ g ∈ (x : A) → B x ] (f ∼ g))
+        -- to 
+        --   is-contr ((x : A) → Σ[ b ∈ B x ] ((f x) ≡ b)). 
+        -- The weak function extensionality assumption gives us this; 
+        -- when applied to the right type arguments, wk has the type
+        --   (x : A) → is-contr (Σ[ b ∈ B x ] (f x ≡ b))) → 
+        --   is-contr ((x : A) → Σ[ b ∈ B x ] ((f x) ≡ b))
+        -- The inhabitant of the argument to wk is trivial.
+        (contr-codomain⇒contr-domain i  (wk (λ x → (f x , refl) , (λ { (_ , refl) → refl }))) eqv-i) 
+        where 
+          -- AH> For insight, compare the definitions below to the axiom of choice in 13.2.1
+          i : (Σ[ g ∈ ((x : A) → B x) ] (f ∼ g)) → 
+              ((x : A) → Σ[ b ∈ (B x) ] (f x ≡ b)) 
+          i (g , H) = < g , H > 
+
+          r : ((x : A) → Σ[ b ∈ (B x) ] (f x ≡ b)) → 
+              (Σ[ g ∈ ((x : A) → B x) ] (f ∼ g)) 
+          r p = (fst ∘ p) , (snd ∘ p) 
+
+          eqv-i : is-equiv i 
+          eqv-i = has-inverse⇒is-equiv (r , refl-∼ , refl-∼)  
+
 
 
 ----------------------------------------
 -- Axiom 13.1.3 (Function Extensionality)
--- and Proof of 13.1.1
 
-postulate
-  Fun-Ext : FunctionExtensionality {A = A} {𝐁 = 𝐁}
-
--- AH> The straightforward use of this axiom
-fun-ext : (f g : (x : A) → 𝐁 x)  → (f ∼ g) → f ≡ g
-fun-ext f g = `sec (Fun-Ext f g)  
-
--- We bundle the equivalent forms of functional extensionality
--- by invoking the fundamental theorem of identity types.
-fun-ext-proof : (f : (x : A) → 𝐁 x) → IdFundProof f refl-∼ (htpy-eq f) 
-fun-ext-proof f = familyEquivalence (Fun-Ext f)
-
--- All forms
-fun-ext-forms : (f : (x : A) → 𝐁 x) → IdFund f refl-∼ (htpy-eq f)
-fun-ext-forms f = fund-thm-id f refl-∼ (htpy-eq f) (fun-ext-proof f) 
-
--- (ii) The total space Σ[ g ∈ (x : A) → 𝐁 x ] (f ∼ g) is contractible.
-fun-ext-HtpyContractible : ∀ (f g : (x : A) → 𝐁 x) → HtpyContractible f g
-fun-ext-HtpyContractible f g = fun-ext-forms f .space-contractible 
-
-
--- (iii) The principle of homotopy induction
--- AH> Good luck proving this! It's "true" in the text, but
---     I suspect differences between the formalization of an "identity system"
---     and my def'n of HtpyInduction are mechanically incongruent.
---     Problems arise in that the inductive-hypothesis provided by the identity
---     system is not strong (that is, generalized) enough to prove HptyInduction f P.
-fun-ext-induction : ∀ {ℓ} {A : Set ℓ} {𝐁 : A → Set ℓ} → 
-                    (f : (x : A) → 𝐁 x) (P : (g : (x : A) → 𝐁 x) → f ∼ g → Set ℓ) → 
-                    HtpyInduction f P 
-fun-ext-induction f P = fun-ext-forms f .id-system P
+module _ {ℓ₁} {ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} where
+  postulate
+    Fun-Ext : FunctionExtensionality {A = A} {𝐁 = 𝐁}
+  open FunExt Fun-Ext public
 
            
 ----------------------------------------
