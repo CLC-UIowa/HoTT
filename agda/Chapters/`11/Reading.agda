@@ -280,6 +280,19 @@ is-unary-ident-system {ℓ = ℓ} A 𝐁 {a = a} b =
 contr-path : {ℓ : Level} {A : Set ℓ} → (a : A) → is-contr A → is-contr A
 contr-path a (center , contraction) = (a , λ x → sym (contraction a) ○ contraction x)
 
+-- AH> A subtlety:
+-- We can define f, with the correct identification, simply:
+module _ (a : A) (B : A → Set ℓ) (b : 𝐁 a) where 
+    private 
+      f : ∀ (x : A) → (a ≡ x) → 𝐁 x 
+      f x refl = b 
+-- But we choose to let f be generalized. Rijke writes:
+--   > ...you may wonder why we choose to formulate the fundamental theorem of identity 
+--   > types using a general family of maps 𝑓. The reason is that it is somewhat common
+--   > to apply the fundamental theorem of identity types in order to conclude that 𝑓 
+--   > is a family equivalences, even when 𝑓 is not by definition the canonical family of maps,
+--   > and we want to be free to do so.
+
 module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
               (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) where
   -- (i)   The family of maps f is a family of equivalences

@@ -23,6 +23,8 @@ private
 -- Proposition 13.1.1
 
 -- We've three equivalent characterizations of the function extensionality principle.
+-- AH> N.b. Rijke chooses to treat f as a module parameter, which is equivalent. I
+--     prefer letting f and g both be components of the definition.
 module _ {ℓ₁ ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} where
 
   htpy-eq : (f : (x : A) → 𝐁 x) (g : (x : A) → 𝐁 x) → f ≡ g → f ∼ g 
@@ -30,7 +32,7 @@ module _ {ℓ₁ ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} where
  
   -- ------------------------------
   -- 1. The *function extensionality principle* 
-  -- asserts that the function htpy-eq g is an equivalence for any g.
+  -- asserts that the function htpy-eq f g is an equivalence for any g.
   FunctionExtensionality : Set _
   FunctionExtensionality = ∀ (f : (x : A) → 𝐁 x) (g : (x : A) → 𝐁 x) → is-equiv (htpy-eq f g)
 
@@ -50,16 +52,13 @@ module _ {ℓ₁ ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} where
   --        base case (refl-∼) and it holds for the general case.
   --        That this is a section means
   --          htpy-eval ∘ htpy-ind ∼ id 
-  --        I'm not sure the significance we gain from this added identity...
-  --        To me, it feels sufficient to have simply asked that we have
-  --        the witness htpy-ind?
   module _ {ℓ} (f : (x : A) → 𝐁 x) (P : (g : (x : A) → 𝐁 x) → f ∼ g → Set ℓ) where
     htpy-eval : ((g : (x : A) → 𝐁 x) → (H : f ∼ g) → P g H) → 
                P f refl-∼
-    htpy-eval s = s f refl-∼ 
+    htpy-eval s = s f Refl    
 
     HtpyInduction : Set _
-    HtpyInduction = retraction htpy-eval
+    HtpyInduction = section htpy-eval
 
 -- data FunExtProof {ℓ} : Set ℓ where 
 
@@ -105,12 +104,8 @@ fun-ext-HtpyContractible f g = fun-ext-forms f .space-contractible
 fun-ext-induction : ∀ {ℓ} {A : Set ℓ} {𝐁 : A → Set ℓ} → 
                     (f : (x : A) → 𝐁 x) (P : (g : (x : A) → 𝐁 x) → f ∼ g → Set ℓ) → 
                     HtpyInduction f P 
-fun-ext-induction f P with fun-ext-forms f .id-system P
-... | ih , sec = ih , {!sec!}
-  -- λ h → 
-  -- fun-ext (ih (h f refl-∼)) h 
-  -- (λ k → fun-ext (ih (h f refl-∼) k) (h k) 
-  --   (λ H → {!sec (h f refl-∼)!}))
+fun-ext-induction f P = fun-ext-forms f .id-system P
+
            
 ----------------------------------------
 -- ¬ P is a prop for any type P. (Requires functional extensionality, as we
