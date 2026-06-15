@@ -189,10 +189,35 @@ module _ {ℓ₁} {ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} where
     Fun-Ext : FunctionExtensionality {A = A} {𝐁 = 𝐁}
   open FunExt Fun-Ext public
 
+----------------------------------------
+-- Theorem 13.1.5.
+-- We generalize the weak function extensionality principle to
+-- the following statement:
+-- For any type family B over A, one has
+--   ((x : A) is-trunkₖ (B x)) → is-truncₖ ((x : A) → B x)
+-- 
+-- The gist:
+-- - The base case is exactly the same as when we proved strong⇒weak extensionality
+-- - The step case uses 
+--     k-type-closed-under-equivalence : {A B : Set ℓ} → (k : 𝕋) (e : A ≃ B) → is-trunc k B → is-trunc k A.
+--   Here A is (f ≡ g) and B is (f ∼ g). In other words, function extensionality lets us 
+--   shift the goal from equivalence to homotopic equivalence. 
+--   This then permits the invocation of the inductive hypothesis:
+--     is-trunk-wk-ext k : (x : A) → is-trunc k (f x ≡ g x).
+--   which can be proven given the argument 
+--     i : (x : A) (a b : 𝐁 x) → (a ≡ b).
+module _ where 
+  open is-contr 
+  is-trunk-wk-ext : ∀ k → ((x : A) → is-trunc k (𝐁 x)) → is-trunc k ((x : A) → 𝐁 x)
+  is-trunk-wk-ext -𝟚T f = center ∘ f , λ g → (fun-ext (center ∘ f) g) (λ x → (contraction ∘ f) x (g x))
+  is-trunk-wk-ext {A = A} {𝐁 = 𝐁} (succT k) i f g = k-type-closed-under-equivalence k ((htpy-eq f g , Fun-Ext f g)) (is-trunk-wk-ext k (λ x → i x (f x) (g x)))
            
 ----------------------------------------
 -- ¬ P is a prop for any type P. (Requires functional extensionality, as we
 --  have to prove f ≡ g for f , g : P → ⊥.
+-- AH> The text proves this as a consequence of the more general Thm 13.1.5,
+--     but it's simple enough to prove directly.
+
 ¬P-prop : ∀ (P : Set ℓ) → is-prop (¬ P)
 ¬P-prop P f g = 
   Irrelevant⇒is-prop (λ f g → fun-ext f g (λ p → ⊥-elim (f p)) ) f g
