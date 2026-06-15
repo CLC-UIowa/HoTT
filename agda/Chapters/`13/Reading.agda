@@ -210,12 +210,13 @@ module _ where
   open is-contr 
   is-trunk-wk-ext : ∀ k → ((x : A) → is-trunc k (𝐁 x)) → is-trunc k ((x : A) → 𝐁 x)
   is-trunk-wk-ext -𝟚T f = center ∘ f , λ g → (fun-ext (center ∘ f) g) (λ x → (contraction ∘ f) x (g x))
-  is-trunk-wk-ext {A = A} {𝐁 = 𝐁} (succT k) i f g = k-type-closed-under-equivalence k ((htpy-eq f g , Fun-Ext f g)) (is-trunk-wk-ext k (λ x → i x (f x) (g x)))
+  is-trunk-wk-ext {A = A} {𝐁 = 𝐁} (succT k) i f g = 
+    k-type-closed-under-equivalence k ((htpy-eq f g , Fun-Ext f g)) (is-trunk-wk-ext k (λ x → i x (f x) (g x)))
            
 ----------------------------------------
 -- ¬ P is a prop for any type P. (Requires functional extensionality, as we
 --  have to prove f ≡ g for f , g : P → ⊥.
--- AH> The text proves this as a consequence of the more general Thm 13.1.5,
+-- AH> The text proves this as a consequence of Thm 13.1.5,
 --     but it's simple enough to prove directly.
 
 ¬P-prop : ∀ (P : Set ℓ) → is-prop (¬ P)
@@ -236,4 +237,42 @@ module _ (C : (x : A) → 𝐁 x → Set ℓ) where
 
   choice-equiv : is-equiv choice
   choice-equiv = has-inverse⇒is-equiv (choice⁻¹ , refl-∼ , refl-∼)
-           
+
+----------------------------------------
+-- Corollary 13.2.2:
+-- For any two types A and B, and any type family C over B,
+-- we have an equivalence:
+--   (A → Σ[ y ∈ B ] (C y)) ≃ (Σ[ f ∈ A → B ] ((x : A) → C (f x)))
+
+ΠΣ-distr : ∀ {A : Set ℓ₁} {B : Set ℓ₂} {C : B → Set ℓ₃} → 
+          (A → Σ[ y ∈ B ] (C y)) ≃ (Σ[ f ∈ (A → B) ] ((x : A) → C (f x)))
+ΠΣ-distr {A = A} {B} {C} = (choice (λ _ → C)) , (choice-equiv (λ _ → C))
+
+
+-- another direct consequence:
+-- A function that chooses fibers of f is equivalent to 
+-- a section of f.
+fib-distrib : ∀ (f : A → B) → ((b : B) → fib f b) ≃ (Σ[ g ∈ (B → A) ] (f ∘ g ∼ id))
+fib-distrib f = (choice (λ y x → f x ≡ y)) , choice-equiv _ 
+
+----------------------------------------
+-- Corollary 13.2.3: For a type family B over A, and the projection map
+--   fst : (Σ[ x ∈ A ] (B x)) → A 
+-- we have an equivalence 
+--   sec(fst) ≃ (x : A) → B x 
+
+module _ where 
+  open ≃-Reasoning
+  fst-sec : section (fst {A = A} {B = 𝐁}) ≃ (∀ (x : A) → 𝐁 x)
+  fst-sec {A = A} {𝐁 = 𝐁} = begin 
+    -- AH> I don't follow how this step follows from 13.2.1.
+    -- I can't be arsed with this proof.
+    section fst ≃⟨ ({! choice   !} , {!   !}) ⟩ 
+    (Σ[ p ∈ (Σ[ f ∈ (A → A) ] ((x : A) → 𝐁 (f x))) ] (fst p ∼ id)) ≃⟨ {!   !} ⟩
+    {!   !} ∎ 
+
+
+----------------------------------------
+-- Theorem 13.2.4. Blah blah identity system.
+
+
