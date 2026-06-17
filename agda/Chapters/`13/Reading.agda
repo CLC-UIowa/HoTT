@@ -76,8 +76,8 @@ module FunExt {ℓ₁ ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂}
 
   -- We bundle the equivalent forms of functional extensionality
   -- by invoking the fundamental theorem of identity types.
-  fun-ext-proof : (f : (x : A) → 𝐁 x) → IdFundProof f refl-∼ (htpy-eq f) 
-  fun-ext-proof f = familyEquivalence (Fun-Ext f)
+  fun-ext-proof : (f : (x : A) → 𝐁 x) → IdFundProof {𝐁 = f ∼_} f Refl (htpy-eq f)
+  fun-ext-proof f = familyEquivalence (Fun-Ext f) 
 
   -- All forms
   fun-ext-forms : (f : (x : A) → 𝐁 x) → IdFund f refl-∼ (htpy-eq f)
@@ -131,11 +131,12 @@ module _ where
   -- so let y equal (g x) and we prove
   --  center (f x) ≡ g x 
   -- as desired. 
-  strong⇒weak : (∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} → FunctionExtensionality {A = A} {𝐁 = B}) → 
+  strong⇒weak : (∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} → 
+                   FunctionExtensionality {A = A} {𝐁 = B}) → 
                  WeakFunctionExtensionality
   strong⇒weak ext f = 
     center ∘ f , 
-    λ g → (fun-ext (center ∘ f) g) (λ x → (contraction ∘ f) x (g x)) 
+    λ g → fun-ext (center ∘ f) g (λ x → (contraction ∘ f) x (g x))
     where open FunExt ext 
 
   -- Weak function extensionality implies strong.
@@ -165,11 +166,11 @@ module _ where
         --   (x : A) → is-contr (Σ[ b ∈ B x ] (f x ≡ b))) → 
         --   is-contr ((x : A) → Σ[ b ∈ B x ] ((f x) ≡ b))
         -- The inhabitant of the argument to wk is trivial.
-        (contr-codomain⇒contr-domain i  (wk (λ x → (f x , refl) , (λ { (_ , refl) → refl }))) eqv-i) 
+        (contr-codomain⇒contr-domain i (wk {A = A} {B = λ x → Σ-syntax (B x) λ b → f x ≡ b} (λ x → (f x , refl) , λ { (_ , refl) → refl })) eqv-i)
         where 
           -- AH> For insight, compare the definitions below to the axiom of choice in 13.2.1
           i : (Σ[ g ∈ ((x : A) → B x) ] (f ∼ g)) → 
-              ((x : A) → Σ[ b ∈ (B x) ] (f x ≡ b)) 
+              ((x : A) → Σ[ b ∈ (B x) ] (f x ≡ b))
           i (g , H) = < g , H > 
 
           r : ((x : A) → Σ[ b ∈ (B x) ] (f x ≡ b)) → 
@@ -178,8 +179,6 @@ module _ where
 
           eqv-i : is-equiv i 
           eqv-i = has-inverse⇒is-equiv (r , refl-∼ , refl-∼)  
-
-
 
 ----------------------------------------
 -- Axiom 13.1.3 (Function Extensionality)
@@ -199,7 +198,8 @@ module _ {ℓ₁} {ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} where
 -- The gist:
 -- - The base case is exactly the same as when we proved strong⇒weak extensionality
 -- - The step case uses 
---     k-type-closed-under-equivalence : {A B : Set ℓ} → (k : 𝕋) (e : A ≃ B) → is-trunc k B → is-trunc k A.
+--     k-type-closed-under-equivalence : 
+--       {A B : Set ℓ} → (k : 𝕋) (e : A ≃ B) → is-trunc k B → is-trunc k A.
 --   Here A is (f ≡ g) and B is (f ∼ g). In other words, function extensionality lets us 
 --   shift the goal from equivalence to homotopic equivalence. 
 --   This then permits the invocation of the inductive hypothesis:
@@ -209,9 +209,9 @@ module _ {ℓ₁} {ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} where
 module _ where 
   open is-contr 
   is-trunk-wk-ext : ∀ k → ((x : A) → is-trunc k (𝐁 x)) → is-trunc k ((x : A) → 𝐁 x)
-  is-trunk-wk-ext -𝟚T f = center ∘ f , λ g → (fun-ext (center ∘ f) g) (λ x → (contraction ∘ f) x (g x))
+  is-trunk-wk-ext -𝟚T = strong⇒weak Fun-Ext
   is-trunk-wk-ext {A = A} {𝐁 = 𝐁} (succT k) i f g = 
-    k-type-closed-under-equivalence k ((htpy-eq f g , Fun-Ext f g)) (is-trunk-wk-ext k (λ x → i x (f x) (g x)))
+    k-type-closed-under-equivalence k (htpy-eq f g , Fun-Ext f g) (is-trunk-wk-ext k (λ x → i x (f x) (g x)))
            
 ----------------------------------------
 -- ¬ P is a prop for any type P. (Requires functional extensionality, as we
@@ -220,8 +220,8 @@ module _ where
 --     but it's simple enough to prove directly.
 
 ¬P-prop : ∀ (P : Set ℓ) → is-prop (¬ P)
-¬P-prop P f g = 
-  Irrelevant⇒is-prop (λ f g → fun-ext f g (λ p → ⊥-elim (f p)) ) f g
+¬P-prop P f g = is-trunk-wk-ext (succT -𝟚T) (λ { _ () }) f g 
+  -- Irrelevant⇒is-prop (λ f g → fun-ext f g (λ p → ⊥-elim (f p)) ) f g
 
 ----------------------------------------
 -- Thm 13.2.1 (Axiom of choice)
@@ -263,16 +263,26 @@ fib-distrib f = (choice (λ y x → f x ≡ y)) , choice-equiv _
 
 module _ where 
   open ≃-Reasoning
-  fst-sec : section (fst {A = A} {B = 𝐁}) ≃ (∀ (x : A) → 𝐁 x)
+  fst-sec : 
+    section (fst {A = A} {B = 𝐁}) ≃ (∀ (x : A) → 𝐁 x)
   fst-sec {A = A} {𝐁 = 𝐁} = begin 
     -- AH> I don't follow how this step follows from 13.2.1.
     -- I can't be arsed with this proof.
-    section fst ≃⟨ ({! choice   !} , {!   !}) ⟩ 
+    section fst ≃⟨ ({!    !} , {!   !}) ⟩ 
     (Σ[ p ∈ (Σ[ f ∈ (A → A) ] ((x : A) → 𝐁 (f x))) ] (fst p ∼ id)) ≃⟨ {!   !} ⟩
     {!   !} ∎ 
 
 
 ----------------------------------------
 -- Theorem 13.2.4. Blah blah identity system.
+-- SKIP
+
+--------------------------------------------------------------------------------
+-- § 13.3: Universal Properties
+-- TODO:
+--   - Mechanize univ. property of Σ types, id  types, 
+
+----------------------------------------
+-- The universal property of Σ types
 
 

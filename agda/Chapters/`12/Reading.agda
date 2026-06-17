@@ -450,7 +450,7 @@ k-type⇒identity-k-types k A A-is-k-type = k-type⇒k+1-type k A A-is-k-type
 -- if e : A ≃ B is an equivalence, and B is a k-type then so is A
 k-type-closed-under-equivalence : {A B : Set ℓ} → (k : 𝕋) (e : A ≃ B) → is-trunc k B → is-trunc k A
 k-type-closed-under-equivalence -𝟚T (f , f-equiv) B-k-type = 10-3.contr-codomain⇒contr-domain f B-k-type f-equiv
-k-type-closed-under-equivalence (succT k) (f , f-equiv) B-k-type = {!!}
+k-type-closed-under-equivalence (succT k) (f , f-equiv) B-k-type x y = {!k-type-closed-under-equivalence {A = x ≡ y}  k!}
 
 -- Corollary 12.4.6: if f : A → B is an embedding, and B is a (k + 1)-type, then so is A.
 k+1-domain : {A B : Set ℓ} (f : A → B) → is-emb f → (k : 𝕋) → 
