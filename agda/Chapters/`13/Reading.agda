@@ -16,7 +16,7 @@ open import Function
 private
   variable
     ℓ ℓ₁ ℓ₂ ℓ₃ : Level
-    A B C : Set ℓ 
+    A B : Set ℓ 
     𝐁 : A → Set ℓ
 
 ----------------------------------------
@@ -279,10 +279,141 @@ module _ where
 
 --------------------------------------------------------------------------------
 -- § 13.3: Universal Properties
--- TODO:
---   - Mechanize univ. property of Σ types, id  types, 
+--
+-- Universal properties are "characterizations of all maps out of or 
+-- into a given type". Among other applications, universal properties characterize
+-- a type up to equivalence. 
 
 ----------------------------------------
 -- The universal property of Σ types
+
+
+----------------------------------------
+-- Thm. 13.3.1
+-- 
+-- Let B be a type family over A, and let C be a type family over Σ[ x ∈ A ] (B x).
+-- Then the map:
+
+ev-pair : ∀ {ℓ} {C : (Σ A 𝐁) → Set ℓ} → 
+          (∀ (z : Σ A 𝐁) → C z) → ((x : A) (y : 𝐁 x) → C (x , y))
+ev-pair f x y = f (x , y)
+
+-- is an equivalence.
+
+ev-pair⁻¹ : ∀ {ℓ} {C : (Σ A 𝐁) → Set ℓ} → 
+            ((x : A) (y : 𝐁 x) → C (x , y)) → 
+            (∀ (z : Σ A 𝐁) → C z)
+ev-pair⁻¹ f (x , y) = f x y
+
+-- AH> Here is another example where Agda's η-equivalence definitional
+-- equality spares us the need for functional extensionality.
+ev-pair-equiv : ∀ {ℓ} {C : (Σ A 𝐁) → Set ℓ} → is-equiv (ev-pair {C = C})
+ev-pair-equiv = has-inverse⇒is-equiv (ev-pair⁻¹ , (Refl , Refl))
+
+
+-- AH> We have simply demonstrated that currying/uncurrying is an equivalence.
+-- Corollary 13.3.2: Currying is the degenerate case.
+
+ev-pair′ : ∀ {X : Set ℓ} → (A × B → X) → A → B → X
+ev-pair′ = ev-pair 
+
+ev-pair′-equiv : ∀ {X : Set ℓ} → is-equiv (ev-pair′ {A = A} {B = B} {X = X})
+ev-pair′-equiv = ev-pair-equiv
+
+----------------------------------------
+-- THe universal property of identity types
+
+--------------------------------------------------------------------------------
+-- AH> I think it is helpful here to characterize the universal properties of
+-- the identity and empty types, which are (roughly) exercises 13.6 and 13.7.
+
+----------------------------------------
+-- The universal property for ⊥ states, basically,
+-- all eliminations of the bottom type contract to ex-falso.
+-- AH> Exercise 13.6 states it more generally as a chain of bi-implications.
+--     I'm just going to presume A is an arbitrary empty type,
+--     where is-empty(A) = ¬ A = A → ⊥.
+
+module _ (A : Set ℓ) (e : is-empty A) where
+  ⊥-univ : ∀ (P : A → Set ℓ) → is-contr ((x : A) → P x)
+  ⊥-univ P = (⊥-elim ∘ e) , λ f → fun-ext (⊥-elim ∘ e) f (⊥-elim ∘ e)
+
+  ⊥-univ′ : ∀ {X : Set ℓ} → is-contr (A → X) 
+  ⊥-univ′ {X = X} = ⊥-univ λ _ → X
+
+
+----------------------------------------
+-- The universal property of ⊤ states that ⊤-eval is an equivalence.
+-- Again, we prove it for an arbitrary contractible type (which is
+-- therefore equivalent to ⊤).
+
+module _ (A : Set ℓ) (cntr : is-contr A) where
+  open is-contr cntr renaming (center to a ; contraction to C)
+  ⊤-eval : ∀ {P : A → Set ℓ} → 
+           ((x : A) → P x) →
+           P a
+  ⊤-eval f = f a
+
+  -- Things get a little fun, here.
+  -- We will need to show that 
+  --   tr P p t ≡ t
+  -- where
+  --   t : P a
+  --   p : a ≡ x
+  -- There is a trick, given a contraction C, one can use
+  -- to define a separate contraction C′ as
+  --   C′ x = C a ⁻¹ ○ C x
+  -- which forces 
+  --   C′ a ≡ C a ⁻¹ ○ C a ≡ refl
+  -- and hence choosing to transfer along (C′ x):
+  --   ⊤-eval⁻¹ {P = P} t x = tr P (C′ x) t  
+  -- gives us 
+  --   ⊤-eval⁻¹ t a ≡ tr P (C′ a) t ≡ tr p refl t ≡ t.
+  -- (See Notes/OnEquivalence.lagda.md).
+  -- And so, yeah, you could do things that way. Or, you can whip
+  -- out the sledgehammer: contractible types are -2-types, and thus
+  -- are 0-types (sets). Sets observe the UIP. So (C a) ≡ refl,
+  -- and let's call it a day.
+  uip : UIP A 
+  uip = (Irrelevant⇒UIP ∘ is-prop⇒Irrelevant ∘ is-contr⇒is-prop A) cntr
+
+  -- By the UIP, any contraction on the center a equals refl.
+  C-refl : C a ≡ refl
+  C-refl = uip a a (C a) refl
+
+  -- This means that transporting t along (C a) fixes t.
+  C-tr : ∀ {P : A → Set ℓ} → 
+           (t : P a) → 
+           tr P (C a) t ≡ t
+  C-tr x = tr-tr (C a) refl C-refl
+
+  -- We are now free to define the inverse of ⊤-eval as
+  -- transporting along (C x).
+  ⊤-eval⁻¹ : ∀ {P : A → Set ℓ} → 
+             P a → 
+           ((x : A) → P x)
+  ⊤-eval⁻¹ {P = P} t x = tr P (C x) t       
+
+  -- The first direction:
+  --     ⊤-eval ∘ ⊤-eval⁻¹ ∼ id  
+  --   = (t : P a) → tr P (C a) t ≡ t
+  -- is just C-tr. 
+  -- The reverse direction:
+  --     ⊤-eval⁻¹ ∘ ⊤-eval ∼ id
+  --   = (g : (x : A) → P x) → (λ (x : A) → tr P (C x) (g a)) ≡ g
+  -- falls away with fun. ext. and induction over (C x) : x ≡ a.
+  ⊤-univ : ∀ {P : A → Set ℓ} → 
+           is-equiv (⊤-eval {P = P})
+  ⊤-univ {P = P} = has-inverse⇒is-equiv 
+    (⊤-eval⁻¹ , 
+    C-tr , 
+    λ g → fun-ext (⊤-eval⁻¹ (g a)) g (H g))
+    where
+      H : (g : (x : A) → P x) → ⊤-eval⁻¹ (g a) ∼ g 
+      H g x with C x 
+      ... | refl = refl
+    
+
+
 
 

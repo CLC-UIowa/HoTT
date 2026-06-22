@@ -222,6 +222,12 @@ module Homotopies where
                      tr B (p ○ q) ∼ (tr B q) ∘ (tr B p)
   transport-fusion refl refl = refl-∼
 
+  -- replace a transport equality with an equal one
+  tr-tr : ∀ {ℓ₁ ℓ₂} { A : Set ℓ₁} {B : A → Set ℓ₂} {x y : A} {t : B x} → 
+          (p q : x ≡ y) → 
+          (p ≡ q) → tr B p t ≡ tr B q t
+  tr-tr p q refl = refl 
+
   -- -- Definition 9.1.7
 
   -- Left whiskering
@@ -243,6 +249,10 @@ module _ where
   private variable 
     ℓ : Level
     A : Set ℓ 
+
+  -- Not sure where else to put this definition
+  is-empty : Set ℓ → Set ℓ 
+  is-empty A = ¬ A 
 
   -- A type A is irrelevant if all of its inhabitants are equal.
   -- The HoTT book calls this a "proposition" or "mere prop".
