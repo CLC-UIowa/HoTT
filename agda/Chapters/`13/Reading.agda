@@ -284,11 +284,10 @@ module _ where
 -- into a given type". Among other applications, universal properties characterize
 -- a type up to equivalence. 
 
-----------------------------------------
+--------------------------------------------------------------------------------
 -- The universal property of Σ types
-
-
-----------------------------------------
+-- =============================================================================
+--------------------------------------------------------------------------------
 -- Thm. 13.3.1
 -- 
 -- Let B be a type family over A, and let C be a type family over Σ[ x ∈ A ] (B x).
@@ -320,14 +319,42 @@ ev-pair′ = ev-pair
 ev-pair′-equiv : ∀ {X : Set ℓ} → is-equiv (ev-pair′ {A = A} {B = B} {X = X})
 ev-pair′-equiv = ev-pair-equiv
 
-----------------------------------------
+--------------------------------------------------------------------------------
 -- THe universal property of identity types
+--
+-- Something, something, Yoneda. 
+
+--------------------------------------------------------------------------------
+-- Theorem 13.3.3: ev-refl is an equivalence.
+
+module _ (a : A) (B : (x : A) → (a ≡ x) → Set ℓ) where
+  -- Clearly, this is the converse of based path induction
+  ev-refl : ((x : A) (p : a ≡ x) → B x p) → B a refl 
+  ev-refl f = f a refl
+
+  -- So we're just stating that the induction principle on identity 
+  -- types is an equivalence. The proof is:
+  -- 1. that 
+  --      ev-refl ∘ ind≡ ∼ id 
+  --    is immediate.
+  -- 2. In the converse,
+  --      ind≡ ∘ ev-refl
+  --    = (g : (x : A) (p : a ≡ x) → B x p) → 
+  --      ind≡ a B (g a refl) ≡ g
+  --    so we need to use function extensionality twice.
+  --    Induction on (p : a ≡ x), once it's in scope, makes everything reduce 
+  --    to refl.
+  univ-id : is-equiv ev-refl
+  univ-id = has-inverse⇒is-equiv 
+    ((ind≡ a B) , 
+      Refl ,
+      λ f → fun-ext _ _ (λ x → fun-ext _ _ (λ { refl → refl })))
 
 --------------------------------------------------------------------------------
 -- AH> I think it is helpful here to characterize the universal properties of
 -- the identity and empty types, which are (roughly) exercises 13.6 and 13.7.
 
-----------------------------------------
+--------------------------------------------------------------------------------
 -- The universal property for ⊥ states, basically,
 -- all eliminations of the bottom type contract to ex-falso.
 -- AH> Exercise 13.6 states it more generally as a chain of bi-implications.
@@ -342,7 +369,7 @@ module _ (A : Set ℓ) (e : is-empty A) where
   ⊥-univ′ {X = X} = ⊥-univ λ _ → X
 
 
-----------------------------------------
+--------------------------------------------------------------------------------
 -- The universal property of ⊤ states that ⊤-eval is an equivalence.
 -- Again, we prove it for an arbitrary contractible type (which is
 -- therefore equivalent to ⊤).
@@ -413,6 +440,11 @@ module _ (A : Set ℓ) (cntr : is-contr A) where
       H g x with C x 
       ... | refl = refl
     
+
+--------------------------------------------------------------------------------
+-- §13.4 Composing with equivalences
+-- 
+-- f : A → B is an equivalence iff precomposing by f is an equivalence. 
 
 
 
