@@ -351,6 +351,74 @@ module _ (a : A) (B : (x : A) → (a ≡ x) → Set ℓ) where
       λ f → fun-ext _ _ (λ x → fun-ext _ _ (λ { refl → refl })))
 
 --------------------------------------------------------------------------------
+-- Nobody asked, but: a connection to the Yoneda Lemma.
+--
+-- The Yoneda lemma states, for locally small 𝒞, covariant functor F : 𝒞 → Set,
+-- and object A ∈ 𝒞, that the set of natural transformations from F to the hom-functor
+-- Hom(A, —) is in bijection to the set F(A):
+--    Nat(F , Hom(A, —)) ≃ F(A)
+-- Here the Hom-functor Hom(A, —) is:
+--  - maps objects X ∈ 𝒞 to the set of arrows Hom(A, X) 
+--  - Maps arrows f : X → Y in 𝒞 to the Set arrow g : Hom(A, X) → Hom(A, Y)
+--    given by 
+--      g(h) = f ∘ h
+-- The Yoneda Lemma is actually quite easy to prove. If we interpret natural
+-- transformations as parametric polymorphic functions and assume a "category"
+-- of Agda types, it goes like this:
+
+module _ (A : Set) 
+         (F : Set → Set) 
+         (fmap : ∀ {A B : Set} → (A → B) → F A → F B)
+         (fmap-id : ∀ {A} → fmap {A} id ∼ id)
+         (fmap-compose : ∀ {A B C} → (f : B → C) (g : A → B) → fmap (f ∘ g) ∼ fmap f ∘ fmap g) where 
+
+  open import Data.Product.Properties using (Σ-≡,≡→≡)
+
+  -- We will need to use naturality
+  Naturality : (∀ (X : Set) → (A → X) → F X) → Set1
+  Naturality η = ∀ (X Y : Set) (f : X → Y) → fmap f ∘ η X ∼ η Y ∘ (f ∘_)
+
+  -- In one direction, pass the identity function
+  yoneda→ : Σ[ η ∈ (∀ (X : Set) → (A → X) → F X) ] (Naturality η) → -- Nat(F , Hom(A, —))
+            F A                                                     -- F(A) 
+  yoneda→ η = η .fst A id
+
+  -- In the other direction, fmap from F A to F X.
+  yoneda← : F A → Σ[ η ∈ (∀ (X : Set) → (A → X) → F X) ] (Naturality η)
+  yoneda← x = (λ X f → fmap f x) , λ X Y f g → sym (fmap-compose f g x) 
+
+  -- One direction is the fmap identity law; 
+  -- the other direction is naturality.
+  yoneda-equiv : is-equiv yoneda→
+  yoneda-equiv = has-inverse⇒is-equiv 
+    (yoneda← , 
+    fmap-id , 
+    λ { (η , nat) → Σ-≡,≡→≡ 
+      ((fun-ext _ _ (λ X → fun-ext _ _ (λ f → nat A X f id))) , 
+      -- Not interested in proving this part
+      ⊥-elim pfft) })
+    where
+      postulate pfft : ⊥ 
+
+-- Now, as for connecting Yoneda: we think of ourselves in a collection of
+-- categories of types in which objects are elements and the arrows are paths. 
+-- Hence, for example, the "action on paths" ap is:
+--  ap f : x ≡ y → f x ≡ f y
+-- that is, the category is the type A, the objects are the terms (x y : A),
+-- (x ≡ y) is the arrow, and f : A → B is the functor. Now treat the type
+-- family B : (x : A) → (a ≡ x) → Set as a functor, and 
+-- it follows that Nat(Hom(a, —), B) would be a polymorphic function:
+--   ((x : A) → a ≡ x → B x p)  
+-- and B a is:
+--   B a refl
+-- This is precisely what we observe:
+--   ev-refl : ((x : A) (p : a ≡ x) → B x p) → B a refl 
+--   ev-refl f = f a refl
+-- Hence ev-refl is analogous to yoneda→ above. That ev-refl is an equivalence
+-- is thus the Yoneda Lemma applied to the particular categories we think
+-- of ourself in.
+
+--------------------------------------------------------------------------------
 -- AH> I think it is helpful here to characterize the universal properties of
 -- the identity and empty types, which are (roughly) exercises 13.6 and 13.7.
 
