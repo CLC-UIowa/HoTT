@@ -127,7 +127,6 @@ module Paths where
   apd : {B : A → Set ℓ} (f : (x : A) → B x) (p : x ≡ y) → tr B p (f x) ≡ f y
   apd f refl = refl
 
-
   -------------------------------------------------------------------------------
   -- The groupoidal structure of types
   instance
@@ -227,6 +226,12 @@ module Homotopies where
           (p q : x ≡ y) → 
           (p ≡ q) → tr B p t ≡ tr B q t
   tr-tr p q refl = refl 
+
+  -- Composing transport with ap
+  tr-ap : ∀ {A B : Set ℓ} {P : B → Set ℓ} {x y : A} → (f : A → B) → (p : x ≡ y) → 
+            tr P (ap f p) ∼ tr (P ∘ f) p
+  tr-ap f refl = Refl 
+
 
   -- -- Definition 9.1.7
 

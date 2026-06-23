@@ -514,6 +514,51 @@ module _ (A : Set ℓ) (cntr : is-contr A) where
 -- §13.4 Composing with equivalences
 -- 
 -- f : A → B is an equivalence iff precomposing by f is an equivalence. 
+-- That is, the following are in bi-implication:
+--  (i) f is an equivalence
+--  (ii) For any type famly P over B the map
+--         ((y : B) (P y)) → ((x : A) → P (f x))
+--       given by h ↦ h ∘ f is an equivalence.
+--  (iii) For any type X the map
+--          (B → X) → (A → X)
+--        given by g ↦ g ∘ f is an equivalence.
+-- 
+-- AH> Something feels inherently Yoneda-ey here, but contra-variant. 
+
+module _ {A B : Set ℓ} (f : A → B) where 
+
+  -- This is the contravariant Hom-functor made dependent.
+  Hom[—,X]-dep : ∀ {P : B → Set ℓ} → ((y : B) → P y) → ((x : A) → P (f x))
+  Hom[—,X]-dep h = h ∘ f 
+
+  -- The contravariant hom-functor.
+  Hom[—,X] : ∀ {X : Set ℓ} → (B → X) → (A → X)
+  Hom[—,X] {X = X} = Hom[—,X]-dep {P = λ _ → X}
+
+  
+  -- 1. I'm just going to call a spade and spade and use _∘_ in place of the def'ns above
+  -- 2. Condition (iii) is the non-dependent version of condition (ii)
+  -- 3. We will need coherent invertibility
+  is-equiv⇒Hom-equiv : {P : B → Set ℓ} → is-equiv f → is-equiv (λ h → _∘_ {C = P} h f)
+  is-equiv⇒Hom-equiv {P = P} eqv with has-inverse⇒is-coh-invertible f (is-equiv⇒has-inverse eqv)
+  ... | record { g′ = f⁻¹ ; 𝔾 = G ; ℍ = H ; 𝕂 = K } = has-inverse⇒is-equiv
+    (g , 
+    (λ h → fun-ext _ _ (λ x → begin
+       tr P (G (f x)) (h (f⁻¹ (f x)))    ≡⟨ tr-tr (G (f x)) (ap f (H x)) (K x) ⟩ 
+       tr P (ap f (H x)) (h (f⁻¹ (f x))) ≡⟨ tr-ap f (H x) (h (f⁻¹ (f x)))  ⟩ 
+       tr (P ∘ f) (H x) (h (f⁻¹ (f x)))   ≡⟨ apd h (H x) ⟩ 
+       h x                               ∎)), 
+     λ h → fun-ext _ _ (λ y → begin
+       tr P (G y) (h (f (f⁻¹ y))) ≡⟨ apd h (G y) ⟩ 
+       h y                        ∎)) 
+    where
+      open PathReasoning
+      g : ((x : A) → P (f x)) → (y : B) → P y
+      g h y =  tr P (G y) (h (f⁻¹ y)) 
+
+  -- TODO:
+  -- Show the other direction (or, show that if _∘ f : (B → X) → (A → X) is an equivalence
+  -- then f is an equivalence.)
 
 
 
