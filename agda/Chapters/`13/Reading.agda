@@ -539,7 +539,7 @@ module _ {A B : Set ℓ} (f : A → B) where
   -- 1. I'm just going to call a spade and spade and use _∘_ in place of the def'ns above
   -- 2. Condition (iii) is the non-dependent version of condition (ii)
   -- 3. We will need coherent invertibility
-  is-equiv⇒Hom-equiv : {P : B → Set ℓ} → is-equiv f → is-equiv (λ h → _∘_ {C = P} h f)
+  is-equiv⇒Hom-equiv : {P : B → Set ℓ} → is-equiv f → is-equiv (Hom[—,X]-dep {P = P})
   is-equiv⇒Hom-equiv {P = P} eqv with has-inverse⇒is-coh-invertible f (is-equiv⇒has-inverse eqv)
   ... | record { g′ = f⁻¹ ; 𝔾 = G ; ℍ = H ; 𝕂 = K } = has-inverse⇒is-equiv
     (g , 
@@ -556,9 +556,10 @@ module _ {A B : Set ℓ} (f : A → B) where
       g : ((x : A) → P (f x)) → (y : B) → P y
       g h y =  tr P (G y) (h (f⁻¹ y)) 
 
-  -- TODO:
-  -- Show the other direction (or, show that if _∘ f : (B → X) → (A → X) is an equivalence
-  -- then f is an equivalence.)
+  -- The other direciton
+  Hom-equiv⇒is-equiv : (∀ (X : Set ℓ) → is-equiv (Hom[—,X] {X = X}))  → is-equiv f 
+  Hom-equiv⇒is-equiv eqv with is-equiv⇒is-contr-map _ (eqv A) id | is-equiv⇒is-contr-map _ (eqv B) f 
+  ... | ((h , H) , h-cntr) | ((g , G) , g-cntr)  = (h , {! g-cntr (f ∘ h , ?)       !}) , (h ,  λ x → ap (λ g → g x) H)
 
 
 
