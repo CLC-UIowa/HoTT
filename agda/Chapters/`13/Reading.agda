@@ -406,17 +406,18 @@ module _ (A : Set)
 --  ap f : x ≡ y → f x ≡ f y
 -- that is, the category is the type A, the objects are the terms (x y : A),
 -- (x ≡ y) is the arrow, and f : A → B is the functor. Now treat the type
--- family B : (x : A) → (a ≡ x) → Set as a functor, and 
+-- family B : A → Set as a functor, and 
 -- it follows that Nat(Hom(a, —), B) would be a polymorphic function:
---   ((x : A) → a ≡ x → B x p)  
+--   ((x : A) → a ≡ x → B x)  
 -- and B a is:
---   B a refl
--- This is precisely what we observe:
---   ev-refl : ((x : A) (p : a ≡ x) → B x p) → B a refl 
---   ev-refl f = f a refl
--- Hence ev-refl is analogous to yoneda→ above. That ev-refl is an equivalence
--- is thus the Yoneda Lemma applied to the particular categories we think
--- of ourself in.
+--   B a
+-- This is precisely what we observe in the text:
+--   ev-refl : ((x : A) (p : a ≡ x) → B x) → B a
+--   ev-refl f = f a
+-- and contrast with:
+--   yoneda→ : ((X : Set) → (A → X) → F X) → F A
+-- That ev-refl is an equivalence is thus the Yoneda Lemma applied 
+-- to the particular categories we think of ourself in.
 
 --------------------------------------------------------------------------------
 -- AH> I think it is helpful here to characterize the universal properties of
