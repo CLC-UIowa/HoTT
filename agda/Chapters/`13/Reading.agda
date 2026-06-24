@@ -294,7 +294,8 @@ module _ where
 -- Then the map:
 
 ev-pair : ∀ {ℓ} {C : (Σ A 𝐁) → Set ℓ} → 
-          (∀ (z : Σ A 𝐁) → C z) → ((x : A) (y : 𝐁 x) → C (x , y))
+          (∀ (z : Σ A 𝐁) → C z) → 
+          ((x : A) (y : 𝐁 x) → C (x , y))
 ev-pair f x y = f (x , y)
 
 -- is an equivalence.
@@ -307,8 +308,7 @@ ev-pair⁻¹ f (x , y) = f x y
 -- AH> Here is another example where Agda's η-equivalence definitional
 -- equality spares us the need for functional extensionality.
 ev-pair-equiv : ∀ {ℓ} {C : (Σ A 𝐁) → Set ℓ} → is-equiv (ev-pair {C = C})
-ev-pair-equiv = has-inverse⇒is-equiv (ev-pair⁻¹ , (Refl , Refl))
-
+ev-pair-equiv = has-inverse⇒is-equiv (ev-pair⁻¹ , Refl , Refl) -- (ev-pair⁻¹ , (Refl , Refl))
 
 -- AH> We have simply demonstrated that currying/uncurrying is an equivalence.
 -- Corollary 13.3.2: Currying is the degenerate case.
@@ -348,7 +348,7 @@ module _ (a : A) (B : (x : A) → (a ≡ x) → Set ℓ) where
   univ-id = has-inverse⇒is-equiv 
     ((ind≡ a B) , 
       Refl ,
-      λ f → fun-ext _ _ (λ x → fun-ext _ _ (λ { refl → refl })))
+      λ f → fun-ext _ _ (λ x → fun-ext _ _ λ { refl → refl }) ) 
 
 --------------------------------------------------------------------------------
 -- Nobody asked, but: a connection to the Yoneda Lemma.
@@ -379,6 +379,7 @@ module _ (A : Set)
   Naturality η = ∀ (X Y : Set) (f : X → Y) → fmap f ∘ η X ∼ η Y ∘ (f ∘_)
 
   -- In one direction, pass the identity function
+  -- Nat(Hom(A, —), F)
   yoneda→ : Σ[ η ∈ (∀ (X : Set) → (A → X) → F X) ] (Naturality η) → -- Nat(F , Hom(A, —))
             F A                                                     -- F(A) 
   yoneda→ η = η .fst A id
@@ -407,6 +408,8 @@ module _ (A : Set)
 -- that is, the category is the type A, the objects are the terms (x y : A),
 -- (x ≡ y) is the arrow, and f : A → B is the functor. Now treat the type
 -- family B : A → Set as a functor, and 
+--  Hom(a, —) : A → Set 
+--  Hom(a, x) = a ≡ x
 -- it follows that Nat(Hom(a, —), B) would be a polymorphic function:
 --   ((x : A) → a ≡ x → B x)  
 -- and B a is:
@@ -432,7 +435,7 @@ module _ (A : Set)
 
 module _ (A : Set ℓ) (e : is-empty A) where
   ⊥-univ : ∀ (P : A → Set ℓ) → is-contr ((x : A) → P x)
-  ⊥-univ P = (⊥-elim ∘ e) , λ f → fun-ext (⊥-elim ∘ e) f (⊥-elim ∘ e)
+  ⊥-univ P = (⊥-elim ∘ e) , (λ f → fun-ext _ _ (⊥-elim ∘ e))
 
   ⊥-univ′ : ∀ {X : Set ℓ} → is-contr (A → X) 
   ⊥-univ′ {X = X} = ⊥-univ λ _ → X
@@ -488,7 +491,7 @@ module _ (A : Set ℓ) (cntr : is-contr A) where
   ⊤-eval⁻¹ : ∀ {P : A → Set ℓ} → 
              P a → 
            ((x : A) → P x)
-  ⊤-eval⁻¹ {P = P} t x = tr P (C x) t       
+  ⊤-eval⁻¹ {P = P} t x = tr P (C x) t
 
   -- The first direction:
   --     ⊤-eval ∘ ⊤-eval⁻¹ ∼ id  
@@ -502,8 +505,8 @@ module _ (A : Set ℓ) (cntr : is-contr A) where
            is-equiv (⊤-eval {P = P})
   ⊤-univ {P = P} = has-inverse⇒is-equiv 
     (⊤-eval⁻¹ , 
-    C-tr , 
-    λ g → fun-ext (⊤-eval⁻¹ (g a)) g (H g))
+    C-tr  , 
+    λ g → fun-ext _ _ (H g))
     where
       H : (g : (x : A) → P x) → ⊤-eval⁻¹ (g a) ∼ g 
       H g x with C x 
@@ -536,9 +539,6 @@ module _ {A B : Set ℓ} (f : A → B) where
   Hom[—,X] {X = X} = Hom[—,X]-dep {P = λ _ → X}
 
   
-  -- 1. I'm just going to call a spade and spade and use _∘_ in place of the def'ns above
-  -- 2. Condition (iii) is the non-dependent version of condition (ii)
-  -- 3. We will need coherent invertibility
   is-equiv⇒Hom-equiv : {P : B → Set ℓ} → is-equiv f → is-equiv (Hom[—,X]-dep {P = P})
   is-equiv⇒Hom-equiv {P = P} eqv with has-inverse⇒is-coh-invertible f (is-equiv⇒has-inverse eqv)
   ... | record { g′ = f⁻¹ ; 𝔾 = G ; ℍ = H ; 𝕂 = K } = has-inverse⇒is-equiv
@@ -554,7 +554,7 @@ module _ {A B : Set ℓ} (f : A → B) where
     where
       open PathReasoning
       g : ((x : A) → P (f x)) → (y : B) → P y
-      g h y =  tr P (G y) (h (f⁻¹ y)) 
+      g h y =   tr P (G y) (h (f⁻¹ y))
 
   -- The other direciton
   Hom-equiv⇒is-equiv : (∀ (X : Set ℓ) → is-equiv (Hom[—,X] {X = X}))  → is-equiv f 

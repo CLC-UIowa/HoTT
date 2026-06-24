@@ -1,4 +1,3 @@
-{-# OPTIONS --without-K #-}
 module Chapters.`09.Reading where
 
 open import Prelude
