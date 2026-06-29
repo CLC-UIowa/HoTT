@@ -556,10 +556,24 @@ module _ {A B : Set ℓ} (f : A → B) where
       g : ((x : A) → P (f x)) → (y : B) → P y
       g h y =   tr P (G y) (h (f⁻¹ y))
 
-  -- The other direciton
+  -- The other direction
   Hom-equiv⇒is-equiv : (∀ (X : Set ℓ) → is-equiv (Hom[—,X] {X = X}))  → is-equiv f 
   Hom-equiv⇒is-equiv eqv with is-equiv⇒is-contr-map _ (eqv A) id | is-equiv⇒is-contr-map _ (eqv B) f 
-  ... | ((h , H) , h-cntr) | ((g , G) , g-cntr)  = (h , {! g-cntr (f ∘ h , ?)       !}) , (h ,  λ x → ap (λ g → g x) H)
+  ... | ((h , H) , h-cntr) | ((g , G) , g-cntr)  = 
+    (h , λ x → (begin
+      -- We need to give a retraction of f.
+      -- The type Σ[ g ∈ B → B ] (g ∘ f ≡ f) is contractible,
+      -- with center of contraction `g`.
+      -- As (f ∘ h) : B → B, we have (f ∘ h) ≡ g
+      f (h x) ≡⟨ ap (λ f′ → f′ x) (ap fst (g-cntr (f ∘ h , fun-ext _ _ (λ y → ap (λ f′ → f (f′ y)) H)))) ⁻¹  ⟩ 
+      -- As id : B → B, we have g ≡ id.
+      g x     ≡⟨ ap (λ f′ → f′ x) (ap fst (g-cntr (id , refl))) ⟩
+      x        ∎)) , 
+    -- We need to give a section of f, which we have already as (h , H).
+    (h ,  λ x → ap (λ g → g x) H) 
+    where
+      open PathReasoning
+
 
 
 
