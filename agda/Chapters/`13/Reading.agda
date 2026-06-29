@@ -574,7 +574,49 @@ module _ {A B : Set ℓ} (f : A → B) where
     where
       open PathReasoning
 
+--------------------------------------------------------------------------------
+-- § 13.5: The strong induction principle of ℕ 
 
+-- AH> I'm not fucking with our old def'n of _<_
 
+module _ (P : ℕ → Set ℓ) where
+  open import Data.Nat using (_<_ ; _≤_)
+  open import Data.Nat.Properties
 
+  -- Strong induction cannot be immediately
+  -- defined as described in thm 13.5.1 because
+  -- it is not structurally recursive.
+  strong-ind-ℕ₀ : 
+    P 0 → 
+    ((n : ℕ) → (∀ (m : ℕ) → m ≤ n → P m) → P (suc n)) → 
+    (n : ℕ) → P n
+  strong-ind-ℕ₀ p₀ pₛ zero = p₀
+  strong-ind-ℕ₀ p₀ pₛ (suc n) = {!pₛ n (λ m p → strong-ind-ℕ₀ p₀ pₛ m)!}
+ 
+  -- We'll instead define it as so.
+  strong-ind-ℕ : 
+    P 0 → 
+    ((n : ℕ) → (∀ (m : ℕ) → m ≤ n → P m) → P (suc n)) → 
+    (n : ℕ) → P n
+  strong-ind-ℕ p₀ pₛ n = p′ n n ≤-refl 
+    where
+      p′ : ∀ (n m : ℕ) → m ≤ n → P m
+      p′ n .0 _≤_.z≤n = p₀
+      p′ (.suc n) (.suc m) (_≤_.s≤s p) = 
+        pₛ m (λ i q → p′ n i (≤-trans q p))
 
+  -- Let's now assert that strong-ind-ℕ agrees with the def'n we intended
+  test₀ : (p₀ : P 0) → 
+          (pₛ : (n : ℕ) → (∀ (m : ℕ) → m ≤ n → P m) → P (suc n)) → 
+          strong-ind-ℕ p₀ pₛ 0 ≡ p₀       
+  test₀ p₀ pₛ = refl 
+
+  -- AH> Okay---at this point the HoTT theorists will scoff and say:
+  --    you have not been careful about the proof witnesses you have chosen.
+  --    The text *is* more careful, and so can inhabit test₁. 
+  -- I would rather move on to Ch 14.
+  test₁ : (p₀ : P 0) → 
+          (pₛ : (n : ℕ) → (∀ (m : ℕ) → m ≤ n → P m) → P (suc n)) → 
+          (n : ℕ) → strong-ind-ℕ p₀ pₛ (suc n) ≡ pₛ n (λ m p → strong-ind-ℕ p₀ pₛ m)
+  test₁ p₀ pₛ n = ap (pₛ n) (fun-ext _ _ (λ m → fun-ext _ _ (λ p → ⊥-elim pfft)))
+    where postulate pfft : ⊥ 
