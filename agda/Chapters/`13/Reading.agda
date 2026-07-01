@@ -557,20 +557,19 @@ module _ {A B : Set ℓ} (f : A → B) where
       g h y =   tr P (G y) (h (f⁻¹ y))
 
   -- The other direction
-  Hom-equiv⇒is-equiv : (∀ (X : Set ℓ) → is-equiv (Hom[—,X] {X = X}))  → is-equiv f 
-  Hom-equiv⇒is-equiv eqv with is-equiv⇒is-contr-map _ (eqv A) id | is-equiv⇒is-contr-map _ (eqv B) f 
+  Hom-equiv⇒is-equiv : (∀ (X : Set ℓ) → is-equiv (_∘ f))  → is-equiv f 
+  Hom-equiv⇒is-equiv eqv with 
+    is-equiv⇒is-contr-map _ (eqv A) id | is-equiv⇒is-contr-map _ (eqv B) f 
   ... | ((h , H) , h-cntr) | ((g , G) , g-cntr)  = 
     (h , λ x → (begin
       -- We need to give a retraction of f.
       -- The type Σ[ g ∈ B → B ] (g ∘ f ≡ f) is contractible,
       -- with center of contraction `g`.
       -- As (f ∘ h) : B → B, we have (f ∘ h) ≡ g
-      f (h x) ≡⟨ ap (λ f′ → f′ x) (ap fst (g-cntr (f ∘ h , fun-ext _ _ (λ y → ap (λ f′ → f (f′ y)) H)))) ⁻¹  ⟩ 
-      -- As id : B → B, we have g ≡ id.
-      g x     ≡⟨ ap (λ f′ → f′ x) (ap fst (g-cntr (id , refl))) ⟩
-      x        ∎)) , 
-    -- We need to give a section of f, which we have already as (h , H).
-    (h ,  λ x → ap (λ g → g x) H) 
+      f (h x) ≡⟨ ap (λ f′ → f′ x) (ap fst (g-cntr (f ∘ h , fun-ext _ _ (λ y → ap (λ f′ → (f (f′ y))) H)))) ⁻¹  ⟩ -- ap (λ f′ → f′ x) (ap fst (g-cntr (f ∘ h , fun-ext _ _ (λ y → ap (λ f′ → f (f′ y)) H)))) ⁻¹  ⟩ 
+        g x ≡⟨ ap (λ f′ → f′ x) (ap fst (g-cntr (id , refl)))  ⟩ 
+        x ∎)) ,
+    h , λ x → ap (λ f′ → f′ x) H
     where
       open PathReasoning
 
@@ -591,7 +590,7 @@ module _ (P : ℕ → Set ℓ) where
     ((n : ℕ) → (∀ (m : ℕ) → m ≤ n → P m) → P (suc n)) → 
     (n : ℕ) → P n
   strong-ind-ℕ₀ p₀ pₛ zero = p₀
-  strong-ind-ℕ₀ p₀ pₛ (suc n) = {!pₛ n (λ m p → strong-ind-ℕ₀ p₀ pₛ m)!}
+  strong-ind-ℕ₀ p₀ pₛ (suc n) = {!!} -- pₛ n λ m m≤n → strong-ind-ℕ₀ p₀ {!!} m 
  
   -- We'll instead define it as so.
   strong-ind-ℕ : 
@@ -601,9 +600,8 @@ module _ (P : ℕ → Set ℓ) where
   strong-ind-ℕ p₀ pₛ n = p′ n n ≤-refl 
     where
       p′ : ∀ (n m : ℕ) → m ≤ n → P m
-      p′ n .0 _≤_.z≤n = p₀
-      p′ (.suc n) (.suc m) (_≤_.s≤s p) = 
-        pₛ m (λ i q → p′ n i (≤-trans q p))
+      p′ n .0 _≤_.z≤n = p₀  -- p₀
+      p′ (.suc n) (.suc m) (_≤_.s≤s p) = pₛ m ((λ i q → p′ n i (≤-trans q p)))
 
   -- Let's now assert that strong-ind-ℕ agrees with the def'n we intended
   test₀ : (p₀ : P 0) → 
@@ -617,6 +615,8 @@ module _ (P : ℕ → Set ℓ) where
   -- I would rather move on to Ch 14.
   test₁ : (p₀ : P 0) → 
           (pₛ : (n : ℕ) → (∀ (m : ℕ) → m ≤ n → P m) → P (suc n)) → 
-          (n : ℕ) → strong-ind-ℕ p₀ pₛ (suc n) ≡ pₛ n (λ m p → strong-ind-ℕ p₀ pₛ m)
-  test₁ p₀ pₛ n = ap (pₛ n) (fun-ext _ _ (λ m → fun-ext _ _ (λ p → ⊥-elim pfft)))
+          (n : ℕ) → 
+          strong-ind-ℕ p₀ pₛ (suc n) ≡ 
+          pₛ n (λ m p → strong-ind-ℕ p₀ pₛ m)
+  test₁ p₀ pₛ n = ⊥-elim pfft -- ap (pₛ n) (fun-ext _ _ (λ m → fun-ext _ _ (λ p → ⊥-elim pfft)))
     where postulate pfft : ⊥ 

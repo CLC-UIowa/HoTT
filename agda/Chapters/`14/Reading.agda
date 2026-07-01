@@ -103,7 +103,7 @@ map-extension : ∀ (P : Set ℓ₁) → (prp : is-prop P) → (f : A → P) →
                    is-prop-trunc P prp f → 
                    (Q : Set ℓ₂) → is-prop Q → 
                    (g : A → Q) → (Σ[ h ∈ (P → Q) ] (h ∘ f ≡ g))
-map-extension P p f prp-t Q q g = is-equiv⇒is-contr-map (_∘ f) (prp-t Q q) g .center
+map-extension P p f prp-t Q q g = is-equiv⇒is-contr-map (_∘ f) (prp-t Q q) g .center 
 
 
 --------------------------------------------------------------------------------
@@ -116,13 +116,15 @@ map-extension P p f prp-t Q q g = is-equiv⇒is-contr-map (_∘ f) (prp-t Q q) g
 --     I'm going to rewrite it here rather than refactor it there.
 prop-equivalence : ∀ {P : Set ℓ} {Q : Set ℓ₂} → 
                   is-prop P → is-prop Q → (f : P → Q) → (Q → P) → is-equiv f
-prop-equivalence {P = P} {Q} p q f h = has-inverse⇒is-equiv 
-  (h , (λ x →  q (f (h x)) x .center), 
-  λ x → p (h (f x)) x .center) 
+prop-equivalence {P = P} {Q} p q f h = 
+  has-inverse⇒is-equiv (h , ((λ x → q (f (h x)) x .center)) , λ x → p (h (f x)) x .center)
+ -- has-inverse⇒is-equiv 
+ --  (h , (λ x →  q (f (h x)) x .center), 
+ --  λ x → p (h (f x)) x .center) 
 
 -- Also observe that X → Q is a proposition for any type X and proposition Q.
-prop-codomain : ∀ {Q : Set ℓ₂} → is-prop Q → (X : Set ℓ₁) → is-prop (X → Q)
-prop-codomain q X = Irrelevant⇒is-prop  λ f g → (fun-ext _ _ (λ x → q (f x) (g x) .center)) 
+prop-codomain : ∀ {Q : Set ℓ₂} → is-prop Q → (X : Set ℓ₁) → is-prop (X → Q) 
+prop-codomain q X = Irrelevant⇒is-prop λ f g → (fun-ext _ _ (λ x → q (f x) (g x) .center)) 
 
 -- We can inhabit is-prop-trunc P p f by instead inhabiting
 --   (∀ {ℓ} → (Q : Set ℓ) → is-prop Q → (A → Q) → P → Q),
