@@ -162,7 +162,7 @@ module _ where
 -- Proposition 12.1.4
 -- A map f : P → Q between to propositions P and Q is an equivalence
 -- if and only if there is a map g : Q → P
-propositionalEquivalence : {P Q : Set} → is-prop P → is-prop Q → ((P ≃ Q) ↔ (P ↔ Q))
+propositionalEquivalence : {P : Set ℓ₁} {Q : Set ℓ₂} → is-prop P → is-prop Q → ((P ≃ Q) ↔ (P ↔ Q))
 propositionalEquivalence {P = P} {Q = Q} prop-p prop-q =
         (λ e → e .fst , e .snd .fst .fst)
         , λ { (f , g) → f ,
@@ -439,6 +439,10 @@ is-trunc-map {B = B} k f = ∀ (b : B) → is-trunc k (fib f b)
 k-type⇒k+1-type : (k : 𝕋) → (A : Set ℓ) → is-trunc k A → is-trunc (succT k) A
 k-type⇒k+1-type -𝟚T A A-is-contr = is-contr⇒is-prop A A-is-contr
 k-type⇒k+1-type (succT k) A A-is-k-trunc = λ x y → k-type⇒k+1-type _ _ (A-is-k-trunc x y)
+
+-- A special case of the more general above
+is-prop⇒is-set : ∀ {A : Set ℓ} → is-prop A → is-set A 
+is-prop⇒is-set p = k-type⇒k+1-type -𝟙T _ p 
 
 -- Corollary 12.4.4
 -- If A is a k-type then its identity types are also k-types

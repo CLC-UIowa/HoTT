@@ -6,6 +6,7 @@ open import Data.Bool using (true ; false ; Bool ; not) public
 open import Data.Product
     renaming (proj₁ to fst ; proj₂ to snd)
     using (_×_ ; Σ ; Σ-syntax ; ∃ ; ∃-syntax ; _,_ ; <_,_>) public
+open import Data.Product.Properties using (Σ-≡,≡→≡) public
 open import Data.Sum
     using (inj₁ ; inj₂ ; [_,_])
     renaming (_⊎_ to _+_) public
@@ -114,6 +115,9 @@ module Paths where
 
   ap : (f : A → B) → x ≡ y → f x ≡ f y
   ap f refl = refl
+
+  ap₂ : {C : Set ℓ} → (f : A → B → C) → {x y : A} {a b : B} → x ≡ y → a ≡ b → f x a ≡ f y b 
+  ap₂ f refl refl = refl 
 
   ap-id : (p : x ≡ y) → p ≡ ap id p
   ap-id refl = refl

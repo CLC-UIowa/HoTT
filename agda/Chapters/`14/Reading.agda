@@ -13,6 +13,7 @@ open import Chapters.`13.Reading
 open import Function
 
 open is-contr
+open _↔_
  
 private
   variable
@@ -111,16 +112,15 @@ map-extension P p f prp-t Q q g = is-equiv⇒is-contr-map (_∘ f) (prp-t Q q) g
 --  (A → Q) → (P → Q)
 -- for arbitrary prop Q.
 
--- AH> This first property is proven in Ch. 12 as "propositionalEquivalence", but in fuller 
---     generality and for {P Q : Set}.
---     I'm going to rewrite it here rather than refactor it there.
+-- This first property is proven in Ch. 12 as "propositionalEquivalence", but in fuller 
+-- generality as: 
+--   propositionalEquivalence : {P : Set ℓ₁} {Q : Set ℓ₂} → is-prop P → is-prop Q → ((P ≃ Q) ↔ (P ↔ Q))
+-- This definition tells us that P ≃ Q but not specifically that (f : P → Q) is an equivalence,
+-- so I'll prove this ad hoc lemma instead. 
 prop-equivalence : ∀ {P : Set ℓ} {Q : Set ℓ₂} → 
                   is-prop P → is-prop Q → (f : P → Q) → (Q → P) → is-equiv f
 prop-equivalence {P = P} {Q} p q f h = 
   has-inverse⇒is-equiv (h , ((λ x → q (f (h x)) x .center)) , λ x → p (h (f x)) x .center)
- -- has-inverse⇒is-equiv 
- --  (h , (λ x →  q (f (h x)) x .center), 
- --  λ x → p (h (f x)) x .center) 
 
 -- Also observe that X → Q is a proposition for any type X and proposition Q.
 prop-codomain : ∀ {Q : Set ℓ₂} → is-prop Q → (X : Set ℓ₁) → is-prop (X → Q) 
@@ -144,4 +144,78 @@ is-prop-trunc′ P p f H Q q =
 --  (ii) The map g is a propositional truncation of A
 --  (iii) There is a (unique) equivalence P ≃ Q.
 
--- AH> Todo!              
+-- We will need the following helper, which states that (P ≃ Q) is a prop if P and
+-- Q are props.
+≃-prop : {P : Set ℓ} {Q : Set ℓ} 
+         (p : is-prop P) 
+         (q : is-prop Q)  → 
+         is-prop (P ≃ Q) 
+≃-prop {P = P} {Q} p q = Irrelevant⇒is-prop irrel
+  where 
+    -- AH> This proof looks more involved than it really is. The first pain point
+    --     is that we are equating dependent pairs, hence I use with-abstractions
+    --     to pattern-match on equalities of type f ≡ g, σ₁ ≡ σ₂, and ρ₁ ≡ ρ₂. 
+    --     (These identities hold because f, g, σᵢ, and ρᵢ are each propositions.)
+    --     Next, we need to show the contractions contr₁ and contr₂ are equivalent,
+    --     which follows from propositions also being sets. 
+    irrel : Irrelevant (P ≃ Q) 
+    irrel (f , ((σ₁ , sec₁) , (ρ₁ , retr₁))) (g , ((σ₂ , sec₂) , (ρ₂ , retr₂))) with 
+        prop-codomain q _ f g .center
+      | prop-codomain p _ σ₁ σ₂
+      | prop-codomain p _ ρ₁ ρ₂
+    ... | refl | (refl , contr₁) | (refl , contr₂) = 
+      ap (f ,_) (ap₂ _,_ (ap (σ₁ ,_) 
+        (fun-ext _ _ λ x → is-prop⇒is-set q _ _ (sec₁ x) (sec₂ x) .center)) 
+        (ap (ρ₁ ,_) (fun-ext _ _ (λ x → is-prop⇒is-set p _ _ (retr₁ x) (retr₂ x) .center)))) 
+
+module _ {P : Set ℓ} {Q : Set ℓ} 
+        (p : is-prop P) 
+        (q : is-prop Q) 
+        (f : A → P)
+        (g : A → Q) where 
+  
+  
+  -- We express that P ≃ Q is a "unique" equivalence by stating that
+  -- (P ≃ Q) is contractible.
+  is-prop-trunc-→≃ : is-prop-trunc P p f → is-prop-trunc Q q g → 
+                      is-contr (P ≃ Q)
+  is-prop-trunc-→≃ p-trunc q-trunc = P≃Q , 𝒞 
+    where
+      -- We need to simply exhibit a pair of functions inhabiting P ↔ Q.
+      -- In one direction, that f is a propositional truncation means:
+      --  is-equiv (λ (h : P → Q) → h ∘ f)
+      -- Where (λ (h : P → Q) → h ∘ f) : (P → Q) → (A → Q). That this function
+      -- is a section means we have a function at the converse type:
+      --   (A → Q) → (P → Q)
+      -- and hence we may build a witness to (P → Q) from g : A → Q.
+      -- Inhabiting the other direction, Q → P, is entirely dual.    
+      P≃Q : P ≃ Q
+      P≃Q = propositionalEquivalence p q .from (p-trunc Q  q .fst .fst g , q-trunc P p .fst .fst f) 
+
+      -- This fact follows from P ≃ Q being a proposition if P and Q are propositions.
+      𝒞 : ∀ (e : P ≃ Q) → P≃Q  ≡ e
+      𝒞 e = ≃-prop p q P≃Q e .center 
+
+  -- We'll split the other direction into two functions, because the type
+  --   is-prop-trunc P p f : Setω
+  -- and so cannot be bundled up with _×_ or _↔_. 
+  -- The proof idea:
+  -- Use the simpler is-prop-trunc′, which expects the "body" below. 
+  -- Now our goal is to build a term with type Q′, given h : A → Q′ and x : Q.
+  -- As f is a propositional truncation, we have a section at type:
+  --   (A → Q′) → P → Q′
+  -- and so we pass it h : A → Q′ and, leveraging the equivalence P ≃ Q,
+  -- convert x : Q to type P, giving us back an inhabitant of Q′.
+  ≃→is-prop-trunc₁ : is-contr (P ≃ Q) → is-prop-trunc P p f → is-prop-trunc Q q g
+  ≃→is-prop-trunc₁ ((_ , ((σ , _) , _)) , _) prp-trnc-f = is-prop-trunc′ Q q g body 
+    where 
+      -- Using where abstraction just to spell out types.
+      body : ∀ {ℓ} (Q′ : Set ℓ) → is-prop Q′ → (A → Q′) → (Q → Q′) 
+      body Q′ prop-Q′ h x = —∘f-sec h (σ x)
+        where 
+          —∘f-sec : (A → Q′) → P → Q′
+          —∘f-sec = prp-trnc-f Q′ prop-Q′ .fst .fst
+
+  -- We repeat the dualized, but same, steps as above.
+  ≃→is-prop-trunc₂ : is-contr (P ≃ Q) → is-prop-trunc Q q g → is-prop-trunc P p f
+  ≃→is-prop-trunc₂ ((e , (_ , _) , _) , _) prp-trnc-g = is-prop-trunc′ P p f λ Q′ prop-Q′ h x → prp-trnc-g Q′ prop-Q′ .fst .fst h (e x) 
