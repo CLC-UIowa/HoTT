@@ -395,7 +395,15 @@ Def 14.2.2: The induction principle for propositional truncations.
 This definition can be thought of as a mix between our recursion principle 
 and the HoTT text's. The type 
   tr Q (α x y) u ≡ v
-is just asserting that, modulo type indices, the image of Q is a prop. -}
+is just asserting that, modulo type indices, the image of Q is a prop.
+
+A more straightforward translation of our recursion principle would 
+be:
+  ((x y : A) → tr Q (α (η x) (η y)) (f x) ≡ f y)
+but Rijke argues "h(x) and h(y) are not determined by our choice of f".
+I don't think this is true---we know, in fact, that h ∘ η ∼ f.
+
+ -}
 postulate
   ∥—∥-ind : {Q : ∥ A ∥ → Set ℓ} → 
             (f : (a : A) → Q (η a)) → 
@@ -403,10 +411,19 @@ postulate
             Σ[ h ∈ ((t : ∥ A ∥) → Q t) ] (h ∘ η ∼ f)
 
 
+-- Remark 14.2.3: the second requirement of the induction principle
+-- is satisfied iff Q is a family of propositions. 
+-- AH> Calling again in to question why Rijke chose this definition.
+fam-props⇒condition : {Q : ∥ A ∥ → Set ℓ} → (∀ (x : ∥ A ∥) → is-prop (Q x)) → 
+      (x y : ∥ A ∥) (u : Q x) (v : Q y) → tr Q (α x y) u ≡ v
+fam-props⇒condition p x y u q with α x y 
+... | refl = p x u q .center 
 
+condition⇒fam-props : {Q : ∥ A ∥ → Set ℓ} → 
+      ((x y : ∥ A ∥) (u : Q x) (v : Q y) → tr Q (α x y) u ≡ v) → 
+      (∀ (x : ∥ A ∥) → is-prop (Q x))
 
-
-
-
-
-
+condition⇒fam-props  {Q = Q} p x = Irrelevant⇒is-prop 
+  (λ u v → tr (λ X → tr Q X u ≡ v) 
+            only-trivial-paths 
+            (p x x u v))
