@@ -28,6 +28,11 @@ open import Relation.Nullary using (¬_) public
 open import Data.String using (String)
 
 -----------------------------------------------------------------------------
+-- Rewriting 
+
+open import Agda.Builtin.Equality.Rewrite public 
+
+-----------------------------------------------------------------------------
 -- Bi-implication
 -- (the std. library defines _↔_ instead as isomorphism.)
 

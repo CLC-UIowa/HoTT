@@ -5,4 +5,5 @@ include : ./agda/
 flags:
   --allow-unsolved-metas
   --without-K
+  --rewriting
 

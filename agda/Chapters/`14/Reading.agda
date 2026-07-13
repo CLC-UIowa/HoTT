@@ -406,8 +406,7 @@ postulate
   ∥—∥-ind : {Q : ∥ A ∥ → Set ℓ} → 
             (f : (a : A) → Q (η a)) → 
             ((x y : ∥ A ∥) (u : Q x) (v : Q y) → tr Q (α x y) u ≡ v) → 
-            Σ[ h ∈ ((t : ∥ A ∥) → Q t) ] (h ∘ η ∼ f)
-
+            (t : ∥ A ∥) → Q t
 
 -- Remark 14.2.3: the second requirement of the induction principle
 -- is satisfied iff Q is a family of propositions. 
@@ -426,13 +425,32 @@ condition⇒fam-props  {Q = Q} p x = Irrelevant⇒is-prop
             only-trivial-paths 
             (p x x u v))
 
+-- the computational rule isn't strictly necessary, as  both (h ∘ η) and f map 
+-- into props. We'll rewrite by it anyway!
+∥—∥-comp : {Q : ∥ A ∥ → Set ℓ} → 
+            (f : (a : A) → Q (η a)) → 
+            (υ : (x y : ∥ A ∥) (u : Q x) (v : Q y) → tr Q (α x y) u ≡ v) → 
+            ∥—∥-ind f υ ∘ η ∼ f
+∥—∥-comp f υ a = condition⇒fam-props υ (η a) (∥—∥-ind f υ (η a)) (f a) .center
+
+{-# REWRITE ∥—∥-comp #-}
+
 -- It's more convenient, often, to use ∥—∥-ind using the equivalent 
 -- induction principle:
 ∥—∥-ind′ : {Q : ∥ A ∥ → Set ℓ} → 
           (f : (a : A) → Q (η a)) → 
           is-prop-fam Q → 
-          Σ[ h ∈ ((t : ∥ A ∥) → Q t) ] (h ∘ η ∼ f)
+          (t : ∥ A ∥) → Q t
 ∥—∥-ind′ f q = ∥—∥-ind  f (fam-props⇒condition q)
+
+-- The computation rule for ∥—∥-ind′ holds definitionally
+-- by consequence of rewriting by ∥—∥-comp.
+∥—∥-comp′ : {Q : ∥ A ∥ → Set ℓ} → 
+          (f : (a : A) → Q (η a)) → 
+          (υ : is-prop-fam Q) → 
+          ∥—∥-ind′ f υ ∘ η ∼ f
+∥—∥-comp′ f υ = Refl           
+
 
 
 --------------------------------------------------------------------------------
@@ -454,18 +472,18 @@ condition⇒fam-props  {Q = Q} p x = Irrelevant⇒is-prop
 -- on the path constructor α. 
 η-is-prop-trunc : is-prop-trunc ∥ A ∥ ∥ A ∥-prop η 
 η-is-prop-trunc {A = A} = is-prop-trunc′ ∥ A ∥ ∥ A ∥-prop η 
-  (λ Q q f a → ∥—∥-ind f (fam-props⇒condition {Q = λ _ → Q} (λ _ → q))  .fst a) 
+  (λ Q q f a → ∥—∥-ind f (fam-props⇒condition {Q = λ _ → Q} (λ _ → q)) a) 
 
 --------------------------------------------------------------------------------
 -- Proposition 14.2.5: ∥—∥ is functorial, i.e., there is a map
 --   ∥—∥ : (A → B) → (∥ A ∥ → ∥ B ∥) 
 
 -- We could define this as:
---   ∥—∥-ind (η ∘ f) (fam-props⇒condition {Q = λ _ → ∥ B ∥} (λ _ → ∥ B ∥-prop)) .fst
+--   ∥—∥-ind (η ∘ f) (fam-props⇒condition {Q = λ _ → ∥ B ∥} (λ _ → ∥ B ∥-prop)) 
 -- Rijke instead defines a map-extension. FWIW, I think the latter
 -- computes to the former. 
 ∥_∥* : (f : A → B) → (∥ A ∥ → ∥ B ∥)
-∥_∥* {A = A} {B = B} f = ∥—∥-ind′ (η ∘ f) (λ _ → ∥ B ∥-prop) .fst 
+∥_∥* {A = A} {B = B} f = ∥—∥-ind′ (η ∘ f) (λ _ → ∥ B ∥-prop)  
 
 -- functor identity holds simply because ∥ A ∥ is a prop. 
 ∥—∥-id : ∥ (λ (x : A) → x) ∥* ∼ id 
@@ -486,7 +504,7 @@ return = η
 
 -- mult is simple enough to define
 mult : ∥ (∥ A ∥) ∥ → ∥ A ∥ 
-mult {A = A} = ∥—∥-ind′ {Q = λ _ → ∥ A ∥} id (λ _ → ∥ A ∥-prop) .fst 
+mult {A = A} = ∥—∥-ind′ {Q = λ _ → ∥ A ∥} id (λ _ → ∥ A ∥-prop) 
 
 -- mult in any monad can produce a bind.
 -- (Every monad gives rise to a Kleisli category.)
@@ -553,7 +571,7 @@ module _ {P : Set ℓ₁} {Q : Set ℓ₂} (p : is-prop P) (q : is-prop Q) where
   ∨-elim : ∀ (R : Set ℓ₃) → is-prop R → 
               (P → R) → (Q → R) → 
               (P ∨ Q → R) 
-  ∨-elim R r f g = ∥—∥-ind′ [ f , g ] (const r) .fst 
+  ∨-elim R r f g = ∥—∥-ind′ [ f , g ] (const r) 
 
   -- The proof is now straightforward, modulo some plumbing
   ∨-univ : ∀ (R : Set ℓ₃) → is-prop R → 
@@ -592,7 +610,7 @@ module _ {A : Set ℓ₁} {P : A → Set ℓ₂} where
   ∃-elim : ∀ (Q : Set ℓ₃) → is-prop Q →
              (Σ A P → Q) → 
              ∃[ x ∈ A ] (P x) → Q  
-  ∃-elim Q prop-Q f = ∥—∥-ind′ f (const prop-Q) .fst 
+  ∃-elim Q prop-Q f = ∥—∥-ind′ f (const prop-Q) 
 
   -- Again, the universal property is the smart constructor for ∃
   -- and its smart eliminator.
@@ -653,6 +671,8 @@ Surjective {B = B} f = (b : B) → ∥ fib f b ∥
 --   is not determined or specified in any known way.
 -- 
 -- AH> N.b., this axiom *must* be postulated. (It is, indeed, an axiom.)
+--     I also exclude some plumbing---we must have X a set, and A and P families
+--     of sets.   
 AOC : (X : Set ℓ₁) → 
       (A : X → Set ℓ₂) →
       (P : (x : X) → A x → Set ℓ₃) → 
@@ -660,3 +680,183 @@ AOC : (X : Set ℓ₁) →
 AOC X A P = 
   (∀[ x ∈ X ] (∃[ a ∈ A x ] P x a)) ⇒ 
     (∃[ g ∈ ((x : X) → A x) ] (∀[ x ∈ X ] P x (g x))) 
+
+--------------------------------------------------------------------------------
+-- § 14.4 Mapping propositional truncations into sets
+-- 
+-- The problem: we only know how to eliminate ∥ A ∥ to P provided P is a prop!
+-- What do we do when defining a map into X s.t. X is not a set?
+
+-- Rijke writes:
+-- > One strategy is to find a type family P over X such that Σ X P is a proposition.
+--   In that case, we may use the universal property of the propositional truncation
+--   to obtain a map ∥ A ∥ → Σ X P from a map A → Σ X P, and then we simply
+--   compose with the projection map.
+-- 
+-- AH> Another way put this is that we can view Σ X P as a "subset" of X,
+--     where P determines which x ∈ X are in the subset. Hence we restrict
+--     ourselves to just a propositional subset of X. 
+
+module _ (X : Set ℓ₁) (P : X → Set ℓ₂) 
+         (f : A → Σ X P)
+         (prp : is-prop (Σ X P)) where 
+
+  -- This is the idea!
+  map : ∥ A ∥ → X 
+  map = fst ∘ toSubset 
+    where 
+      toSubset : ∥ A ∥ → Σ X P 
+      toSubset = ∥—∥-ind′ f λ _ → prp 
+
+-- AH> Example 14.4.1 explores this idea more, but I can't frankly be arsed
+--     to fuck with natural numbers and lower bounds.
+
+--------------------------------------------------------------------------------
+-- Maps into sets
+-- 
+-- AH> Here we start to circle back to the the induction principle I originally
+-- proposed for propositional truncation! 
+-- That is, ∥—∥-ind f is well-defined if f x ≡ f y for all x, y : A. 
+
+-- Def 14.4.3. A map f : A → B is **weakly constant** if
+--   f x ≡ f y
+-- for all x, y : A.
+
+weakly-constant : (f : A → B) → Set _
+weakly-constant f = ∀ x y → f x ≡ f y 
+
+is-constant : (f : A → B) → Set _
+is-constant {B = B} f = Σ[ b ∈ B ] (const b ∼ f)
+
+-- Remark 14.4.4: A type A is contractible iff the identity map on A is constant;
+-- A type A is a proposition iff the identity map on A is weakly constant.
+constant-contr : ∀ {A : Set ℓ} → is-constant (λ (x : A) → x)  ↔ is-contr A 
+constant-contr .to (a , C) = a , C 
+constant-contr .from (a , C) = a , C
+
+weakly-constant-prop : ∀ {A : Set ℓ} → weakly-constant (λ (x : A) → x) ↔ is-prop A 
+weakly-constant-prop .to = Irrelevant⇒is-prop
+weakly-constant-prop .from p x y = p x y .center
+
+-- Lemma 14.4.5. If 
+--   g ∘ η ∼ f 
+-- then f is a weakly constant. 
+weakly-constant-factors : ∀ (f : A → B) (g : ∥ A ∥ → B) → 
+                            g ∘ η ∼ f → weakly-constant f 
+weakly-constant-factors f g H x y = begin 
+  f x ≡⟨ H x ⁻¹ ⟩ 
+  (g ∘ η) x ≡⟨ ap g (α (η x) (η y)) ⟩ 
+  (g ∘ η) y ≡⟨ H y ⟩ 
+  f y ∎ 
+  where 
+    open PathReasoning
+
+-- AH> N.b. that, as ∥—∥-ind f υ ∘ η ∼ f,
+--     we have f weakly constant. But this is obvious!
+--     Because υ asserts that B is a family of props.
+∥—∥-weakly-constant : (f : A → B) (υ : is-prop B) → weakly-constant f 
+∥—∥-weakly-constant f υ = 
+  weakly-constant-factors f (∥—∥-ind′ f (λ _ → υ)) Refl 
+
+--------------------------------------------------------------------------------
+-- Thm. 14.4.6 (Kraus) let A be a type and let B be a set. Then the map
+--   (∥ A ∥ → B) → Σ[ f ∈ A → B ] ((x y : A) → f x ≡ f y)
+-- given g ↦ (g ∘ η , λ x y. ap g (α x y)) is an equivalence.
+-- AH> N.b., error in def'n above. Corrected below and in Errata.md.
+
+module _ {A : Set ℓ}  {B : Set ℓ} (Bₛ : is-set B) where 
+
+  kraus : (∥ A ∥ → B) → Σ[ f ∈ (A → B) ] (weakly-constant f) 
+  kraus g = (g ∘ η , λ x y → ap g (α (η x) (η y)))
+
+  module _ ((f , eq) : Σ[ f ∈ (A → B) ] (weakly-constant f)) where 
+    open PathReasoning 
+
+    -- The strategy is to construct an inverse to krause as follows:
+    --   krause⁻¹ (f , eq) = fst ∘ h
+    -- with h : ∥ A ∥ → Σ[ b ∈ B ] (∥ fib f b ∥).
+    -- The trick is, as described above, is to:
+    -- 1. Prove that p : is-prop (Σ[ b ∈ B ] (∥ fib f b ∥))
+    -- 2. Construct g : A → Σ[ b ∈ B ] (∥ fib f b ∥)
+    -- 3. This is sufficient to construct 
+    --      h : ∥ A ∥ → Σ[ b ∈ B ] (∥ fib f b ∥) 
+    --    using induction. (The image is a prop!)
+    -- From there, fst ∘ h : ∥ A ∥ → B.    
+
+    -- Step #1 
+    -- ... is the trickiest. We are given b₁ and b₂, and their fibers.
+    -- The crux of this proof relies on **B being a set**, which means
+    -- the type family Q = const (b₁ ≡ b₂) is a prop! So we can
+    -- do induction on fib₁ and fib₂. 
+    f⁻¹[B]-fixed-image : ((b₁ , fib₁) (b₂ , fib₂) : (Σ[ b ∈ B ] (∥ fib f b ∥))) → b₁ ≡ b₂ 
+    f⁻¹[B]-fixed-image (b₁ , fib₁) (b₂ , fib₂) = (∥—∥-ind′ 
+          {Q = λ _ → b₁ ≡ b₂} 
+          (λ { (a₁ , p₁) → ∥—∥-ind′ 
+          (λ { (a₂ , p₂)  → begin 
+            b₁   ≡⟨ p₁ ⁻¹ ⟩ 
+            f a₁ ≡⟨ eq a₁ a₂ ⟩ 
+            f a₂ ≡⟨ p₂ ⟩ 
+            b₂ ∎  }) b₁≡b₂-prop fib₂ }) 
+          b₁≡b₂-prop fib₁)
+      where 
+        b₁≡b₂-prop : ∀ {A : Set ℓ} → is-prop-fam {A = A} (λ _ → b₁ ≡ b₂) 
+        b₁≡b₂-prop _ = Bₛ b₁ b₂
+
+    -- The type is otherwise trivially irrelevant.
+    f⁻¹[B]-Irrelevant : Irrelevant (Σ[ b ∈ B ] (∥ fib f b ∥))
+    f⁻¹[B]-Irrelevant (b₁ , fib₁) (b₂ , fib₂) with f⁻¹[B]-fixed-image (b₁ , fib₁) (b₂ , fib₂)
+    ... | refl = ap (b₁ ,_) (α fib₁ fib₂)
+
+    -- Step #2 
+    -- The handler for the point constructor
+    g : A → Σ[ b ∈ B ] (∥ fib f b ∥)
+    g x = (f x) , (η (x , refl)) 
+
+    -- Step #3
+    h : ∥ A ∥ → Σ[ b ∈ B ] (∥ fib f b ∥)
+    h = ∥—∥-ind′ g (λ _ → Irrelevant⇒is-prop f⁻¹[B]-Irrelevant) 
+
+    -- lastly...
+    kraus⁻¹ : (∥ A ∥ → B)
+    kraus⁻¹ = fst ∘ h 
+
+  -- Now, observe that 
+  --     krause (krause⁻¹ (f , eq)) 
+  --   ≡ krause (fst ∘ h)
+  --   ≡ (fst ∘ h ∘ η , λ x y → ap (fst ∘ h) (α (η x) (η y)))
+  --   ≡ (f , λ x y → ap f (α (η x) (η y)))
+  -- Because B is a set, we have 
+  --     ap f (α (η x) (η y)) ≡ eq 
+  -- and so:
+  --   krause (krause⁻¹ (f , eq))  ≡ (f , eq)
+  kraus-inv₁ : ∀ (weak-f : Σ[ f ∈ (A → B) ] (weakly-constant f)) → 
+                kraus (kraus⁻¹ weak-f) ≡ weak-f 
+  kraus-inv₁ (f , wk) =  
+    ap (f ,_) 
+      (fun-ext _ _ 
+        (λ x → fun-ext _ _ (λ y → Bₛ (f x) (f y) (ap (kraus⁻¹ (f , wk)) (α (η x) (η y))) (wk x y) .center)))
+
+  -- The other direction relies on the observation that
+  -- maps of the form (g h : ∥ A ∥ → B), equipped with homotopies f ∼ g ∘ η and f ∼ h ∘ η,
+  -- are necessarily the same. This is a universal property of the induction principle:
+  -- recall that ∥—∥-ind f _ ∼ f ∘ η. Another way of looking at it:
+  -- if we defined g and h by pattern matching, as so:
+  --   g (η x) = f x 
+  -- and 
+  --   h (η x) = f x 
+  -- then g ∼ h, as η is the only generator of ∥ A ∥.
+  unique-extensions : (f : A → B) (g h : ∥ A ∥ → B) (G : g ∘ η ∼ f) (H : h ∘ η ∼ f) → g ∼ h 
+  unique-extensions f g h G H = ∥—∥-ind′ {Q = λ x → g x ≡ h x} (λ a → G a ○ H a ⁻¹) (λ a → Bₛ (g a) (h a))
+   
+  -- In particular, letting h : ∥ A ∥ → B be arbitrary and choosing
+  -- f = h ∘ η, g = kraus⁻¹ (kraus h), and h = h, we have 
+  --   - G : kraus⁻¹ (kraus h) ∘ η ∼ h ∘ η 
+  --   - H : h ∘ η ∼ h ∘ η 
+  -- And so kraus⁻¹ (kraus h) ∼ h. 
+  -- N.b. that G holds definitionally because of the computational law for ∥—∥-ind. 
+  kraus-inv₂ : (h : ∥ A ∥ → B) → kraus⁻¹ (kraus h) ∼ h
+  kraus-inv₂ h = unique-extensions (h ∘ η) (kraus⁻¹ (kraus h)) h Refl Refl
+
+  -- Finally...
+  kraus-equiv : is-equiv kraus 
+  kraus-equiv = has-inverse⇒is-equiv (kraus⁻¹ , kraus-inv₁ , λ g → fun-ext _ _ (kraus-inv₂ g))

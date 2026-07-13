@@ -51,6 +51,9 @@ when `fst e` is probably what was intended.
 
 ## Chapter 14 
 
+
+### 14.2
+
 When describing the induction principle of the propositional truncation HIT, bullet point (ii) states that "This second 
 requirement is therefore that
   
@@ -59,3 +62,30 @@ tr_P (\alpha(x, y), u) = v
 ```
 
 but this should be `tr_Q`. 
+
+
+### 14.4 
+
+Theorem 14.4.6 describes the Kraus map as given by
+
+
+``` 
+g ↦ (g ∘ η , λ x y. ap g (α(x , y)))
+``` 
+
+But this should be:
+
+``` 
+g ↦ (g ∘ η , λ x y. ap g (α(η x, η y)))
+``` 
+
+(Note that x and y have type A, whereas α excepts inputs in the truncation of A.)
+
+A separate remark: Given the definition of being *weakly constant* that precedes it, Theorem 14.4.6 could be rephrased as stating
+that the witness to 
+
+```
+(∥ A ∥ → B) → Σ[ f ∈ (A → B) ] (weakly-constant f)
+```
+
+is an equivalence.
