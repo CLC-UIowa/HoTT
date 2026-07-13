@@ -48,3 +48,14 @@ e : A ≃ Σ[ y ∈ B ] fib f y
 ```
 but later (in particular, in the commutative diagram) uses `e` as a function
 when `fst e` is probably what was intended.
+
+## Chapter 14 
+
+When describing the induction principle of the propositional truncation HIT, bullet point (ii) states that "This second 
+requirement is therefore that
+  
+``` 
+tr_P (\alpha(x, y), u) = v
+```
+
+but this should be `tr_Q`. 
