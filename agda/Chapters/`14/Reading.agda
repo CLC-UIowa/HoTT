@@ -10,8 +10,6 @@ open import Chapters.`11.Exercises
 open import Chapters.`12.Reading
 open import Chapters.`13.Reading
 
-open import Function
-
 open is-contr
 open _↔_
  
@@ -421,9 +419,244 @@ fam-props⇒condition p x y u q with α x y
 
 condition⇒fam-props : {Q : ∥ A ∥ → Set ℓ} → 
       ((x y : ∥ A ∥) (u : Q x) (v : Q y) → tr Q (α x y) u ≡ v) → 
-      (∀ (x : ∥ A ∥) → is-prop (Q x))
+      is-prop-fam Q 
 
 condition⇒fam-props  {Q = Q} p x = Irrelevant⇒is-prop 
   (λ u v → tr (λ X → tr Q X u ≡ v) 
             only-trivial-paths 
             (p x x u v))
+
+-- It's more convenient, often, to use ∥—∥-ind using the equivalent 
+-- induction principle:
+∥—∥-ind′ : {Q : ∥ A ∥ → Set ℓ} → 
+          (f : (a : A) → Q (η a)) → 
+          is-prop-fam Q → 
+          Σ[ h ∈ ((t : ∥ A ∥) → Q t) ] (h ∘ η ∼ f)
+∥—∥-ind′ f q = ∥—∥-ind  f (fam-props⇒condition q)
+
+
+--------------------------------------------------------------------------------
+-- The universal property 
+
+
+-- Thm 14.2.4: The map η : A → ∥ A ∥ satisfies the universal property 
+-- of propositional truncation, that is:
+--   (— ∘ η)
+-- is an equivalence.
+
+-- Pf. It sufficies to construct a map
+--   (Q : Set) → is-prop Q → (A → Q) → (∥ A ∥ → Q) 
+-- We can build the result type (∥ A ∥ → Q) using the induction 
+-- principle for truncated types. Clearly, the point constructor is handled
+-- by f : A → Q. We handle the path constructor by observing that, as Q 
+-- is a proposition, then the type family (const Q) is a family of propositions.
+-- Hence we use the helper fam-props⇒condition to inhabit the condition 
+-- on the path constructor α. 
+η-is-prop-trunc : is-prop-trunc ∥ A ∥ ∥ A ∥-prop η 
+η-is-prop-trunc {A = A} = is-prop-trunc′ ∥ A ∥ ∥ A ∥-prop η 
+  (λ Q q f a → ∥—∥-ind f (fam-props⇒condition {Q = λ _ → Q} (λ _ → q))  .fst a) 
+
+--------------------------------------------------------------------------------
+-- Proposition 14.2.5: ∥—∥ is functorial, i.e., there is a map
+--   ∥—∥ : (A → B) → (∥ A ∥ → ∥ B ∥) 
+
+-- We could define this as:
+--   ∥—∥-ind (η ∘ f) (fam-props⇒condition {Q = λ _ → ∥ B ∥} (λ _ → ∥ B ∥-prop)) .fst
+-- Rijke instead defines a map-extension. FWIW, I think the latter
+-- computes to the former. 
+∥_∥* : (f : A → B) → (∥ A ∥ → ∥ B ∥)
+∥_∥* {A = A} {B = B} f = ∥—∥-ind′ (η ∘ f) (λ _ → ∥ B ∥-prop) .fst 
+
+-- functor identity holds simply because ∥ A ∥ is a prop. 
+∥—∥-id : ∥ (λ (x : A) → x) ∥* ∼ id 
+∥—∥-id {A = A} x = ∥ A ∥-prop (∥ (λ (x : A) → x) ∥* x) x .center 
+
+-- functor composition, which again holds because ∥ C ∥ is a prop.
+∥—∥-∘ : (f : A → B) (g : B → C) → ∥ (g ∘ f) ∥* ∼ ∥ g ∥* ∘ ∥ f ∥*
+∥—∥-∘ {C = C} f g x = ∥ C ∥-prop  _ _ .center 
+
+
+--------------------------------------------------------------------------------
+-- AH> Taking this a step further, we can go ahead and show that propositional
+-- truncation is a monad. (I omit monad laws.)
+
+-- Clearly, η is the unit
+return : A → ∥ A ∥ 
+return = η 
+
+-- mult is simple enough to define
+mult : ∥ (∥ A ∥) ∥ → ∥ A ∥ 
+mult {A = A} = ∥—∥-ind′ {Q = λ _ → ∥ A ∥} id (λ _ → ∥ A ∥-prop) .fst 
+
+-- mult in any monad can produce a bind.
+-- (Every monad gives rise to a Kleisli category.)
+_>>=_ : ∥ A ∥ → (A → ∥ B ∥) → ∥ B ∥ 
+m >>= f = mult (∥ f ∥*  m)
+
+-- Example do notation.
+foobar : ∥ A ∥ → ∥ A + ¬ A ∥ 
+foobar x = do 
+  y ← x 
+  return (inj₁ y) 
+
+--------------------------------------------------------------------------------
+-- § 14.3 Logic in type theory
+{- 
+AH> This much is crucial
+    > However, when the existential quantifier is interpreted by Σ-types,
+      then it is not possible to express certain concepts correctly, such 
+      as finiteness of a type or being in the image of map, and therefore
+      we will add a second interpretation of logic in type theory, where
+      logical propositions are interpreted by type theoretic propositions,
+      i.e., the types of truncation level -1.
+    N.b., the types of truncation level -1 means "props". Further...
+    > We have seen that the propositions are closed under cartesian products,
+      implication, and dependent products indexed by arbitrary types. However,
+      they are not closed under coproducts, and if P is a family of propositions
+      over a type A, then it not necessarily the case that Σ[ x ∈ A ](P x) is 
+      a proposition.
+-} 
+--------------------------------------------------------------------------------
+-- Def 14.3.1: disjunction.
+
+-- Given two propositions P and Q, we define their disjunction
+--  P ∨ Q ≡ ∥ P + Q ∥ 
+
+-- AH> I am going to be a little bit loose and wild here, and not 
+-- define _∨_ as a partial type constructor. Otherwise it fucks
+-- with our nice infix notation... We will just have to be 
+-- careful to assert that P and Q are props!
+_∨_ : (P : Set ℓ₁) (Q : Set ℓ₂) → Set _ 
+P ∨ Q = ∥ P + Q ∥
+
+module _ {P : Set ℓ₁} {Q : Set ℓ₂} (p : is-prop P) (q : is-prop Q) where 
+
+  -- Prop 14.3.2: Given P ∨ Q, then:
+  -- there exists 
+  --   - i : P → P ∨ Q
+  --   - j : Q → P ∨ Q
+  -- such that the universal property of disjunction (branching) is satisfied
+  -- for any proposition R:
+  --   (p ∨ Q → R) ↔ ((P → R) × (Q → R))
+  left : P → P ∨ Q 
+  left = η ∘ inj₁ 
+
+  right : Q → P ∨ Q 
+  right = η ∘ inj₂ 
+
+  -- The last part of the proof is easy to describe on paper,
+  -- which witnesses that (P ≃ Q) ↔ (P ↔ Q). Unfolding definitions 
+  -- is a bit tricky, and is more amenable to mechanization directly.
+
+  -- Begin by defining the elimination principle (universal property)
+  -- of coproducts.
+  ∨-elim : ∀ (R : Set ℓ₃) → is-prop R → 
+              (P → R) → (Q → R) → 
+              (P ∨ Q → R) 
+  ∨-elim R r f g = ∥—∥-ind′ [ f , g ] (const r) .fst 
+
+  -- The proof is now straightforward, modulo some plumbing
+  ∨-univ : ∀ (R : Set ℓ₃) → is-prop R → 
+              (P ∨ Q → R) ↔ ((P → R) × (Q → R))
+  ∨-univ R r .to f = (f ∘ left) , (f ∘ right)
+  ∨-univ R r .from = uncurry (∨-elim R r)               
+
+--------------------------------------------------------------------------------
+-- Def 14.3.3: existential quantification
+-- ... is defined, for family P of propositions over A, as
+--   ∃[ x ∈ A ](P x) := ∥ Σ[ x ∈ A ] (P x) ∥
+-- AH> Again, I am going to define this syntax without the stipulation 
+--     that P be a family of props, simply to preserve nice notation.
+
+infix 2 ∃-syntax
+
+∃-syntax : (A : Set ℓ₁) → (A → Set ℓ₂) → Set _
+∃-syntax A P = ∥ Σ[ x ∈ A ] (P x) ∥ 
+
+syntax ∃-syntax A (λ x → B) = ∃[ x ∈ A ] B
+
+-- Prop 14.3.4: For family P of props over A, the quantification ∃[ x ∈ A ](P x)
+-- comes equipped with a dependent function with type
+--   (a : A) → (P a → ∃[ x ∈ A ] (P x))
+-- and, further, for any prop Q,
+--   ((∃[ x ∈ A] (P x)) → Q) ↔ ((x : A) → P x → Q)
+
+-- AH> I omit the requirement that P be a family of propositions:
+--     it should be present to correctly use ∃ notation,
+--     but it isn't required for the proof.
+module _ {A : Set ℓ₁} {P : A → Set ℓ₂} where 
+  _,,_ : (a : A) → P a → ∃[ x ∈ A ] (P x) 
+  a ,, Pa = η (a , Pa)
+
+  -- AH> We state clearly the elimination principle
+  ∃-elim : ∀ (Q : Set ℓ₃) → is-prop Q →
+             (Σ A P → Q) → 
+             ∃[ x ∈ A ] (P x) → Q  
+  ∃-elim Q prop-Q f = ∥—∥-ind′ f (const prop-Q) .fst 
+
+  -- Again, the universal property is the smart constructor for ∃
+  -- and its smart eliminator.
+  ∃-univ : ∀ (Q : Set ℓ₃) → is-prop Q → 
+           ((∃[ x ∈ A ] (P x)) → Q) ↔ ((x : A) → P x → Q)
+  ∃-univ Q prop-Q .to f x Px = f (x ,, Px)
+  ∃-univ Q prop-Q .from f = ∃-elim Q prop-Q (uncurry f) 
+
+--------------------------------------------------------------------------------
+-- A syntax for the other connectives
+
+-- Truth: 
+-- ⊤ = 1
+
+-- Falsity: 
+-- ⊥ = 0 
+
+-- implication
+_⇒_ : (P : Set ℓ₁) (Q : Set ℓ₂) → Set _ 
+P ⇒ Q = P → Q 
+
+-- conjunction 
+_∧_ : (P : Set ℓ₁) (Q : Set ℓ₂) → Set _ 
+P ∧ Q = P × Q 
+
+-- disjunction 
+-- (see above)
+
+-- bi-implication
+_⇔_ : (P : Set ℓ₁) (Q : Set ℓ₂) → Set _ 
+P ⇔ Q = P ↔ Q 
+
+-- Existentials 
+-- (above)
+
+-- Universals
+infix 2 ∀-syntax
+∀-syntax : (A : Set ℓ₁) → (A → Set ℓ₂) → Set _
+∀-syntax A P = ∀ (x : A) → P x 
+syntax ∀-syntax A (λ x → P) = ∀[ x ∈ A ] P
+
+--------------------------------------------------------------------------------
+-- AH> *Applications of logic in type theory*!
+
+-- AH> To give a flavor of what Rijke means by "... being in the image of a map",
+--     we borrow for Def 4.6.1 of the HoTT book to define surjectivity.
+--     Note that this says "the fiber is inhabited", without specifying which fiber.
+Surjective : (f : A → B) → Set _ 
+Surjective {B = B} f = (b : B) → ∥ fib f b ∥ 
+
+-- AH> Here is the logical axiom of choice, from the HoTT book.
+-- From Book HoTT:
+-- > In particular, note that the propositional truncation appears twice.
+--   The truncation in the domain means we assume that for every x there 
+--   exists *some* (a : A x) such that P x a, but taht these values
+--   are not chosen or specified in any known way. The truncation in the codomain
+--   means that we conclude there exists some function g, but this function
+--   is not determined or specified in any known way.
+-- 
+-- AH> N.b., this axiom *must* be postulated. (It is, indeed, an axiom.)
+AOC : (X : Set ℓ₁) → 
+      (A : X → Set ℓ₂) →
+      (P : (x : X) → A x → Set ℓ₃) → 
+      Set _ 
+AOC X A P = 
+  (∀[ x ∈ X ] (∃[ a ∈ A x ] P x a)) ⇒ 
+    (∃[ g ∈ ((x : X) → A x) ] (∀[ x ∈ X ] P x (g x))) 

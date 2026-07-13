@@ -29,6 +29,10 @@ private
 is-prop : ∀ {ℓ} → Set ℓ → Set ℓ
 is-prop A = ∀ (x y : A) → is-contr (x ≡ y)
 
+-- AH> We will also define a family of propositions as so:
+is-prop-fam : {A : Set ℓ₁} → (A → Set ℓ₂) → Set _
+is-prop-fam {A = A} P = ∀ (x : A) → is-prop (P x)
+
 -- given a universe 𝓤, define Prop[𝓤] to be the type of all small propositions
 -- AI> I can't make this work
 -- AH> This is the closest Agda analogue

@@ -5,7 +5,7 @@ open import Agda.Primitive public
 open import Data.Bool using (true ; false ; Bool ; not) public
 open import Data.Product
     renaming (proj₁ to fst ; proj₂ to snd)
-    using (_×_ ; Σ ; Σ-syntax ; ∃ ; ∃-syntax ; _,_ ; <_,_>) public
+    using (_×_ ; Σ ; Σ-syntax ; _,_ ; <_,_> ; curry ; uncurry) public
 open import Data.Product.Properties using (Σ-≡,≡→≡) public
 open import Data.Sum
     using (inj₁ ; inj₂ ; [_,_])
@@ -17,7 +17,7 @@ open import Data.Fin
   renaming (zero to fzero ; suc to fsuc) public
 open import Data.Nat using (ℕ ; suc ; zero) public
 
-open import Function hiding (_↔_ ; _↪_) public
+open import Function hiding (_↔_ ; _↪_ ; Surjective ; _⇔_) public
 
 open import Relation.Binary using (IsEquivalence)
 open import Relation.Binary.PropositionalEquality
