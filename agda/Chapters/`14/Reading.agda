@@ -498,24 +498,31 @@ condition⇒fam-props  {Q = Q} p x = Irrelevant⇒is-prop
 -- AH> Taking this a step further, we can go ahead and show that propositional
 -- truncation is a monad. (I omit monad laws.)
 
+module ∥—∥-monad where 
 -- Clearly, η is the unit
-return : A → ∥ A ∥ 
-return = η 
+  return : A → ∥ A ∥ 
+  return = η 
 
--- mult is simple enough to define
-mult : ∥ (∥ A ∥) ∥ → ∥ A ∥ 
-mult {A = A} = ∥—∥-ind′ {Q = λ _ → ∥ A ∥} id (λ _ → ∥ A ∥-prop) 
+  -- We can escape the monad if we are indeed a prop
+  escape : is-prop A → ∥ A ∥ → A 
+  escape prp = ∥—∥-ind′ id (λ _ → prp) 
 
--- mult in any monad can produce a bind.
--- (Every monad gives rise to a Kleisli category.)
-_>>=_ : ∥ A ∥ → (A → ∥ B ∥) → ∥ B ∥ 
-m >>= f = mult (∥ f ∥*  m)
+  -- mult is simple enough to define
+  mult : ∥ (∥ A ∥) ∥ → ∥ A ∥ 
+  mult {A = A} = escape (∥ A ∥-prop)
 
--- Example do notation.
-foobar : ∥ A ∥ → ∥ A + ¬ A ∥ 
-foobar x = do 
-  y ← x 
-  return (inj₁ y) 
+  -- mult in any monad can produce a bind.
+  -- (Every monad gives rise to a Kleisli category.)
+  _>>=_ : ∥ A ∥ → (A → ∥ B ∥) → ∥ B ∥ 
+  m >>= f = mult (∥ f ∥*  m)
+
+  -- Example do notation.
+  module _ where private 
+    foobar : ∥ A ∥ → ∥ A + ¬ A ∥ 
+    foobar x = do 
+      y ← x 
+      return (inj₁ y) 
+open ∥—∥-monad 
 
 --------------------------------------------------------------------------------
 -- § 14.3 Logic in type theory
@@ -699,7 +706,7 @@ AOC X A P =
 
 module _ (X : Set ℓ₁) (P : X → Set ℓ₂) 
          (f : A → Σ X P)
-         (prp : is-prop (Σ X P)) where 
+         (prp : is-prop (Σ X P)) where private 
 
   -- This is the idea!
   map : ∥ A ∥ → X 
@@ -764,7 +771,7 @@ weakly-constant-factors f g H x y = begin
 -- given g ↦ (g ∘ η , λ x y. ap g (α x y)) is an equivalence.
 -- AH> N.b., error in def'n above. Corrected below and in Errata.md.
 
-module _ {A : Set ℓ}  {B : Set ℓ} (Bₛ : is-set B) where 
+module _ {A : Set ℓ₁}  {B : Set ℓ₂} (Bₛ : is-set B) where 
 
   kraus : (∥ A ∥ → B) → Σ[ f ∈ (A → B) ] (weakly-constant f) 
   kraus g = (g ∘ η , λ x y → ap g (α (η x) (η y)))
@@ -775,7 +782,7 @@ module _ {A : Set ℓ}  {B : Set ℓ} (Bₛ : is-set B) where
     -- The strategy is to construct an inverse to krause as follows:
     --   krause⁻¹ (f , eq) = fst ∘ h
     -- with h : ∥ A ∥ → Σ[ b ∈ B ] (∥ fib f b ∥).
-    -- The trick is, as described above, is to:
+    -- The trick is, as described above, to:
     -- 1. Prove that p : is-prop (Σ[ b ∈ B ] (∥ fib f b ∥))
     -- 2. Construct g : A → Σ[ b ∈ B ] (∥ fib f b ∥)
     -- 3. This is sufficient to construct 
@@ -788,19 +795,16 @@ module _ {A : Set ℓ}  {B : Set ℓ} (Bₛ : is-set B) where
     -- The crux of this proof relies on **B being a set**, which means
     -- the type family Q = const (b₁ ≡ b₂) is a prop! So we can
     -- do induction on fib₁ and fib₂. 
-    f⁻¹[B]-fixed-image : ((b₁ , fib₁) (b₂ , fib₂) : (Σ[ b ∈ B ] (∥ fib f b ∥))) → b₁ ≡ b₂ 
-    f⁻¹[B]-fixed-image (b₁ , fib₁) (b₂ , fib₂) = (∥—∥-ind′ 
-          {Q = λ _ → b₁ ≡ b₂} 
-          (λ { (a₁ , p₁) → ∥—∥-ind′ 
-          (λ { (a₂ , p₂)  → begin 
+
+    f⁻¹[B]-fixed-image : ((b₁ , fib₁) (b₂ , fib₂) : (Σ[ b ∈ B ] (∥ fib f b ∥))) → b₁ ≡ b₂
+    f⁻¹[B]-fixed-image (b₁ , fib₁) (b₂ , fib₂) = escape (Bₛ  b₁ b₂) (do 
+        (a₁ , p₁) ← fib₁ 
+        (a₂ , p₂) ← fib₂
+        return (begin 
             b₁   ≡⟨ p₁ ⁻¹ ⟩ 
             f a₁ ≡⟨ eq a₁ a₂ ⟩ 
             f a₂ ≡⟨ p₂ ⟩ 
-            b₂ ∎  }) b₁≡b₂-prop fib₂ }) 
-          b₁≡b₂-prop fib₁)
-      where 
-        b₁≡b₂-prop : ∀ {A : Set ℓ} → is-prop-fam {A = A} (λ _ → b₁ ≡ b₂) 
-        b₁≡b₂-prop _ = Bₛ b₁ b₂
+            b₂ ∎))
 
     -- The type is otherwise trivially irrelevant.
     f⁻¹[B]-Irrelevant : Irrelevant (Σ[ b ∈ B ] (∥ fib f b ∥))
@@ -860,3 +864,12 @@ module _ {A : Set ℓ}  {B : Set ℓ} (Bₛ : is-set B) where
   -- Finally...
   kraus-equiv : is-equiv kraus 
   kraus-equiv = has-inverse⇒is-equiv (kraus⁻¹ , kraus-inv₁ , λ g → fun-ext _ _ (kraus-inv₂ g))
+
+--------------------------------------------------------------------------------
+-- AH> Before I die on this hill, I can clarify that the other direction---
+--     that given ((x y : A) → f x ≡ f y), we can produce the Book HoTT 
+--     recursor---is accurate provided B is a set.
+--     I will still attest that my recursor is the most accurate. 
+
+prop-def← : (Bₛ : is-set B) (f : A → B) → (v : weakly-constant f) → Σ[ h ∈ (∥ A ∥ → B) ] (h ∘ η ∼ f)
+prop-def← {B = B} {A = A} Bₛ f v = kraus⁻¹ Bₛ (f , v) , Refl
