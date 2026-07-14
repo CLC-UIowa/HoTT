@@ -831,10 +831,25 @@ module _ where
 
   -- or, another way to phrase this:
   -- η has a retraction iff A is a prop.
-  section-η : retraction (η {A = A}) ↔ is-prop A 
-  section-η .to (f , H) = gc-prop-↔ f .to H
-  section-η .from prop = prop-choice prop , Refl
+  retraction-η : retraction (η {A = A}) ↔ is-prop A 
+  retraction-η .to (f , H) = gc-prop-↔ f .to H
+  retraction-η .from prop = prop-choice prop , Refl
 
+  -- We can take it a step further and assert that 
+  -- retractions of η are equivalent to proofs that A is a proposition.
+  -- AH> This one is trickier to prove than expected...
+  is-prop² : is-prop (is-prop A) 
+  is-prop² = Irrelevant⇒is-prop λ p q → (fun-ext _ _ (λ x → fun-ext _ _ (λ y → {! is-prop⇒is-set p x y     !})))
+
+  retraction-η-prop : is-prop (retraction (η {A = A})) 
+  retraction-η-prop {A = A} = Irrelevant⇒is-prop retraction-η-irr
+    where 
+      retraction-η-irr : Irrelevant (retraction (η {A = A})) 
+      retraction-η-irr (f , F) (g , G) with fun-ext _ _ (λ x → retraction-η .to (f , F) (f x) (g x) .center)
+      ... | refl = ap (f ,_) (fun-ext _ _ (λ a → is-prop⇒is-set (retraction-η .to (f , F)) (f (η a)) a (F a) (G a) .center))
+  
+  retraction-η≃is-prop : retraction (η {A = A}) ≃ is-prop A
+  retraction-η≃is-prop = propositionalEquivalence retraction-η-prop is-prop² .from  retraction-η 
 
 --------------------------------------------------------------------------------
 -- Maps into sets
@@ -862,6 +877,7 @@ constant-contr .from (a , C) = a , C
 weakly-constant-prop : ∀ {A : Set ℓ} → weakly-constant (λ (x : A) → x) ↔ is-prop A 
 weakly-constant-prop .to = Irrelevant⇒is-prop
 weakly-constant-prop .from p x y = p x y .center
+
 
 -- Lemma 14.4.5. If 
 --   g ∘ η ∼ f 
