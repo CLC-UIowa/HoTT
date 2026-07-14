@@ -806,7 +806,7 @@ gc-∥ A ∥ = mult
 prop-choice : is-prop A → global-choice A 
 prop-choice prp = ∥—∥-ind′ id (λ _ → prp) 
 
--- AH> I think it's erroneous to write that: 
+-- AH> I think it's hazardous to write that: 
 --   > the function we constructed in Ex. 14.4.1 for 
 --   > decidable subtypes of ℕ is a rare case in which
 --   > it is possible to obtain a function ∥ A ∥ → A.
@@ -814,42 +814,61 @@ prop-choice prp = ∥—∥-ind′ id (λ _ → prp)
 const-choice : (a : A) → global-choice A 
 const-choice = const  
 
--- AH> (it might be better to assert ¬ (is-constant f)?
---     It's wrong to assert instead that, for (f : global-choice A), 
---     we have f ∘ η ∼ id. This holds iff A is a prop.
+--------------------------------------------------------------------------------
+-- Retractions of η 
+-- 
+-- AH> Every retraction of η is a global choice. But we show below
+--     that retractions of η are equivalent to A being a proposition.
+
 module _ where 
   open PathReasoning
-  gc-prop-↔ : (f : global-choice A) → (f ∘ η ∼ id)  ↔ is-prop A 
-  gc-prop-↔ {A = A} f .to  H x y = 
+ 
+  -- η has a retraction iff A is a prop.
+  retraction-η↔is-prop : retraction (η {A = A}) ↔ is-prop A 
+  retraction-η↔is-prop .to (f , H) x y =     
     (H x ⁻¹ ○ (ap f (α (η x) (η  y))) ○  H y) , 
       λ { refl → begin 
         ((H x ⁻¹ ○ (ap f (α (η x) (η  x))) ○  H x) ≡⟨ ((H x ⁻¹ ⋆ᵣ ap (ap f) only-trivial-paths) ⋆ₗ H x) ⟩ 
         (H x ⁻¹ ○ refl ○ H x)                      ≡⟨ (right-identity (H x ⁻¹) ⋆ₗ H x) ⟩ 
         (H x ⁻¹ ○ H x)                             ≡⟨ left-inv (H x) ⟩ 
         refl ∎) } 
-  gc-prop-↔ f .from p x = p (f (η x)) x .center
+  retraction-η↔is-prop .from prop = prop-choice prop , Refl
 
-  -- or, another way to phrase this:
-  -- η has a retraction iff A is a prop.
-  retraction-η : retraction (η {A = A}) ↔ is-prop A 
-  retraction-η .to (f , H) = gc-prop-↔ f .to H
-  retraction-η .from prop = prop-choice prop , Refl
+  -- We next show that retraction η ≃ is-prop A by showing 
+  -- that both the left-hand and right-hand sides are themselves
+  -- propositions.
 
-  -- We can take it a step further and assert that 
-  -- retractions of η are equivalent to proofs that A is a proposition.
-  -- AH> This one is trickier to prove than expected...
-  is-prop² : is-prop (is-prop A) 
-  is-prop² = Irrelevant⇒is-prop λ p q → (fun-ext _ _ (λ x → fun-ext _ _ (λ y → {! is-prop⇒is-set p x y     !})))
-
+  -- First: retractions of η are propositions.
   retraction-η-prop : is-prop (retraction (η {A = A})) 
   retraction-η-prop {A = A} = Irrelevant⇒is-prop retraction-η-irr
     where 
       retraction-η-irr : Irrelevant (retraction (η {A = A})) 
-      retraction-η-irr (f , F) (g , G) with fun-ext _ _ (λ x → retraction-η .to (f , F) (f x) (g x) .center)
-      ... | refl = ap (f ,_) (fun-ext _ _ (λ a → is-prop⇒is-set (retraction-η .to (f , F)) (f (η a)) a (F a) (G a) .center))
+      retraction-η-irr (f , F) (g , G) with fun-ext _ _ (λ x → retraction-η↔is-prop .to (f , F) (f x) (g x) .center)
+      ... | refl = ap (f ,_) (fun-ext _ _ (λ a → is-prop⇒is-set (retraction-η↔is-prop .to (f , F)) (f (η a)) a (F a) (G a) .center))
+
+  -- Observe that witness to contractibility are propositions.
+  is-prop-is-contr : is-prop (is-contr A)
+  is-prop-is-contr {A = A} = Irrelevant⇒is-prop irr 
+    where 
+      irr : Irrelevant (is-contr A)
+      irr (c₁ , C₁) (c₂ , C₂) with C₁ c₂
+      ... | refl = ap (c₁ ,_) (fun-ext _ _ 𝒞) 
+        where
+          𝒞 : C₁ ∼ C₂ 
+          𝒞 x = is-prop⇒is-set (is-contr⇒is-prop _ (c₁ , C₁)) c₁ x (C₁ x) (C₂ x) .center  
+
+  -- And so witnesses to propositions are propositions.
+  is-prop² : is-prop (is-prop A) 
+  is-prop² {A = A} = Irrelevant⇒is-prop irr 
+    where 
+      irr : Irrelevant (is-prop A)
+      irr p q = fun-ext _ _ (λ x → fun-ext _ _ (λ y → is-prop-is-contr (p x y) (q x y) .center)) 
   
+  -- Because (P ↔ Q) ↔ (P ≃ Q) for propositions P and Q, and because 
+  -- both retraction η and is-prop A are propositions, it follows
+  -- that retraction η ≃ is-prop A.
   retraction-η≃is-prop : retraction (η {A = A}) ≃ is-prop A
-  retraction-η≃is-prop = propositionalEquivalence retraction-η-prop is-prop² .from  retraction-η 
+  retraction-η≃is-prop = propositionalEquivalence retraction-η-prop is-prop² .from  retraction-η↔is-prop 
 
 --------------------------------------------------------------------------------
 -- Maps into sets
