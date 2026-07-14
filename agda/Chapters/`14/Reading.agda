@@ -744,46 +744,47 @@ module _ (X : Set ℓ₁) (P : X → Set ℓ₂)
 -- with type:
 --   ∃[ n ∈ ℕ ] (P x) → Σ[ x ∈ ℕ ] (P x).
 
-lower-bound-irrelevant : (P : ℕ → Set ℓ) → (x : ℕ) → Irrelevant (is-lower-bound P x)
-lower-bound-irrelevant P x b₁ b₂ = fun-ext _ _ (λ y → fun-ext _ _ (λ py → ≤-irrelevant (b₁ y py) (b₂ y py))) 
+lower-bound-irrelevant : (P : ℕ → Set ℓ) → (n : ℕ) → Irrelevant (is-lower-bound P n)
+lower-bound-irrelevant P n b₁ b₂ = fun-ext _ _ (λ y → fun-ext _ _ (λ py → ≤-irrelevant (b₁ y py) (b₂ y py))) 
 
 -- Theorem 8.3.2: The well ordering principle
 -- AH> (which I did not implement!)
---     N.b. have to define this on the curried (x : ℕ) → P x → ...
+--     N.b. have to define this on the curried (n : ℕ) → P n → ...
 --     because we can't recurse over dependent tuples.
-well-ordering : {P : ℕ → Set ℓ} (sub : P ⊆ ℕ) (dec : (x : ℕ) → Decidable (P x)) → 
-                (x : ℕ) → P x → Σ[ x ∈ ℕ ](P x) × is-lower-bound P x 
+-- The theorem states, as expected, that any *non-empty* subset of ℕ 
+-- has a lower bound.
+well-ordering : {P : ℕ → Set ℓ} (sub : P ⊆ ℕ) (dec : (n : ℕ) → Decidable (P n)) → 
+                (n : ℕ) → P n → Σ[ m ∈ ℕ ] (P m) × is-lower-bound P m 
 well-ordering sub dec zero p = 0 , p , λ _ _  → z≤n
-well-ordering {P = P} sub dec (suc x) p with dec 0 
+well-ordering {P = P} sub dec (suc n) p with dec 0 
 ... | inj₁ p₀ = 0 , p₀ , λ _ _ → z≤n 
-... | inj₂ p₁ with well-ordering {P = P ∘ suc}  (sub ∘ suc)  (dec ∘ suc) x p 
+... | inj₂ p₁ with well-ordering {P = P ∘ suc}  (sub ∘ suc)  (dec ∘ suc) n p 
 ... | n , q , b = suc n , q , λ { zero pm → (⊥-elim ∘ p₁) pm
                                 ; (suc m) pm → s≤s (b m pm) }
 
 module _ {P : ℕ → Set ℓ} (sub : P ⊆ ℕ) (dec : (x : ℕ) → Decidable (P x)) where 
   
   -- The trick is to find a propositional subset of ℕ, such as this one:
-  -- (The lower bounds of P).
-  prop-subset : is-prop (Σ[ x ∈ ℕ ](P x) × is-lower-bound P x) 
+  -- (The lower bounds of P). Obviously, a lower bound (if it exists!) in ℕ 
+  -- is unique, as ℕ is a well-order.
+  prop-subset : is-prop (Σ[ n ∈ ℕ ](P n) × is-lower-bound P n) 
   prop-subset = Irrelevant⇒is-prop irr 
     where 
-      irr : Irrelevant (Σ[ x ∈ ℕ ] (P x) × is-lower-bound P x) 
-      irr (x , p₁ , b₁) (y , p₂ , b₂) with ≤-antisym (b₁ y p₂) (b₂ x p₁) 
-      ... | refl = ap (x ,_) (ap₂ _,_ (sub  x  p₁ p₂ .center) (lower-bound-irrelevant P x b₁ b₂)) 
+      irr : Irrelevant (Σ[ n ∈ ℕ ] (P n) × is-lower-bound P n) 
+      irr (n , p₁ , b₁) (y , p₂ , b₂) with ≤-antisym (b₁ y p₂) (b₂ n p₁) 
+      ... | refl = ap (n ,_) (ap₂ _,_ (sub  n  p₁ p₂ .center) (lower-bound-irrelevant P n b₁ b₂)) 
 
   -- Because the codomain is a prop, we can induct over 
-  --   ∃[ n ∈ ℕ ] (P n) := ∥ Σ[ x ∈ ℕ ] (P x) ∥ 
-  pick₀  : ∃[ n ∈ ℕ ] (P n) → (Σ[ x ∈ ℕ ](P x) × is-lower-bound P x) 
+  --   ∃[ n ∈ ℕ ] (P n) := ∥ Σ[ n ∈ ℕ ] (P n) ∥ 
+  pick₀  : ∃[ n ∈ ℕ ] (P n) → (Σ[ m ∈ ℕ ] (P m) × is-lower-bound P m) 
   pick₀ = ∥—∥-ind′ (uncurry $ well-ordering sub dec) (const prop-subset)
 
   -- The last step is to chop off the bits we don't care about.
   -- N.b. that the codomain of pick₀ is nested to the right:
   --   (x , (p , b)) : Σ[ x ∈ ℕ ](P x) × is-lower-bound P x
-  -- so we associate to the left to get
-  --   ((x , p) , b) : (Σ[ x ∈ ℕ ](P x)) × is-lower-bound P x
-  -- and can thereafter take its (left) projection, e.g.,
+  -- so we associate to the left to project out
   --   (x , p) : (Σ[ x ∈ ℕ ](P x))
-  pick : ∃[ n ∈ ℕ ] (P n) → Σ[ x ∈ ℕ ](P x)
+  pick : ∃[ n ∈ ℕ ] (P n) → Σ[ m ∈ ℕ ] (P m)
   pick = fst ∘ assocˡ ∘ pick₀ 
 
   -- Let's pause to establish what it is we've really done:
@@ -810,9 +811,25 @@ prop-choice prp = ∥—∥-ind′ id (λ _ → prp)
 --   > decidable subtypes of ℕ is a rare case in which
 --   > it is possible to obtain a function ∥ A ∥ → A.
 -- simply because any constant function is a global choice.
--- (it might be better to assert ¬ (is-constant f).
 const-choice : (a : A) → global-choice A 
 const-choice = const  
+
+-- AH> (it might be better to assert ¬ (is-constant f)?
+--     It's wrong to assert instead that, for (f : global-choice A), 
+--     we have f ∘ η ∼ id. This holds iff A is a prop.
+module _ where 
+  open PathReasoning
+  gc-prop-↔ : (f : global-choice A) → (f ∘ η ∼ id)  ↔ is-prop A 
+  gc-prop-↔ {A = A} f .to  H x y = 
+    (H x ⁻¹ ○ (ap f (α (η x) (η  y))) ○  H y) , 
+      λ { refl → begin 
+        ((H x ⁻¹ ○ (ap f (α (η x) (η  x))) ○  H x) ≡⟨ ((H x ⁻¹ ⋆ᵣ ap (ap f) only-trivial-paths) ⋆ₗ H x) ⟩ 
+        (H x ⁻¹ ○ refl ○ H x)                      ≡⟨ (right-identity (H x ⁻¹) ⋆ₗ H x) ⟩ 
+        (H x ⁻¹ ○ H x)                             ≡⟨ left-inv (H x) ⟩ 
+        refl ∎) } 
+
+  gc-prop-↔ f .from p x = p (f (η x)) x .center
+
 
 --------------------------------------------------------------------------------
 -- Maps into sets

@@ -258,6 +258,9 @@ module Homotopies where
 open Homotopies public
 
 --------------------------------------------------------------------------------
+-- Whiskering when reasoning about higher paths
+
+--------------------------------------------------------------------------------
 -- Some properties we ought to name descriptively, even if Rijke doesn't
 
 module _ where 
