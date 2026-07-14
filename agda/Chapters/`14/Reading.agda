@@ -827,8 +827,13 @@ module _ where
         (H x ⁻¹ ○ refl ○ H x)                      ≡⟨ (right-identity (H x ⁻¹) ⋆ₗ H x) ⟩ 
         (H x ⁻¹ ○ H x)                             ≡⟨ left-inv (H x) ⟩ 
         refl ∎) } 
-
   gc-prop-↔ f .from p x = p (f (η x)) x .center
+
+  -- or, another way to phrase this:
+  -- η has a retraction iff A is a prop.
+  section-η : retraction (η {A = A}) ↔ is-prop A 
+  section-η .to (f , H) = gc-prop-↔ f .to H
+  section-η .from prop = prop-choice prop , Refl
 
 
 --------------------------------------------------------------------------------
