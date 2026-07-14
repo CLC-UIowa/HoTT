@@ -5,7 +5,7 @@ open import Agda.Primitive public
 open import Data.Bool using (true ; false ; Bool ; not) public
 open import Data.Product
     renaming (proj₁ to fst ; proj₂ to snd)
-    using (_×_ ; Σ ; Σ-syntax ; _,_ ; <_,_> ; curry ; uncurry) public
+    using (_×_ ; Σ ; Σ-syntax ; _,_ ; <_,_> ; curry ; uncurry ; map₂ ; assocˡ ; assocʳ) public
 open import Data.Product.Properties using (Σ-≡,≡→≡) public
 open import Data.Sum
     using (inj₁ ; inj₂ ; [_,_])
@@ -15,7 +15,8 @@ open import Data.Empty using (⊥ ; ⊥-elim) public
 open import Data.Fin
   using (Fin ; fromℕ)
   renaming (zero to fzero ; suc to fsuc) public
-open import Data.Nat using (ℕ ; suc ; zero) public
+open import Data.Nat using (ℕ ; suc ; zero ; _≤_ ; z≤n ; s≤s) public
+open import Data.Nat.Properties using (≤-irrelevant ; ≤-antisym) public
 
 open import Function hiding (_↔_ ; _↪_ ; Surjective ; _⇔_) public
 
@@ -313,6 +314,11 @@ module _ where
   K↔UIP : Axiom-K A ↔ UIP A
   K↔UIP = K⇒UIP , UIP⇒K 
 
+-----------------------------------------------------------------------------
+-- Defining bounds on nats 
+
+is-lower-bound : ∀ {ℓ} (P : ℕ → Set ℓ) →  ℕ → Set _ 
+is-lower-bound P x = ∀ (y : ℕ) → P y → x ≤ y 
 
 -----------------------------------------------------------------------------
 -- Reasoning syntax over _≡_

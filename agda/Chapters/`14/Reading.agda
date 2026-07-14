@@ -10,6 +10,8 @@ open import Chapters.`11.Exercises
 open import Chapters.`12.Reading
 open import Chapters.`13.Reading
 
+open import Data.Nat using (_≤_)
+
 open is-contr
 open _↔_
  
@@ -334,6 +336,12 @@ module _ where private
   bad : true ≡ false
   bad = all-prop {A = Bool} true false .center
 
+  -- N.b. Incongruent with HITs in general, Agda also
+  -- recognizes internally that constructors are disjoint. Observe:
+  oopsies : ⊥ 
+  oopsies with bad 
+  ... | () 
+
 --------------------------------------------------------------------------------
 {- A recursion principle for ∥_∥ 
 
@@ -347,7 +355,7 @@ where f : A → B, with the expectation that h ∘ η ∼ f. The intuition: We
 throw f : A → B in as an argument to the recursion principle principle,
 and assert (in the return type) that the pattern holds.
 
-  ∥—⊩rec :  (f : A → B) → 
+  ∥—∥-rec :  (f : A → B) → 
              ? → 
             Σ[ h ∈ (∥ A ∥ → B) ] (h ∘ η ∼ f)
 
@@ -369,21 +377,23 @@ and hence we can instead require an argument of the form:
   v : (x y : A) → f x ≡ f y
 -} 
 
-postulate 
-  ∥—⊩rec :  (f : A → B) → 
-            (v : (x y : A) → f x ≡ f y) → 
-            Σ[ h ∈ (∥ A ∥ → B) ] (h ∘ η ∼ f)
+module ∥—∥-recursor where 
+  postulate
+    ∥—∥-rec :  (f : A → B) → 
+              ((x y : A) → f x ≡ f y) → 
+              (∥ A ∥ → B)
+    -- This computational law has to be asserted 
+    ∥—∥-rec-comp : ∀ (f : A → B) (v : (x y : A) → f x ≡ f y) →  ∥—∥-rec f v ∘ η ∼ f 
 
--- Alternatively, the HoTT book simply requires that B be a prop.
--- Our definition can build the HoTT definition (but not the other way around.)
-prop-def→ : (f : A → B) → (v : is-prop B) → Σ[ h ∈ (∥ A ∥ → B) ] (h ∘ η ∼ f)
-prop-def→ f v = ∥—⊩rec f λ x y → v (f x) (f y) .center
+  -- Alternatively, the HoTT book simply requires that B be a prop.
+  -- Our definition can build the HoTT definition (but not the other way around.)
+  prop-def→ : (f : A → B) → (v : is-prop B) → (∥ A ∥ → B)
+  prop-def→ f v = ∥—∥-rec f λ x y → v (f x) (f y) .center
 
--- 
-module _ where private 
-  -- Now the naughty destructor won't work unless A is a prop!
-  σ : is-prop A → ∥ A ∥ → A 
-  σ prop = ∥—⊩rec id (λ x y → prop x y .center) .fst
+  module _ where private 
+    -- Now the naughty destructor won't work unless A is a prop!
+    σ : is-prop A → ∥ A ∥ → A 
+    σ prop = ∥—∥-rec id (λ x y → prop x y .center)
 
 
 {- --------------------------------------------------------------------------------
@@ -407,7 +417,7 @@ postulate
             (f : (a : A) → Q (η a)) → 
             ((x y : ∥ A ∥) (u : Q x) (v : Q y) → tr Q (α x y) u ≡ v) → 
             (t : ∥ A ∥) → Q t
-
+           
 -- Remark 14.2.3: the second requirement of the induction principle
 -- is satisfied iff Q is a family of propositions. 
 -- AH> Calling again in to question why Rijke chose this definition.
@@ -435,7 +445,7 @@ condition⇒fam-props  {Q = Q} p x = Irrelevant⇒is-prop
 
 {-# REWRITE ∥—∥-comp #-}
 
--- It's more convenient, often, to use ∥—∥-ind using the equivalent 
+-- It's more convenient, often (always?), to use ∥—∥-ind using the equivalent 
 -- induction principle:
 ∥—∥-ind′ : {Q : ∥ A ∥ → Set ℓ} → 
           (f : (a : A) → Q (η a)) → 
@@ -451,18 +461,27 @@ condition⇒fam-props  {Q = Q} p x = Irrelevant⇒is-prop
           ∥—∥-ind′ f υ ∘ η ∼ f
 ∥—∥-comp′ f υ = Refl           
 
+-- AH> The Book HoTT recursor, for free.
+∥—∥-rec :  (f : A → B) → 
+           is-prop B → 
+           (∥ A ∥ → B)
+∥—∥-rec f v = 
+  ∥—∥-ind′ f (const v)
+
+-- Again, the computational rule is definitional.
+∥—∥-rec-comp : (f : A → B) (v : is-prop B) → ∥—∥-rec f v ∘ η ∼ f 
+∥—∥-rec-comp f v = Refl 
 
 
 --------------------------------------------------------------------------------
 -- The universal property 
-
 
 -- Thm 14.2.4: The map η : A → ∥ A ∥ satisfies the universal property 
 -- of propositional truncation, that is:
 --   (— ∘ η)
 -- is an equivalence.
 
--- Pf. It sufficies to construct a map
+-- Pf. It suffices to construct a map
 --   (Q : Set) → is-prop Q → (A → Q) → (∥ A ∥ → Q) 
 -- We can build the result type (∥ A ∥ → Q) using the induction 
 -- principle for truncated types. Clearly, the point constructor is handled
@@ -476,14 +495,16 @@ condition⇒fam-props  {Q = Q} p x = Irrelevant⇒is-prop
 
 --------------------------------------------------------------------------------
 -- Proposition 14.2.5: ∥—∥ is functorial, i.e., there is a map
---   ∥—∥ : (A → B) → (∥ A ∥ → ∥ B ∥) 
+--   ∥—∥* : (A → B) → (∥ A ∥ → ∥ B ∥) 
 
--- We could define this as:
---   ∥—∥-ind (η ∘ f) (fam-props⇒condition {Q = λ _ → ∥ B ∥} (λ _ → ∥ B ∥-prop)) 
--- Rijke instead defines a map-extension. FWIW, I think the latter
--- computes to the former. 
+
 ∥_∥* : (f : A → B) → (∥ A ∥ → ∥ B ∥)
 ∥_∥* {A = A} {B = B} f = ∥—∥-ind′ (η ∘ f) (λ _ → ∥ B ∥-prop)  
+
+-- Rijke instead defines a ∥_∥* as a map-extension. These definitions are 
+-- equivalent definitionally.
+∥_∥*-map-extension : (f : A → B) → ∥ f ∥* ≡ map-extension _ (∥ A ∥-prop) _ η-is-prop-trunc (∥ B ∥) ∥ B ∥-prop (η ∘ f) .fst 
+∥_∥*-map-extension = Refl 
 
 -- functor identity holds simply because ∥ A ∥ is a prop. 
 ∥—∥-id : ∥ (λ (x : A) → x) ∥* ∼ id 
@@ -678,13 +699,13 @@ Surjective {B = B} f = (b : B) → ∥ fib f b ∥
 --   is not determined or specified in any known way.
 -- 
 -- AH> N.b., this axiom *must* be postulated. (It is, indeed, an axiom.)
---     I also exclude some plumbing---we must have X a set, and A and P families
---     of sets.   
-AOC : (X : Set ℓ₁) → 
-      (A : X → Set ℓ₂) →
-      (P : (x : X) → A x → Set ℓ₃) → 
+--     Book HoTT insists, though, that X, A, and P are sets (or set families).
+--     Why, I'm not sure of.  
+AOC : (X : Set ℓ₁) → is-set X → 
+      (A : X → Set ℓ₂) → is-set-fam A → 
+      (P : (x : X) → A x → Set ℓ₃) → ((x : X) → is-set-fam (P x)) →  
       Set _ 
-AOC X A P = 
+AOC X _ A _ P _  = 
   (∀[ x ∈ X ] (∃[ a ∈ A x ] P x a)) ⇒ 
     (∃[ g ∈ ((x : X) → A x) ] (∀[ x ∈ X ] P x (g x))) 
 
@@ -715,23 +736,98 @@ module _ (X : Set ℓ₁) (P : X → Set ℓ₂)
       toSubset : ∥ A ∥ → Σ X P 
       toSubset = ∥—∥-ind′ f λ _ → prp 
 
--- AH> Example 14.4.1 explores this idea more, but I can't frankly be arsed
---     to fuck with natural numbers and lower bounds.
+--------------------------------------------------------------------------------
+-- Example 14.4.1
+-- Recall that a subtype P of ℕ is a predicate P for which,
+-- for all x : ℕ, we have is-prop (P x). if P x is also
+-- decidable for all x : ℕ, then there exists a function
+-- with type:
+--   ∃[ n ∈ ℕ ] (P x) → Σ[ x ∈ ℕ ] (P x).
+
+lower-bound-irrelevant : (P : ℕ → Set ℓ) → (x : ℕ) → Irrelevant (is-lower-bound P x)
+lower-bound-irrelevant P x b₁ b₂ = fun-ext _ _ (λ y → fun-ext _ _ (λ py → ≤-irrelevant (b₁ y py) (b₂ y py))) 
+
+-- Theorem 8.3.2: The well ordering principle
+-- AH> (which I did not implement!)
+--     N.b. have to define this on the curried (x : ℕ) → P x → ...
+--     because we can't recurse over dependent tuples.
+well-ordering : {P : ℕ → Set ℓ} (sub : P ⊆ ℕ) (dec : (x : ℕ) → Decidable (P x)) → 
+                (x : ℕ) → P x → Σ[ x ∈ ℕ ](P x) × is-lower-bound P x 
+well-ordering sub dec zero p = 0 , p , λ _ _  → z≤n
+well-ordering {P = P} sub dec (suc x) p with dec 0 
+... | inj₁ p₀ = 0 , p₀ , λ _ _ → z≤n 
+... | inj₂ p₁ with well-ordering {P = P ∘ suc}  (sub ∘ suc)  (dec ∘ suc) x p 
+... | n , q , b = suc n , q , λ { zero pm → (⊥-elim ∘ p₁) pm
+                                ; (suc m) pm → s≤s (b m pm) }
+
+module _ {P : ℕ → Set ℓ} (sub : P ⊆ ℕ) (dec : (x : ℕ) → Decidable (P x)) where 
+  
+  -- The trick is to find a propositional subset of ℕ, such as this one:
+  -- (The lower bounds of P).
+  prop-subset : is-prop (Σ[ x ∈ ℕ ](P x) × is-lower-bound P x) 
+  prop-subset = Irrelevant⇒is-prop irr 
+    where 
+      irr : Irrelevant (Σ[ x ∈ ℕ ] (P x) × is-lower-bound P x) 
+      irr (x , p₁ , b₁) (y , p₂ , b₂) with ≤-antisym (b₁ y p₂) (b₂ x p₁) 
+      ... | refl = ap (x ,_) (ap₂ _,_ (sub  x  p₁ p₂ .center) (lower-bound-irrelevant P x b₁ b₂)) 
+
+  -- Because the codomain is a prop, we can induct over 
+  --   ∃[ n ∈ ℕ ] (P n) := ∥ Σ[ x ∈ ℕ ] (P x) ∥ 
+  pick₀  : ∃[ n ∈ ℕ ] (P n) → (Σ[ x ∈ ℕ ](P x) × is-lower-bound P x) 
+  pick₀ = ∥—∥-ind′ (uncurry $ well-ordering sub dec) (const prop-subset)
+
+  -- The last step is to chop off the bits we don't care about.
+  -- N.b. that the codomain of pick₀ is nested to the right:
+  --   (x , (p , b)) : Σ[ x ∈ ℕ ](P x) × is-lower-bound P x
+  -- so we associate to the left to get
+  --   ((x , p) , b) : (Σ[ x ∈ ℕ ](P x)) × is-lower-bound P x
+  -- and can thereafter take its (left) projection, e.g.,
+  --   (x , p) : (Σ[ x ∈ ℕ ](P x))
+  pick : ∃[ n ∈ ℕ ] (P n) → Σ[ x ∈ ℕ ](P x)
+  pick = fst ∘ assocˡ ∘ pick₀ 
+
+  -- Let's pause to establish what it is we've really done:
+  -- Given only the knowledge of *some* element in P ⊆ ℕ,
+  -- we can pick a precise witness (n , p) ∈ P.  
+
+--------------------------------------------------------------------------------
+-- Remark 14.4.2: We say that the type A satisfies the
+-- **principle of global choice** if there is a function ∥ A ∥ → A.
+
+global-choice : (A : Set ℓ) → Set _ 
+global-choice A = ∥ A ∥ → A
+
+-- Another (trivial) example:
+gc-∥_∥ : (A : Set ℓ) → global-choice (∥ A ∥) 
+gc-∥ A ∥ = mult
+
+-- Any proposition has a global choice 
+prop-choice : is-prop A → global-choice A 
+prop-choice prp = ∥—∥-ind′ id (λ _ → prp) 
+
+-- AH> I think it's erroneous to write that: 
+--   > the function we constructed in Ex. 14.4.1 for 
+--   > decidable subtypes of ℕ is a rare case in which
+--   > it is possible to obtain a function ∥ A ∥ → A.
+-- simply because any constant function is a global choice.
+-- (it might be better to assert ¬ (is-constant f).
+const-choice : (a : A) → global-choice A 
+const-choice = const  
 
 --------------------------------------------------------------------------------
 -- Maps into sets
 -- 
 -- AH> Here we start to circle back to the the induction principle I originally
 -- proposed for propositional truncation! 
--- That is, ∥—∥-ind f is well-defined if f x ≡ f y for all x, y : A. 
-
--- Def 14.4.3. A map f : A → B is **weakly constant** if
+-- That is, ∥—∥-ind f is well-defined if f is **weakly constant**:
+-- Def 14.4.3:
+-- A map f : A → B is **weakly constant** if
 --   f x ≡ f y
 -- for all x, y : A.
-
 weakly-constant : (f : A → B) → Set _
 weakly-constant f = ∀ x y → f x ≡ f y 
 
+-- a map f : A → B is constant if its homotopic to a constant function.
 is-constant : (f : A → B) → Set _
 is-constant {B = B} f = Σ[ b ∈ B ] (const b ∼ f)
 
@@ -866,10 +962,35 @@ module _ {A : Set ℓ₁}  {B : Set ℓ₂} (Bₛ : is-set B) where
   kraus-equiv = has-inverse⇒is-equiv (kraus⁻¹ , kraus-inv₁ , λ g → fun-ext _ _ (kraus-inv₂ g))
 
 --------------------------------------------------------------------------------
--- AH> Before I die on this hill, I can clarify that the other direction---
---     that given ((x y : A) → f x ≡ f y), we can produce the Book HoTT 
---     recursor---is accurate provided B is a set.
---     I will still attest that my recursor is the most accurate. 
+-- AH> I'll die on this hill: there's nothing wrong with the (more accurate!)
+--     recursor ∥—∥-rec. It's more general! We can replicate the Kraus theorem
+--     to recover the ∥—∥-rec recursor given the Book HoTT definition, provided
+--     B is a set. 
+--     
+module Stubborn {A : Set ℓ₁} {B : Set ℓ₂} (Bₛ : is-set B) (f : A → B) 
+                (rec : ∀ {ℓ₁} {ℓ₂} {A : Set ℓ₁} {B : Set ℓ₂} (f : A → B) → 
+                  is-prop B → Σ[ h ∈ (∥ A ∥ → B) ] (h ∘ η ∼ f)) where private 
+                    
+  prop-def← : (v : weakly-constant f) → Σ[ h ∈ (∥ A ∥ → B) ] (h ∘ η ∼ f)
+  prop-def← v = fst ∘ h₀ , 
+    (begin 
+      fst ∘ (h₀ ∘ η)       ∼⟨ ap fst ∘ h₁ ⟩  
+      fst ∘ (g Bₛ (f , v)) ∼⟨ (λ x → v x x) ⟩ 
+      f ∎) 
+    where 
+      open HomReasoning
+      fibers-irrelevant₁  : ((b₁ , fib₁) (b₂ , fib₂) : (Σ[ b ∈ B ] (∥ fib f b ∥))) → b₁ ≡ b₂
+      fibers-irrelevant₁  (b₁ , fib₁) (b₂ , fib₂) = 
+        rec {A = fib f b₁} {B = b₁ ≡ b₂} 
+        (λ { (a₁ , eq₁) → rec {A = fib f b₂} {B = b₁ ≡ b₂} 
+        (λ { (a₂ , eq₂) → eq₁ ⁻¹ ○ (v  a₁ a₂ ○ eq₂) }) (Bₛ b₁ b₂) .fst fib₂ }) 
+        (Bₛ b₁ b₂) .fst fib₁ 
 
-prop-def← : (Bₛ : is-set B) (f : A → B) → (v : weakly-constant f) → Σ[ h ∈ (∥ A ∥ → B) ] (h ∘ η ∼ f)
-prop-def← {B = B} {A = A} Bₛ f v = kraus⁻¹ Bₛ (f , v) , Refl
+      fibers-irrelevant : Irrelevant (Σ[ b ∈ B ] (∥ fib f b ∥))
+      fibers-irrelevant (b₁ , fib₁) (b₂ , fib₂) with fibers-irrelevant₁ (b₁ , fib₁) (b₂ , fib₂)
+      ... | refl = ap (b₂ ,_) (α fib₁ fib₂) 
+
+      h′  : Σ[ h ∈ (∥ A ∥ → Σ[ b ∈ B ] (∥ fib f b ∥)) ] (h ∘ η ∼ g Bₛ (f , v)) 
+      h′ = rec {B = Σ[ b ∈ B ] (∥ fib f b ∥)} (g Bₛ (f , v)) (Irrelevant⇒is-prop fibers-irrelevant) 
+      open Σ h′ renaming (proj₁ to h₀ ; proj₂ to h₁)
+      

@@ -184,8 +184,15 @@ propositionalEquivalence {P = P} {Q = Q} prop-p prop-q =
 -- AH> For fun, see "Five stages of accepting constructive mathematics" by Andrej Baujer:
 --     https://www.ams.org/journals/bull/2017-54-03/S0273-0979-2016-01556-4/S0273-0979-2016-01556-4.pdf
 --     In particular, Theorem 2.1. Can you spot why we assert the property 𝐁 is a prop?
-is-subtype : {A : Set} → (A → Set) → Set
+is-subtype : (A → Set ℓ) → Set _ 
 is-subtype {A = A} 𝐁 = ∀ (x : A) → is-prop (𝐁 x)
+
+-- syntax for set comprehensions
+comprehension-syntax : ∀ {a b} → (A : Set a) → (A → Set b) → Set (a ⊔ b)
+comprehension-syntax A B = is-subtype B
+
+syntax comprehension-syntax A B = B ⊆ A
+
 
 -- Lemma 12.2.2
 -- Let A B by types, let e : A ≃ B then we have
@@ -260,6 +267,9 @@ module 12•2•3 {A B : Set ℓ} {f : A → B} where
 -- A type A is said to be a *set* if its identity types are propositions
 is-set : Set ℓ → Set ℓ
 is-set A = ∀ (x y : A) → is-prop (x ≡ y)
+
+is-set-fam : ∀ {A : Set ℓ₁} → (A → Set ℓ₂) → Set _
+is-set-fam {A = A} P = (x : A) → is-set A
 
 -- Example 12.3.2
 -- The type of natural numbers is a set
