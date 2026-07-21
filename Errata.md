@@ -95,3 +95,7 @@ is an equivalence.
 ### Def 17.1.3
 
 I believe the phrase "A type X is said to be 𝒰-small..." should be "A type A is said to be...". That is, the definition is defined in terms of A, not X.
+
+### Example 17.1.4
+
+We write "For any family P of 𝒰-small types over a 𝒰-small type A, the dependent product Π(x : A) B(x) is 𝒰-small". The B should be P.

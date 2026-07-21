@@ -11,6 +11,7 @@ open import Data.Sum
     using (inj₁ ; inj₂ ; [_,_])
     renaming (_⊎_ to _+_) public
 open import Data.Unit using (⊤ ; tt) public
+open import Data.Unit.Polymorphic renaming (⊤ to ⊤ₚ ; tt to ttₚ) public
 open import Data.Empty using (⊥ ; ⊥-elim) public
 open import Data.Fin
   using (Fin ; fromℕ)

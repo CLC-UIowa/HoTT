@@ -123,7 +123,7 @@ module _ where
 
 
   -- This is a simple trick that will "give us" an X in the next proof step.
-  lemmer : {X Y : Set} → {f : X → Y} → (X → is-emb f) → is-emb f
+  lemmer : {X : Set ℓ₁} {Y : Set ℓ₂} → {f : X → Y} → (X → is-emb f) → is-emb f
   lemmer {f = f} m = Embed λ x y → m x .is-emb.ap-equiv x y
 
   -- (iii → iv)

@@ -966,11 +966,11 @@ module _ {A : Set ℓ₁}  {B : Set ℓ₂} (Bₛ : is-set B) where
 
     -- Step #2 
     -- The handler for the point constructor
-    g : A → Σ[ b ∈ B ] (∥ fib f b ∥)
+    private g : A → Σ[ b ∈ B ] (∥ fib f b ∥)
     g x = (f x) , (η (x , refl)) 
 
     -- Step #3
-    h : ∥ A ∥ → Σ[ b ∈ B ] (∥ fib f b ∥)
+    private h : ∥ A ∥ → Σ[ b ∈ B ] (∥ fib f b ∥)
     h = ∥—∥-ind′ g (λ _ → Irrelevant⇒is-prop f⁻¹[B]-Irrelevant) 
 
     -- lastly...
@@ -1032,7 +1032,7 @@ module Stubborn {A : Set ℓ₁} {B : Set ℓ₂} (Bₛ : is-set B) (f : A → B
   prop-def← v = fst ∘ h₀ , 
     (begin 
       fst ∘ (h₀ ∘ η)       ∼⟨ ap fst ∘ h₁ ⟩  
-      fst ∘ (g Bₛ (f , v)) ∼⟨ (λ x → v x x) ⟩ 
+      fst ∘ g′ ∼⟨ (λ x → v x x) ⟩ 
       f ∎) 
     where 
       open HomReasoning
@@ -1047,7 +1047,12 @@ module Stubborn {A : Set ℓ₁} {B : Set ℓ₂} (Bₛ : is-set B) (f : A → B
       fibers-irrelevant (b₁ , fib₁) (b₂ , fib₂) with fibers-irrelevant₁ (b₁ , fib₁) (b₂ , fib₂)
       ... | refl = ap (b₂ ,_) (α fib₁ fib₂) 
 
-      h′  : Σ[ h ∈ (∥ A ∥ → Σ[ b ∈ B ] (∥ fib f b ∥)) ] (h ∘ η ∼ g Bₛ (f , v)) 
-      h′ = rec {B = Σ[ b ∈ B ] (∥ fib f b ∥)} (g Bₛ (f , v)) (Irrelevant⇒is-prop fibers-irrelevant) 
+      -- Step #2 
+      -- The handler for the point constructor
+      g′ : A → Σ[ b ∈ B ] (∥ fib f b ∥)
+      g′ x = (f x) , (η (x , refl)) 
+
+      h′  : Σ[ h ∈ (∥ A ∥ → Σ[ b ∈ B ] (∥ fib f b ∥)) ] (h ∘ η ∼ g′) 
+      h′ = rec {B = Σ[ b ∈ B ] (∥ fib f b ∥)} g′ (Irrelevant⇒is-prop fibers-irrelevant) 
       open Σ h′ renaming (proj₁ to h₀ ; proj₂ to h₁)
       
