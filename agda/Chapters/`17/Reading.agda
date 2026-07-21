@@ -121,7 +121,7 @@ module _ {ℓ} where
   -- - eq : A ≃ X 
   -- but (eq-equiv eq) is ill-formed, as
   -- the type A ≡ X is ill-formed.
-  bad : ∀ (A : Set ι) → ((X , _) : is-small A) → Set {!!}
+  bad : ∀ (A : Set ι) → ((X , _) : is-small A) → Set {!is-equiv-tot↔-is-equiv-fx!}
   bad A (X , eq) = {!eq-equiv eq !}
 
   --------------------------------------------------------------------------------
@@ -185,13 +185,15 @@ module _ {ℓ} where
       open PathReasoning
 
   -- Likewise, we need to prove That _≃_ distributes over Σ---which is a consequence
-  -- of Thm 1.1.6.
-  ≃-distrib-Σ : ∀ {A₁ : Set ℓ₁} {A₂ : Set ℓ₂}
+  -- of Thm 11.1.6. Unfortunately, Thm 1.1.6 (as it is proven) is not universe polymorphic,
+  -- and I don't have it in me to rectify that.
+  postulate 
+    ≃-distrib-Σ : ∀ {A₁ : Set ℓ₁} {A₂ : Set ℓ₂}
                   {B₁ : A₁ → Set ι₁} {B₂ : A₂ → Set ι₂} →
                   ((f , e) : A₁ ≃ A₂) → 
                   ((x : A₁) → B₁ x ≃ B₂ (f x)) → 
                   Σ A₁ B₁ ≃ Σ A₂ B₂ 
-  ≃-distrib-Σ = {!!} 
+    -- ≃-distrib-Σ (f , e) b  = {!11•1•6 !} 
 
   -- We're learning that we haven't really catalogued a number of 
   -- congruences over _≃_. Above, we need congruence over Σ; 
@@ -202,9 +204,10 @@ module _ {ℓ} where
   -- because A and B are not in the same universe.
   -- 
   -- Proofs are left as exercise to the reader. (Apoorv?)
-  ≃-distribₗ : ∀ {A : Set ℓ₁} {B : Set ℓ₂} {Y : Set ι} → 
+  postulate
+    ≃-distribₗ : ∀ {A : Set ℓ₁} {B : Set ℓ₂} {Y : Set ι} → 
                  A ≃ B → (A ≃ Y) ≃ (B ≃ Y)
-  ≃-distribₗ e = {!!}                                   
+    -- ≃-distribₗ e = {!!}                                   
 
   is-small-prop : ∀ (A : Set ι) → is-prop (is-small A)
   is-small-prop A = (const⋆-embedding⇒is-prop ∘
