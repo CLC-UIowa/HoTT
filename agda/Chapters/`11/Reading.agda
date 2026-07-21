@@ -60,7 +60,7 @@ fib-tot-equiv f t = ϕ , (ψ , 𝔾) , (ψ , ℍ)
 -- The following are equivalent
 -- (i) for each x the map f x is an equivalence. We call f a _family of equivalences_
 -- (ii) The map tot (f) : Σ_(x : A) B x -> Σ_(x : A)  C x is an equivalence
-module 11•1•3 {A : Set ℓ} {𝐁 𝐂 : A → Set ℓ} (f : (x : A) → 𝐁 x → 𝐂 x) where
+module 11•1•3 {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} {𝐂 : A → Set ℓ₃} (f : (x : A) → 𝐁 x → 𝐂 x) where
   -- is-contr-map {B = B} f = ∀ (b : B) → is-contr (fib f b)
   -- 10.3.5 is-contr-map-equiv (f : A → B) : is-contr-map f → is-equiv f
   -- is-equiv⇒is-contr-map (f : A → B) : is-equiv f → is-contr-map f
@@ -262,13 +262,13 @@ module 11•1•6 {A B : Set ℓ} {𝐂 : A → Set ℓ} (𝐃 : B → Set ℓ) 
 --     (for any family of types P indexed by x : A and y : B x) has a section
 
 rfl-ident-system :
-  {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ} {P : (x : A) (y : 𝐁 x) → Set ℓ} {a : A}
+  {ℓ₁ ℓ₂ ℓ₃ : Level} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂} {P : (x : A) (y : 𝐁 x) → Set ℓ₃} {a : A}
   (b : 𝐁 a) → ((x : A) (y : 𝐁 x) → P x y) → P a b
 rfl-ident-system {a = a} b h = h a b
 
-is-unary-ident-system : {ℓ : Level} (A : Set ℓ) (𝐁 : A → Set ℓ) {a : A} (b : 𝐁 a) → Set (lsuc ℓ)
-is-unary-ident-system {ℓ = ℓ} A 𝐁 {a = a} b =
-  (P : (x : A) (y : 𝐁 x) → Set ℓ) → section {B = P a b} (rfl-ident-system {𝐁 = 𝐁} {P = P} b)
+is-unary-ident-system : {ℓ₁ ℓ₂ : Level} (A : Set ℓ₁) (𝐁 : A → Set ℓ₂) {a : A} (b : 𝐁 a) → Set (lsuc ℓ₁ ⊔ lsuc ℓ₂)
+is-unary-ident-system {ℓ₁ = ℓ₁} {ℓ₂} A 𝐁 {a = a} b =
+  (P : (x : A) (y : 𝐁 x) → Set (ℓ₁ ⊔ ℓ₂)) → section {B = P a b} (rfl-ident-system {𝐁 = 𝐁} {P = P} b)
 
 ---------------------------------------
 -- Thm 11.2.2 (The fundamental theoerm of identity types)
@@ -282,7 +282,7 @@ contr-path a (center , contraction) = (a , λ x → sym (contraction a) ○ cont
 
 -- AH> A subtlety:
 -- We can define f, with the correct identification, simply:
-module _ (a : A) (B : A → Set ℓ) (b : 𝐁 a) where 
+module _ (a : A) (b : 𝐁 a) where 
     private 
       f : ∀ (x : A) → (a ≡ x) → 𝐁 x 
       f x refl = b 
@@ -293,7 +293,7 @@ module _ (a : A) (B : A → Set ℓ) (b : 𝐁 a) where
 --   > is a family equivalences, even when 𝑓 is not by definition the canonical family of maps,
 --   > and we want to be free to do so.
 
-module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
+module 11•2•2 {ℓ₁ ℓ₂ : Level} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂}
               (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) where
   -- (i)   The family of maps f is a family of equivalences
   -- (ii)  The total space Σ_{x : A} B x is contractible
@@ -338,7 +338,7 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
 
   open 9-4
 
-  ii↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system {ℓ = ℓ} A 𝐁 b
+  ii↔iii : is-contr (Σ A 𝐁) ↔ is-unary-ident-system A 𝐁 b
   ii↔iii = forward , backward
     where -- (left-inv (tot-prf (a , b)))
       ev-pair : ∀ {P : (x : A) (y : 𝐁 x) → Set ℓ} → ((t : Σ A 𝐁) → P (fst t) (snd t)) → (x : A) → (y : 𝐁 x) → P x y
@@ -350,35 +350,31 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
       φ : ∀ {P : (x : A) (y : 𝐁 x) → Set ℓ} → ((x : A) → (y : 𝐁 x) → P x y) → P a b
       φ h = h a b
 
-      comm : ∀ {P} → ev-pt[a,b] {P = P} ∼ φ ∘ ev-pair
+      comm : ∀ {P : (x : A) (y : 𝐁 x) → Set ℓ} → ev-pt[a,b] {P = P} ∼ φ ∘ ev-pair
       comm = refl-∼
 
-      ev-pair-sec : ∀ {P} → section (ev-pair {P = P})
+      ev-pair-sec : ∀ {P : (x : A) (y : 𝐁 x) → Set ℓ} → section (ev-pair {P = P})
       ev-pair-sec = (λ f t → f (fst t) (snd t)) , refl-∼
 
-      9-4a-inst : ∀ {P} → section (ev-pt[a,b] {P = P}) ↔ section φ
+      9-4a-inst : ∀ {P : (x : A) (y : 𝐁 x) → Set ℓ} → section (ev-pt[a,b] {P = P}) ↔ section φ
       9-4a-inst = 9-4a.f-section↔g-section ev-pt[a,b] ev-pair φ comm ev-pair-sec
 
-      Contr⇒SI-inst = Contr⇒SI.SI {ℓ₁ = ℓ} {A = Σ A 𝐁}
+      Contr⇒SI-inst = Contr⇒SI.SI {ℓ₁ = ℓ₂} {A = Σ A 𝐁}
       SI⇒Contr-inst = SI⇒Contr.Contr {A = Σ A 𝐁}
 
       forward : is-contr (Σ A 𝐁) → is-unary-ident-system A 𝐁 {a = a} b
-      forward contr P =
-        _↔_.to 9-4a-inst
-          ((snd
-            $ _↔_.from section↔SI
-            $ Contr⇒SI-inst (contr-path (a , b) contr) -- We don't get to choose the center
-              {B = λ a,b → P (fst a,b) (snd a,b)}))
+      forward contr P = 9-4a-inst .to (snd $ section↔SI .from (Contr⇒SI.SI (contr-path (a , b) contr) {uncurry P} )) 
 
       -- Now just do the same thing, but backward
       backward : is-unary-ident-system A 𝐁 {a = a} b → is-contr (Σ A 𝐁)
       backward hyp =
-        SI⇒Contr-inst
+        SI⇒Contr.Contr
           (_↔_.to (section↔SI)
             ( (a , b) ,
               λ {B = P'} →
-                _↔_.from 9-4a-inst
-                  (hyp λ x y → P' (x , y))))
+                (9-4a-inst {P = λ a b → P' (a , b)}) .from ((hyp λ x y → P' (x , y)))))
+        -- _↔_.from 9-4a-inst
+        --          (hyp λ x y → P' (x , y))))
 
   -- for convenience
   i↔iii : (∀ (x : A) → is-equiv (f x)) ↔ is-unary-ident-system A 𝐁 b
@@ -391,16 +387,16 @@ module 11•2•2 {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
 -- 3. Project from that record the property you need
 
 data IdFundProof
-     {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
-     (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) : Set (lsuc ℓ) where
+     {ℓ₁ ℓ₂ : Level} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂}
+     (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) : Set (lsuc ℓ₁ ⊔ lsuc ℓ₂) where
      
      familyEquivalence : (∀ (x : A) → is-equiv (f x)) → IdFundProof a b f
      spaceContractible : is-contr (Σ[ x ∈ A ] (𝐁 x)) → IdFundProof a b f
      idSystem : is-unary-ident-system A 𝐁 b → IdFundProof a b f
 
 record IdFund
-       {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
-     (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x): Set (lsuc ℓ) where
+       {ℓ₁ ℓ₂ : Level} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂}
+     (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x): Set (lsuc ℓ₁ ⊔ lsuc ℓ₂) where
      
      field
        family-equivalence : (∀ (x : A) → is-equiv (f x))
@@ -409,7 +405,7 @@ record IdFund
 
 open IdFund public 
  
-module _ {ℓ : Level} {A : Set ℓ} {𝐁 : A → Set ℓ}
+module _ {ℓ₁ ℓ₂ : Level} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂}
      (a : A) (b : 𝐁 a) (f : (x : A) → (a ≡ x) → 𝐁 x) where
 
      open 11•2•2 a b f

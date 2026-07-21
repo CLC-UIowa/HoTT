@@ -47,7 +47,9 @@ module 10-2 where
   --   f-retr b ≡ f-retr (f a).
   -- Finally, since f is a retraction with f-retr being the associated pseudo-inverse, we have
   --   f-retr (f a) = a. ∎
-  retract-is-contractible : {A : Set ℓ} {B : Set ℓ} → (f : A → B) → (retraction {A = A} {B = B} f) → is-contr B → is-contr A
+  retract-is-contractible : ∀ {ℓ₁ ℓ₂} → 
+                              {A : Set ℓ₁} {B : Set ℓ₂} → 
+                              (f : A → B) → (retraction {A = A} {B = B} f) → is-contr B → is-contr A
   retract-is-contractible {A = A} {B = B} f (f-retr , f-retr-h) (b , eq-b) = center , contraction
     where
       center : A
@@ -277,7 +279,7 @@ module 10-3 where
       f-retr : retraction f
       f-retr =  h-ret→f-ret (snd is-equiv-const-tt-A)
 
-  lem : {A B : Set ℓ} → (f : A → B) → (eq-f : is-equiv f) → retraction (`sec eq-f)
+  lem : ∀ {ℓ₁ ℓ₂} → {A : Set ℓ₁} {B : Set ℓ₂} → (f : A → B) → (eq-f : is-equiv f) → retraction (`sec eq-f)
   lem f eq-f = f , (eq-f .fst .snd)
 
   {-
@@ -294,7 +296,9 @@ module 10-3 where
   -- Exercise 10.2 allows us to conclude that B is contractible.
   -}
 
-  contr-domain⇒contr-codomain : {A B : Set ℓ}(f : A → B) →  is-contr A → is-equiv f → is-contr B
+  contr-domain⇒contr-codomain : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : Set ℓ₂}
+                                 (f : A → B) →  
+                                 is-contr A → is-equiv f → is-contr B
   contr-domain⇒contr-codomain {A = A} {B = B} f ctr-A eq-f = 10-2.retract-is-contractible (`sec eq-f) (lem f eq-f) ctr-A
   
   {-
@@ -304,7 +308,8 @@ module 10-3 where
   -- Use exercise 10.2 to conclude that A is contractible.
   -}
 
-  contr-codomain⇒contr-domain : {A B : Set ℓ}(f : A → B) →  is-contr B → is-equiv f → is-contr A
+  contr-codomain⇒contr-domain : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : Set ℓ₂}
+                                   (f : A → B) →  is-contr B → is-equiv f → is-contr A
   contr-codomain⇒contr-domain {A = A} {B = B} f ctr-B eq-f = 10-2.retract-is-contractible f (snd eq-f) ctr-B
 
 open 10-3 hiding (lem) public 

@@ -74,25 +74,25 @@ thm-10∙1∙4 {A = A} a = (a , refl) , C
 --   - ind-singₐ : 𝐁 a → ∀ (x : A) → B x
 --   - comp-singₐ : ev-pt ∘ ind-singₐ ∼ id
 
-record SingletonInduction {ℓ : Level} (A : Set ℓ) : Set (lsuc ℓ) where
+record SingletonInduction {ℓ₁ ℓ₂ : Level} (A : Set ℓ₁) : Set (ℓ₁ ⊔ lsuc ℓ₂) where
   constructor SingInd
   field
     `a : A
 
   -- ev-pt is the converse of an induction principle for A
-  ev-pt : {B : A → Set ℓ} → (∀ (x : A) → B x) → B `a
+  ev-pt : {B : A → Set ℓ₂} → (∀ (x : A) → B x) → B `a
   ev-pt f = f `a
 
   field
-    ind-sing : {B : A → Set ℓ} → B `a → (∀ (x : A) → B x)
-    comp-sing : {B : A → Set ℓ} → ev-pt {B = B} ∘ ind-sing ∼ id
+    ind-sing : {B : A → Set ℓ₂} → B `a → (∀ (x : A) → B x)
+    comp-sing : {B : A → Set ℓ₂} → ev-pt {B = B} ∘ ind-sing ∼ id
 
 section↔SI :
-  {ℓ : Level} {A : Set ℓ}
-  → (Σ[ a ∈ A ] ({B : A → Set ℓ} → section (λ (f : (x : A) → B x) → f a))) ↔ SingletonInduction A
-section↔SI {ℓ = ℓ} {A = A} = forward , backward
+  {ℓ₁ ℓ₂ : Level} {A : Set ℓ₁}
+  → (Σ[ a ∈ A ] ({B : A → Set ℓ₂} → section (λ (f : (x : A) → B x) → f a))) ↔ SingletonInduction A
+section↔SI {ℓ₁ = ℓ₁} {ℓ₂} {A = A} = forward , backward
   where
-    forward : Σ[ a ∈ A ] ({B : A → Set ℓ} → section (λ (f : (x : A) → B x) → f a)) → SingletonInduction A
+    forward : Σ[ a ∈ A ] ({B : A → Set ℓ₂} → section (λ (f : (x : A) → B x) → f a)) → SingletonInduction A
     forward (a , sec) = SingInd a (λ {B = B} → fst (sec {B = B})) λ {B = B} → snd (sec {B = B})
 
     backward : SingletonInduction A → (Σ[ a ∈ A ] ({B : A → Set ℓ} → section (λ (f : (x : A) → B x) → f a)))
@@ -104,7 +104,7 @@ section↔SI {ℓ = ℓ} {A = A} = forward , backward
 ind⊤ : {B : ⊤ → Set ℓ} → B tt → (∀ (x : ⊤) → B x)
 ind⊤ btt tt = btt
 
-⊤-SI : {B : ⊤ → Set ℓ} → SingletonInduction ⊤
+⊤-SI : {B : ⊤ → Set ℓ} → SingletonInduction {ℓ₁ = lzero} {ℓ} ⊤
 ⊤-SI = SingInd tt ind⊤ (refl-∼)
 
 -- Theorem 10.2.3: The type A is contractible iff it satisfies
@@ -126,7 +126,7 @@ module Contr⇒SI {ℓ ℓ₁ : Level} {A : Set ℓ} (cntr : is-contr A) where
   p = left-inv (C a)
 
   -- Pfft
-  SI : {B : A → Set ℓ₁}  → SingletonInduction A
+  SI : {B : A → Set ℓ₁}  → SingletonInduction {ℓ₂ = ℓ₁} A
   SI .`a = a
   SI .ind-sing {B = B} b x = tr B (C′ x) b
   SI .comp-sing {B = B} x = begin
