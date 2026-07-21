@@ -89,3 +89,9 @@ that the witness to
 ```
 
 is an equivalence.
+
+## Chapter 17
+ 
+### Def 17.1.3
+
+I believe the phrase "A type X is said to be 𝒰-small..." should be "A type A is said to be...". That is, the definition is defined in terms of A, not X.
