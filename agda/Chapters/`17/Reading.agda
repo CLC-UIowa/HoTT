@@ -50,7 +50,7 @@ module _ {ℓ} where
                  P A refl-≃  
     equiv-eval f = f A refl-≃
 
-    EquivInduction : Set _
+    EquivInduction : Set (lsuc ℓ ⊔ ℓ₃)
     EquivInduction = section equiv-eval
 
   -- That these three are equivalent follows from the fundamental theorem of identity types
@@ -68,7 +68,7 @@ module _ {ℓ} where
     𝒰₁ = Set (lsuc ℓ)
 
   postulate 
-    -- AH> We are also postulating that all universes
+    -- AH> We are postulating that all universes
     --     (Set ℓ), for any ℓ, are *univalent*.
     univalence : Univalence {ℓ} 
 
@@ -109,7 +109,7 @@ module _ {ℓ} where
                    (f : A → B) → Set _
   is-small-map {B = B} f = ∀ (b : B) → is-small (fib f b)
 
-  -- AH> N.b. this will be problematic with univalence.
+  -- AH> N.b. We have to be very careful with universes.
   -- The relation 
   --   _≃_ : Set ℓ₁ → Set ℓ₂ → Set _
   -- relates different universes; the relation 
@@ -224,4 +224,76 @@ module _ {ℓ} where
         where
           is-contr-is-small-X : is-contr (is-small X)
           is-contr-is-small-X = equiv-contractible X 
+  --------------------------------------------------------------------------------
+  -- Corollary 17.1.6: Consider a univalent universe 𝒰 and univalent universe 𝒱 
+  -- containing all types in 𝒰. Then the universe inclusion i : 𝒰 → 𝒱 is an embedding.
+  -- 
+  -- AH> I don't know of a good way to formalize that 𝒾 : 𝒰 → 𝒱 is an inclusion.
+  --     Ch. 6 assumes a cumulative hierarchy of universes:
+  --       X : 𝒰 ⊢ 𝒯(X) : 𝒰' 
+  --     i.e, that if X : Set ℓ then X : Set (lsuc ℓ). 
+  --     We don't have cumulativity to play with, really. (Enabling it causes Agda to loop.)
+  --     We can fuck with intensional cumulativity---that is, an inclusion operator
+  --       𝒾 : Set ℓ → Set (lsuc ℓ)
+  --     where lift : A → 𝒾 A is an equivalence.
+
+  data 𝒾 (A : Set ℓ) : Set (lsuc ℓ) where 
+    lift : (x : A) → 𝒾 A 
+  
+  unlift : 𝒾 A → A 
+  unlift (lift x) = x 
+
+  𝒾so : ∀ {ℓ} → is-equiv (lift {ℓ})
+  𝒾so = has-inverse⇒is-equiv (unlift , (λ { (lift x) → refl }) , Refl)
+
+  module _ where 
+    𝒱 = Set (lsuc ℓ) 
+    
+    -- "Since 𝒱 is assumed to be univalent, it follows that 
+    --   fib 𝒾 A ≃ is-small A". Why?
+    --     fib 𝒾 A 
+    --   ≡ Σ[ X ∈ 𝒰 ] (𝒾 X ≡ A) 
+    -- and 
+    --     is-small A 
+    --   ≡ Σ[ X ∈ 𝒰 ] (A ≃ X) 
+    -- The proof is that, by ≃-distrib-Σ, we need only prove second
+    -- components are equivalent. Then:
+    --   (𝒾 X ≡ A) 
+    --   {by univalence}
+    -- ≃ (𝒾 X ≃ A)
+    --    {as 𝒾 X ≃ X}
+    -- ≃ (X ≃ A) 
+    --    {by symmetry}
+    -- ≃ (A ≃ X)
+
+    fib≃is-small : (A : 𝒱) → fib 𝒾 A ≃ is-small A
+    fib≃is-small A = ≃-distrib-Σ refl-≃ s
+      where
+        𝒾-eqv : (X : 𝒰) → X ≃ 𝒾 X
+        𝒾-eqv X = (lift , 𝒾so)       
+
+        -- This would be prettier with ≃-reasoning, which isn't level-heterogeneous!
+        s : (X : 𝒰) → (𝒾 X ≡ A) ≃ (A ≃ X)
+        s X = trans-≃ 
+          (equiv-eq , univalence) 
+          (trans-≃ 
+            (≃-distribₗ (sym-≃ (𝒾-eqv X))) 
+            -- This is just simple symmetry at work,
+            -- but do I need to prove it separately?
+            {! sym-≃   !}) 
+          where 
+            open ≃-Reasoning
+    
+  --------------------------------------------------------------------------------
+  -- § 17.2 Propositional Extensionality
+
+  --------------------------------------------------------------------------------
+  -- Proposition 17.2.1: Let P be a family of propositions over 𝒰. Then
+  -- the family of maps
+  --   equiv-eq : A ≡ B → pr₁ A ≃ pr₁ B 
+  -- where A , B : Σ[ X ∈ 𝒰 ] (P X) given by equiv-eq refl = refl-≃ is an equivalence.
+
+  module _ (P : 𝒰 → Set ℓ) (prop-P : ∀ (X : 𝒰) → is-prop (P X)) where
+    equiv-eq′ : ∀ {A B : Σ[ X ∈ 𝒰 ] (P X)} → A ≡ B → fst A ≃ fst B 
+    equiv-eq′ refl = refl-≃   
 
