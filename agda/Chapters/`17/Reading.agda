@@ -20,6 +20,106 @@ private
     𝐁 : A → Set ℓ
 
 --------------------------------------------------------------------------------
+-- Type equivalence as a groupoid
+-- 
+-- AH> Before going any further, there are a handful of properties about 
+-- type equivalence that will prove necessary.
+
+module _ where 
+  open import Relation.Binary.PropositionalEquality.Properties using (isEquivalence)  
+  
+  section-is-contr : (f : A → B) → retraction f → is-contr (section f)
+  section-is-contr f retr = {!   !} 
+  
+  -- Being an equivalence is a prop.
+  -- A better proof route:
+  -- 1. Show that section f and retraction f are contractible:
+  --    - retraction f → is-contr (section f)
+  --    - section f → is-contr (retraction f)
+  --    These proofs follow from how post-composition (f ∘_) is an equivalence
+  --    if f is an equivalence.
+  -- 2. Therefore is-equiv f := section f × retraction f is contractible,
+  --    as the product of contractible types is contractible.
+  -- 3. Therefore is-equiv f is a prop. 
+  is-prop-is-equiv : (f : A → B) → is-prop (is-equiv f)
+  is-prop-is-equiv {A = A} {B = B} f = {!   !} 
+    -- Irrelevant⇒is-prop irrelevant-is-equiv
+    -- where 
+    --   eq-sections : (σ₁ σ₂ : B → A) (sec₁ : f ∘ σ₁ ∼ id) (sec₂ : f ∘ σ₂ ∼ id)
+    --                 (ret₁ : σ₁ ∘ f ∼ id) → 
+    --                 σ₁ ∼ σ₂ 
+    --   eq-sections σ₁ σ₂ sec₁ sec₂ ret₁ = begin 
+    --         σ₁          ∼⟨ ap σ₁ ∘ sec₁ ⁻¹ ⟩ 
+    --         σ₁ ∘ f ∘ σ₁ ∼⟨ σ₁ ·ₗ (sec₁ ○ (sec₂ ⁻¹)) ⟩ 
+    --         σ₁ ∘ f ∘ σ₂ ∼⟨ ret₁ ·ᵣ σ₂ ⟩ 
+    --         σ₂ ∎
+    --     where open HomReasoning 
+
+    --   special-p : ∀ {y z : B} → ((σ , sec) : section f) → (p : y ≡ z) → p ≡ sec y ⁻¹ ○ ap (f ∘ σ) p ○ sec z
+    --   special-p {y = y} {z} (σ , sec) refl = sym (begin
+    --     ((sec y ⁻¹) ○ refl) ○ (sec y) ≡⟨ (right-identity (sec y ⁻¹) ⋆ₗ (sec y)) ⟩ 
+    --     sec y ⁻¹ ○ sec y ≡⟨ left-inv (sec y) ⟩ 
+    --     refl ∎) 
+    --     where open PathReasoning
+
+    --   irrelevant-is-equiv : Irrelevant (is-equiv f) 
+    --   irrelevant-is-equiv eqv₁@((σ₁ , sec₁) , ρ₁ , ret₁) eqv₂@((σ₂ , sec₂) , ρ₂ , ret₂) 
+    --     with fun-ext _ _ (is-equiv⇒equalSplits eqv₁) 
+    --        | fun-ext _ _ (is-equiv⇒equalSplits eqv₂)
+    --   ... | refl | refl with fun-ext _ _ (eq-sections σ₁ σ₂ sec₁ sec₂ ret₁)
+    --   ... | refl   = ap₂ _,_ (ap (σ₁ ,_) (fun-ext _ _ (λ x → special-p (σ₁ , sec₁) (sec₁ x) ○ {! (special-p (σ₁ , sec₁) (sec₁ x) ⁻¹)  !}))) {!   !} 
+
+  -- Because (is-equiv f) is a prop, it's sufficent to compare
+  -- just the maps of given equivalences.
+  eq-≃ : {e₁ e₂ : A ≃ B} → (fst e₁ ≡ fst e₂) → e₁ ≡ e₂ 
+  eq-≃ {e₁ = (f , eqv₁)} {(.f , eqv₂)} refl = ap (f ,_) (is-prop⇒Irrelevant (is-prop-is-equiv f) eqv₁ eqv₂) 
+
+  sym-≃-involutive : ∀ {A : Set ℓ₁} {B : Set ℓ₂} → sym-≃ ∘ (sym-≃ {A = A} {B = B}) ∼ id
+  sym-≃-involutive x = eq-≃ refl 
+  
+  sym-≃² : ∀ {A : Set ℓ₁} {B : Set ℓ₂} → (A ≃ B) ≃ (B ≃ A) 
+  sym-≃² = sym-≃ , has-inverse⇒is-equiv (sym-≃ , sym-≃-involutive , sym-≃-involutive) 
+
+
+  -- _≃_ is an equivalence relation
+  ≃-equiv : ∀ {A : Set ℓ₁} → IsEquivalence {A = Set ℓ₁} (_≃_)
+  ≃-equiv = record { refl = refl-≃ ; sym = sym-≃ ; trans = trans-≃ }
+
+
+  open GroupoidSyntax
+  EquivGroupoid : ∀ {A : Set ℓ} → GroupoidSyntax {A = Set ℓ} _≃_
+  EquivGroupoid .Refl = refl-≃
+  EquivGroupoid ⁻¹ = sym-≃
+  EquivGroupoid ._○_ = trans-≃
+  EquivGroupoid ._~_ = _≡_
+  EquivGroupoid .eqv = isEquivalence
+  EquivGroupoid ._⋆_ refl refl = refl 
+  EquivGroupoid .left-inv = {!   !}
+  EquivGroupoid .right-inv = {!   !}
+  EquivGroupoid .involution = sym-≃-involutive
+  EquivGroupoid .left-identity = {!   !}
+  EquivGroupoid .right-identity = {!   !}
+  EquivGroupoid .assoc = {!   !} 
+
+  -- instance
+  --   HtpyGroupoid : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} → GroupoidSyntax {A = (x : A) → B x} (_∼_)
+  --   HtpyGroupoid = record {
+  --     Refl = refl-∼ ;
+  --     _⁻¹ = sym-∼ ;
+  --     _○_ = trans-∼ ;
+  --     _~_ = _∼_ ;
+  --     eqv = ∼-equiv ;
+  --     _⋆_ = λ p∼h q∼k x → _⋆_ {{PathGroupoid}} (p∼h x) (q∼k x) ;
+  --     left-inv = λ H → left-inv {{PathGroupoid}} ∘ H ;
+  --     right-inv = λ H → right-inv {{PathGroupoid}} ∘ H ;
+  --     involution = λ p x → involution {{PathGroupoid}} (p x) ;
+  --     left-identity = λ _ _ → refl  ;
+  --     right-identity = λ H → right-identity {{PathGroupoid}} ∘ H ;
+  --     assoc = λ { H K L x → assoc {{PathGroupoid}} (H x) (K x) (L x) }
+  --     }
+
+
+--------------------------------------------------------------------------------
 -- Ch. 17 The Univalence Axiom
   
 --------------------------------------------------------------------------------
@@ -76,6 +176,11 @@ module _ {ℓ} where
   eq-equiv : ∀ {A B : 𝒰} → A ≃ B → A ≡ B
   eq-equiv = `sec univalence  
 
+
+  -- When we want to explicitly specify the equivalence
+  univ : ∀ (A B : 𝒰) → (A ≡ B) ≃ (A ≃ B) 
+  univ A B = (equiv-eq , univalence)
+
   -- A proof we can use to derive the rest of the equivalent forms
   univ-proof : ∀ {A : 𝒰} → IdFundProof {𝐁 = A ≃_} A refl-≃ (λ B → equiv-eq {A = A} {B})
   univ-proof = familyEquivalence λ _ → univalence
@@ -121,7 +226,7 @@ module _ {ℓ} where
   -- - eq : A ≃ X 
   -- but (eq-equiv eq) is ill-formed, as
   -- the type A ≡ X is ill-formed.
-  bad : ∀ (A : Set ι) → ((X , _) : is-small A) → Set {!is-equiv-tot↔-is-equiv-fx!}
+  bad : ∀ (A : Set ι) → ((X , _) : is-small A) → Set {! !}
   bad A (X , eq) = {!eq-equiv eq !}
 
   --------------------------------------------------------------------------------
@@ -207,7 +312,10 @@ module _ {ℓ} where
   postulate
     ≃-distribₗ : ∀ {A : Set ℓ₁} {B : Set ℓ₂} {Y : Set ι} → 
                  A ≃ B → (A ≃ Y) ≃ (B ≃ Y)
-    -- ≃-distribₗ e = {!!}                                   
+    -- ≃-distribₗ e = {!!}    
+
+  -- Some more definitions 
+                                 
 
   is-small-prop : ∀ (A : Set ι) → is-prop (is-small A)
   is-small-prop A = (const⋆-embedding⇒is-prop ∘
@@ -250,7 +358,7 @@ module _ {ℓ} where
     𝒱 = Set (lsuc ℓ) 
     
     -- "Since 𝒱 is assumed to be univalent, it follows that 
-    --   fib 𝒾 A ≃ is-small A". Why?
+    --   fib 𝒾 A ≃ is-small A". Observe that
     --     fib 𝒾 A 
     --   ≡ Σ[ X ∈ 𝒰 ] (𝒾 X ≡ A) 
     -- and 
@@ -272,17 +380,30 @@ module _ {ℓ} where
         𝒾-eqv : (X : 𝒰) → X ≃ 𝒾 X
         𝒾-eqv X = (lift , 𝒾so)       
 
-        -- This would be prettier with ≃-reasoning, which isn't level-heterogeneous!
         s : (X : 𝒰) → (𝒾 X ≡ A) ≃ (A ≃ X)
-        s X = trans-≃ 
-          (equiv-eq , univalence) 
-          (trans-≃ 
-            (≃-distribₗ (sym-≃ (𝒾-eqv X))) 
-            -- This is just simple symmetry at work,
-            -- but do I need to prove it separately?
-            {! sym-≃   !}) 
+        s X = 
+          (𝒾 X ≡ A) ≃⟨ univ (𝒾 X) A ⟩ 
+          (𝒾 X ≃ A) ≃⟨ ≃-distribₗ (sym-≃ (𝒾-eqv X)) ⟩ 
+          (X ≃ A)   ≃⟨ sym-≃² ⟩
+          (A ≃ X) ∎
           where 
             open ≃-Reasoning
+    
+    --  Equivalent types are the same k-types; since (is-small A) is a prop (proven above),
+    -- we know that fib 𝒾 A is a prop.
+    𝒾-prop-fibers : (A : 𝒱) → is-prop (fib 𝒾 A) 
+    𝒾-prop-fibers A = ≃-is-prop (sym-≃ (fib≃is-small A)) (is-small-prop A) 
+    
+    -- AH> This is Theorem 12.2.3, which isn't proven over heterogeneous universes.
+    --     I am done refactoring levels in old theorems!
+    postulate 
+      prop-fibers⇒is-emb : ∀ {A : Set ℓ₁} {B : Set ℓ₂} (f : A → B) → 
+                              ((b : B) → is-prop (fib f b)) → is-emb f
+    
+    -- Having propositional fibers is equivalent to being an embedding,
+    -- completing the proof.
+    𝒾-emb : is-emb 𝒾 
+    𝒾-emb = prop-fibers⇒is-emb 𝒾 𝒾-prop-fibers  
     
   --------------------------------------------------------------------------------
   -- § 17.2 Propositional Extensionality

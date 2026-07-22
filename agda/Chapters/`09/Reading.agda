@@ -243,7 +243,7 @@ refl-≃ = id , ((id , refl-∼) , (id , λ x → refl))
 --------------------------------------------------------------------------------
 -- Equational reasoning over ≃ equivalence
 
-module ≃-Reasoning {ℓ₁} where
+module ≃-Reasoning where
   -- Usage:
   -- eq : A ≃ B
   -- eq = begin
@@ -251,9 +251,9 @@ module ≃-Reasoning {ℓ₁} where
   --   ...
   --   ?   ≃⟨ ? ⟩
   --   bar ∎
-  open import Relation.Binary.Reasoning.Syntax using (module ≃-syntax ; module begin-syntax ; module end-syntax)
-  open import Relation.Binary.Reasoning.Base.Single (_≃_ {ℓ₁ = ℓ₁})
-    refl-≃ 
-    trans-≃ renaming (∼-go to ≃-go) public
-  open ≃-syntax _IsRelatedTo_ _IsRelatedTo_ ≃-go sym-≃ public
+  infixr 1 _≃⟨_⟩_
+  _≃⟨_⟩_ : (A : Set ℓ₁) {B : Set ℓ₂} {C : Set ℓ₃} → A ≃ B → B ≃ C → A ≃ C
+  _≃⟨_⟩_ A = trans-≃
 
+  _∎ : ∀ (A : Set ℓ) → A ≃ A 
+  _ ∎ = refl-≃

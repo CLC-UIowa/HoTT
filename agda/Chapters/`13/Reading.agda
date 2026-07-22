@@ -265,7 +265,7 @@ module _ where
   open ≃-Reasoning
   fst-sec : 
     section (fst {A = A} {B = 𝐁}) ≃ (∀ (x : A) → 𝐁 x)
-  fst-sec {A = A} {𝐁 = 𝐁} = begin 
+  fst-sec {A = A} {𝐁 = 𝐁} = 
     -- AH> I don't follow how this step follows from 13.2.1.
     -- I can't be arsed with this proof.
     section fst ≃⟨ ({!    !} , {!   !}) ⟩ 

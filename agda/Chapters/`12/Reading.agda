@@ -214,7 +214,7 @@ syntax comprehension-syntax A B = B ⊆ A
 -- The first argument follows from A being a prop; the second follows
 -- from f⁻¹ being an embedding.
 -- 
-≃-is-prop : ∀ {A B : Set ℓ} → (A ≃ B) → is-prop A → is-prop B
+≃-is-prop : ∀ {A : Set ℓ₁} {B : Set ℓ₂} → (A ≃ B) → is-prop A → is-prop B
 ≃-is-prop eqv@(f , (f⁻¹ , sec) , retr) isProp x y  = 
   10-3.contr-codomain⇒contr-domain (ap f⁻¹) (isProp (f⁻¹ x) (f⁻¹ y)) (ap-equiv x y) 
   where
@@ -254,7 +254,7 @@ module 12•2•3 {A B : Set ℓ} {f : A → B} where
   ii→i : ((b : B) → is-prop (fib f b)) → is-emb f
   ii→i p = Embed (λ x y → 10-3.contr-domains⇒is-equiv (ap f) {!!} {! p (f y)!})
 
-
+--------------------------------------------------------------------------------  
 -- Corollary 12.2.4: Consider a family B of types over A. The following are equivalent
 -- (i) The map pr₁ : Σ_{x : A} B x → A is an embedding
 -- (ii) The type B x is a proposition for each x : A

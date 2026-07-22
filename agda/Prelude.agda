@@ -52,7 +52,7 @@ sym-↔ ( to , from ) = from , to
 
 
 
-record GroupoidSyntax {ℓ} {A : Set ℓ} (_≈_ : A → A → Set ℓ)  : Set (lsuc ℓ)  where
+record GroupoidSyntax {ℓ₁} {ℓ₂} {A : Set ℓ₁} (_≈_ : A → A → Set ℓ₂)  : Set (ℓ₁ ⊔ lsuc ℓ₂)  where
   infixl 30 _⁻¹
   infixl 25 _○_
   field
@@ -63,7 +63,7 @@ record GroupoidSyntax {ℓ} {A : Set ℓ} (_≈_ : A → A → Set ℓ)  : Set (
     -- The type of paths between paths. This abstraction is
     -- unfortunately necessary if we want to also
     -- abstract over groupoid properties.
-    _~_ : ∀ {x y : A} → x ≈ y → x ≈ y → Set ℓ
+    _~_ : ∀ {x y : A} → x ≈ y → x ≈ y → Set ℓ₂
     eqv : ∀ {x y} → IsEquivalence (_~_ {x} {y})
 
     -- Congruence
