@@ -81,44 +81,6 @@ module _ where
   sym-≃² = sym-≃ , has-inverse⇒is-equiv (sym-≃ , sym-≃-involutive , sym-≃-involutive) 
 
 
-  -- _≃_ is an equivalence relation
-  ≃-equiv : ∀ {A : Set ℓ₁} → IsEquivalence {A = Set ℓ₁} (_≃_)
-  ≃-equiv = record { refl = refl-≃ ; sym = sym-≃ ; trans = trans-≃ }
-
-
-  open GroupoidSyntax
-  EquivGroupoid : ∀ {A : Set ℓ} → GroupoidSyntax {A = Set ℓ} _≃_
-  EquivGroupoid .Refl = refl-≃
-  EquivGroupoid ⁻¹ = sym-≃
-  EquivGroupoid ._○_ = trans-≃
-  EquivGroupoid ._~_ = _≡_
-  EquivGroupoid .eqv = isEquivalence
-  EquivGroupoid ._⋆_ refl refl = refl 
-  EquivGroupoid .left-inv = {!   !}
-  EquivGroupoid .right-inv = {!   !}
-  EquivGroupoid .involution = sym-≃-involutive
-  EquivGroupoid .left-identity = {!   !}
-  EquivGroupoid .right-identity = {!   !}
-  EquivGroupoid .assoc = {!   !} 
-
-  -- instance
-  --   HtpyGroupoid : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} → GroupoidSyntax {A = (x : A) → B x} (_∼_)
-  --   HtpyGroupoid = record {
-  --     Refl = refl-∼ ;
-  --     _⁻¹ = sym-∼ ;
-  --     _○_ = trans-∼ ;
-  --     _~_ = _∼_ ;
-  --     eqv = ∼-equiv ;
-  --     _⋆_ = λ p∼h q∼k x → _⋆_ {{PathGroupoid}} (p∼h x) (q∼k x) ;
-  --     left-inv = λ H → left-inv {{PathGroupoid}} ∘ H ;
-  --     right-inv = λ H → right-inv {{PathGroupoid}} ∘ H ;
-  --     involution = λ p x → involution {{PathGroupoid}} (p x) ;
-  --     left-identity = λ _ _ → refl  ;
-  --     right-identity = λ H → right-identity {{PathGroupoid}} ∘ H ;
-  --     assoc = λ { H K L x → assoc {{PathGroupoid}} (H x) (K x) (L x) }
-  --     }
-
-
 --------------------------------------------------------------------------------
 -- Ch. 17 The Univalence Axiom
   

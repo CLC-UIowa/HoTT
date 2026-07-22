@@ -240,6 +240,11 @@ sym-≃ (f , is-eq-f) with is-equiv⇒has-inverse is-eq-f
 refl-≃ : A ≃ A
 refl-≃ = id , ((id , refl-∼) , (id , λ x → refl))
 
+-- _≃_ is an equivalence relation
+≃-equiv : ∀ {A : Set ℓ₁} → IsEquivalence {A = Set ℓ₁} (_≃_)
+≃-equiv = record { refl = refl-≃ ; sym = sym-≃ ; trans = trans-≃ }
+
+
 --------------------------------------------------------------------------------
 -- Equational reasoning over ≃ equivalence
 
