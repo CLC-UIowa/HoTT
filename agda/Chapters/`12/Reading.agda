@@ -103,7 +103,7 @@ module _ where
   --     it's inhabited! So we just take the center of contraction.
   is-prop⇒Irrelevant : is-prop A → Irrelevant A
   is-prop⇒Irrelevant isProp x y = isProp x y .center
-
+  
   -- AH> Irrelevant types satisfy the UIP (defined in Prelude)
   -- Irrelevant⇒UIP : Irrelevant A → UIP A
 

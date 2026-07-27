@@ -179,33 +179,18 @@ is-contr-map {B = B} f = ∀ (b : B) → is-contr (fib f b)
 
 -- Thm 10.3.5: Any contractible map is an equivalence
 is-contr-map-equiv : ∀ {f : A → B} → is-contr-map f → is-equiv f
-is-contr-map-equiv {A = A} {B = B} {f} is-contr-map-f = sec-is-contr-map-f , retr-is-contr-map-f
-  where
-  g̅ : B → A
-  g̅ y with is-contr-map-f y
-  ... | (a , _) , _ = a
+is-contr-map-equiv {A = A} {B = B} {f} contr-map = 
+  has-inverse⇒is-equiv ((fst ∘ center ∘ contr-map) , rinv , linv)
+  where 
+    open is-contr
+    f⁻¹ : B → A 
+    f⁻¹ = fst ∘ center ∘ contr-map
 
-  G̅ : f ∘ g̅ ∼ id
-  G̅ y with is-contr-map-f y
-  ... | (_ , p) , _ = p
+    rinv : f ∘ f⁻¹ ∼ id 
+    rinv = snd ∘ center ∘ contr-map
 
-  sec-is-contr-map-f : section f
-  sec-is-contr-map-f = g̅ , G̅
-
-  p : f ∘ g̅ ∘ f ∼ f
-  p = G̅ ·ᵣ f
-
-  fib-fx : ∀ {x} → fib f (f x)
-  fib-fx {x} = (g̅ ∘ f) x , (p x)
-
-  q : ∀ {x : A} → fib-fx ≡ (x , refl)
-  q {x} = is-contr.contraction (is-contr-map-f (f x)) (x , refl)
-
-  retr-f-prf : g̅ ∘ f ∼ id
-  retr-f-prf x = ap fst (q {x})
-
-  retr-is-contr-map-f : retraction f
-  retr-is-contr-map-f = g̅ , retr-f-prf
+    linv : f⁻¹ ∘ f ∼ id 
+    linv x = ap fst ∘ contr-map (f x) .contraction $ (x , refl) 
 
 
 --------------------------------------------------------------------
