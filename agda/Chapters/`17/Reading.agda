@@ -20,16 +20,22 @@ private
     𝐁 : A → Set ℓ
 
 --------------------------------------------------------------------------------
--- Type equivalence as a groupoid
--- 
 -- AH> Before going any further, there are a handful of properties about 
--- type equivalence that will prove necessary.
+-- type equivalence that will prove necessary. I'm not sure a better place to put
+-- these.
 
 module _ where 
   open import Relation.Binary.PropositionalEquality.Properties using (isEquivalence)  
   
-  section-is-contr : (f : A → B) → retraction f → is-contr (section f)
-  section-is-contr f retr = {!   !} 
+  ×-is-contr : is-contr A → is-contr B → is-contr (A × B)
+  ×-is-contr = {!!} 
+
+  section-is-contr : (f : A → B) → is-equiv f → is-contr (section f)
+  section-is-contr f eqv@((σ , sec) , _) with is-equiv⇒is-contr-map (f ∘_) {!!} id
+  ... | ((g , eq) , contr) = (g , htpy-eq _ _ eq) , {!eq!} -- is-equiv⇒is-contr-map (_∘ f) ? id
+
+  retraction-is-contr : (f : A → B) → is-equiv f → is-contr (retraction f)
+  retraction-is-contr f eqv = {!!} , {!!} 
   
   -- Being an equivalence is a prop.
   -- A better proof route:
@@ -42,7 +48,13 @@ module _ where
   --    as the product of contractible types is contractible.
   -- 3. Therefore is-equiv f is a prop. 
   is-prop-is-equiv : (f : A → B) → is-prop (is-equiv f)
-  is-prop-is-equiv {A = A} {B = B} f = {!   !} 
+  is-prop-is-equiv {A = A} {B = B} f = 
+    (const⋆-embedding⇒is-prop ∘
+      contractibleIfInhabited→const⋆-embedding {A = is-equiv f})
+      ifInhabited 
+    where
+      ifInhabited : is-equiv f → is-contr (is-equiv f)
+      ifInhabited eqv = ×-is-contr (section-is-contr f eqv) (retraction-is-contr f eqv) 
     -- Irrelevant⇒is-prop irrelevant-is-equiv
     -- where 
     --   eq-sections : (σ₁ σ₂ : B → A) (sec₁ : f ∘ σ₁ ∼ id) (sec₂ : f ∘ σ₂ ∼ id)
