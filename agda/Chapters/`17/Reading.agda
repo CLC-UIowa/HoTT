@@ -44,9 +44,24 @@ open Chapters.`10.Exercises ; open 10-5
 ×-is-contr = curry 10-5-i⇒ii 
 
 --------------------------------------------------------------------------------
--- The next main result is that:
--- - is-equiv f is a prop, meaning
--- - we have (f , 
+--   Now's as good a time as any to prove the following
+
+↔-≃-× : (A ↔ B) ≃ ((A → B) × (B → A))
+↔-≃-× = (λ { (f , g) → (f , g) })  , has-inverse⇒is-equiv ((λ (f , g) → (f , g)) , Refl , Refl) 
+
+--------------------------------------------------------------------------------
+-- The next main result is that (is-equiv f) is a prop. This is both pleasant
+-- and *necessary*. 
+-- - It's pleasant because it means we can equate (p₁ p₂ : A ≃ B) 
+--   based solely on the first component.
+-- - It's necessary because, with univalence, we want only one 
+--   inhabitant of equivalence per isomorphism. For example, we have only two
+--   inhabitants of (Bool ≡ Bool) because there are exactly two distinct
+--   equivalences:
+--   - equiv-eq (id , pf₁) : Bool ≡ Bool 
+--   - equiv-eq (not , pf₂) : Bool ≡ BOol
+--   because (is-equiv not) is a prop, we don't have extra identifications
+--   floating around.
 
 module _ (f : A → B) where 
   open ≃-Reasoning
@@ -272,7 +287,7 @@ module _ {ℓ} where
   family-small A (X , (f , eq)) P sm-P with is-equiv⇒has-inverse eq
   ... | f⁻¹ , f∘f⁻¹ , f⁻¹∘f = 
       -- I can't be bothered to prove these inverses.
-      Y , (g , has-inverse⇒is-equiv (g⁻¹ , {!!} , {!!}))
+      Y , (g , has-inverse⇒is-equiv (g⁻¹ , {!univ!} , {!!}))
       where
         Y : 𝒰 
         Y = (x : X) → sm-P (f⁻¹ x) .fst
@@ -455,8 +470,8 @@ module _ {ℓ} where
     iff-eq : P ≡ Q → P ↔ Q 
     iff-eq refl = (id , id) 
 
-    ↔-prop : is-prop (P ↔ Q) 
-    ↔-prop = {! propositionalEquivalence    !} -- Irrelevant⇒is-prop λ { (to₁ , from₁) (to₂ , from₂) → {!   !}  }
+    ↔-irr : Irrelevant (P ↔ Q) 
+    ↔-irr p q = {! tr id (eq-equiv ↔-≃-×) p        !} -- Irrelevant⇒is-prop λ { (to₁ , from₁) (to₂ , from₂) → {!   !}  }
 
     iff-eq-eqv : is-equiv iff-eq 
     iff-eq-eqv = tr is-equiv same (chain .snd)
@@ -465,7 +480,7 @@ module _ {ℓ} where
         chain : (P ≡ Q) ≃ (P ↔ Q)
         chain = 
           P ≡ Q ≃⟨ univ P Q ⟩ 
-          (P ≃ Q) ≃⟨ propositionalEquivalence (≃-prop prop-P prop-Q) ↔-prop .from (propositionalEquivalence prop-P prop-Q) ⟩ 
+          (P ≃ Q) ≃⟨ propositionalEquivalence (≃-prop prop-P prop-Q) (Irrelevant⇒is-prop ↔-irr) .from (propositionalEquivalence prop-P prop-Q) ⟩ 
           (P ↔ Q) ∎ 
         
         
