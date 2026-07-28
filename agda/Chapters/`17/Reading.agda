@@ -441,3 +441,34 @@ module _ {ℓ} where
     
     fst-≃ : {A  B : ⟨ X ∈ 𝒰 ∣ (P X) ⟩} → is-equiv (equiv-eq′ {A = A} {B})
     fst-≃ {A = A} {B} = univalence ∘ₑ (fst-emb prop-P A B)
+
+--------------------------------------------------------------------------------
+-- Theorem 17.2.3 (Propositional Extensionality): 
+-- the canonical map
+--   iff-eq : P ≡ Q → (P ↔ Q) 
+-- is an equivalence.
+
+  module _ (P Q : 𝒰) 
+           (prop-P : is-prop P) 
+           (prop-Q : is-prop Q)  where 
+    open _↔_
+    iff-eq : P ≡ Q → P ↔ Q 
+    iff-eq refl = (id , id) 
+
+    ↔-prop : is-prop (P ↔ Q) 
+    ↔-prop = {! propositionalEquivalence    !} -- Irrelevant⇒is-prop λ { (to₁ , from₁) (to₂ , from₂) → {!   !}  }
+
+    iff-eq-eqv : is-equiv iff-eq 
+    iff-eq-eqv = tr is-equiv same (chain .snd)
+      where 
+        open ≃-Reasoning 
+        chain : (P ≡ Q) ≃ (P ↔ Q)
+        chain = 
+          P ≡ Q ≃⟨ univ P Q ⟩ 
+          (P ≃ Q) ≃⟨ propositionalEquivalence (≃-prop prop-P prop-Q) ↔-prop .from (propositionalEquivalence prop-P prop-Q) ⟩ 
+          (P ↔ Q) ∎ 
+        
+        
+
+        same : chain .fst ≡ iff-eq 
+        same = fun-ext (chain .fst) iff-eq (λ { refl → refl }) 
