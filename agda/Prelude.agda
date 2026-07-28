@@ -35,6 +35,20 @@ open import Data.String using (String)
 open import Agda.Builtin.Equality.Rewrite public 
 
 -----------------------------------------------------------------------------
+-- set comprehensions
+
+comprehension-syntax₁ : ∀ {ℓ₁ ℓ₂} → {A : Set ℓ₁} (P : A → Set ℓ₂) → Set _ 
+comprehension-syntax₁ {A = A} P = Σ A P  
+
+syntax comprehension-syntax₁ (λ x → P) = ⟨ x ∣ P ⟩
+
+comprehension-syntax₂ : ∀ {ℓ₁ ℓ₂} → (A : Set ℓ₁) (P : A → Set ℓ₂) → Set _ 
+comprehension-syntax₂ = Σ 
+
+syntax comprehension-syntax₂ A (λ x → P) = ⟨ x ∈ A ∣ P ⟩
+
+
+-----------------------------------------------------------------------------
 -- Bi-implication
 -- (the std. library defines _↔_ instead as isomorphism.)
 
@@ -239,7 +253,7 @@ module Homotopies where
   tr-tr p q refl = refl 
 
   -- Composing transport with ap
-  tr-ap : ∀ {A B : Set ℓ} {P : B → Set ℓ} {x y : A} → (f : A → B) → (p : x ≡ y) → 
+  tr-ap : ∀ {A : Set ℓ₁} {B : Set ℓ₂} {P : B → Set ℓ₃} {x y : A} → (f : A → B) → (p : x ≡ y) → 
             tr P (ap f p) ∼ tr (P ∘ f) p
   tr-ap f refl = Refl 
 

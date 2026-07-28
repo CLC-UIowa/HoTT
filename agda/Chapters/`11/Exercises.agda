@@ -15,7 +15,7 @@ private
 module 11•1a where
   -- show that the map ∅ → A is an embedding for any type A
   ex : ⊥ ↪ A
-  ex = (λ ()) , Embed (λ ())
+  ex = (λ ()) , (λ ())
 
 
 module 11•1b {A B : Set ℓ} where
@@ -23,10 +23,10 @@ module 11•1b {A B : Set ℓ} where
   -- for any two types A and B
 
   ex1 : is-emb {A = A} {B = A + B} inj₁
-  ex1 = Embed (λ x y → ((λ { refl → refl }) , λ { refl → refl }) , ((λ { refl → refl }) , λ { refl → refl }))
+  ex1 = (λ x y → ((λ { refl → refl }) , λ { refl → refl }) , ((λ { refl → refl }) , λ { refl → refl }))
 
   ex2 : is-emb {A = B} {B = A + B} inj₂
-  ex2 = Embed (λ x y → ((λ { refl → refl }) , λ { refl → refl }) , ((λ { refl → refl }) , λ { refl → refl }))
+  ex2 = (λ x y → ((λ { refl → refl }) , λ { refl → refl }) , ((λ { refl → refl }) , λ { refl → refl }))
 
 
 module 11•1c where
@@ -124,7 +124,7 @@ module 11•3 {A B : Set} {f g : A → B} where
   -- for any f, g : A → B
   open PathReasoning
   f→g : (f ∼ g) → is-emb f → is-emb g
-  f→g H (Embed ap-equiv-f) = Embed λ x y → lem x y H (ap-equiv-f x y)
+  f→g H ap-equiv-f x y = lem x y H (ap-equiv-f x y)
      where
        sec-ap-g : ∀ x y → section (ap {x = x} {y = y} g)
        sec-ap-g x y = (λ gx≡gy → ap-equiv-f x y .fst .fst (H x ○ gx≡gy ○ H y ⁻¹)) ,
@@ -174,43 +174,40 @@ module 11•4 {A B X : Set} {f : A → X} {g : B → X} {h : A → B} {H : f ∼
   ex-a is-emb-g = forward , backward
     where
       forward : is-emb f → is-emb h
-      forward is-emb-f = Embed emb
+      forward is-emb-f x y = emb' 
         where -- SB> Sorry, I couldn't figure out how to put "where" syntax inside the lambda, so I did this nonsense instead
-          emb : (x y : A) → is-equiv (ap h)
-          emb x y = emb'
-            where
-              is-equiv-ap-comp : is-equiv (ap (g ∘ h))
-              is-equiv-ap-comp = is-emb.ap-equiv ((_↔_.to $ 11•3.ex H) is-emb-f) x y
+          is-equiv-ap-comp : is-equiv (ap (g ∘ h))
+          is-equiv-ap-comp = ((_↔_.to $ 11•3.ex H) is-emb-f) x y
 
-              is-equiv-comp-ap : is-equiv ((ap g) ∘ (ap h))
-              is-equiv-comp-ap = is-equiv-∼ (sym-∼ (ap-comp-∼ h g)) is-equiv-ap-comp
+          is-equiv-comp-ap : is-equiv ((ap g) ∘ (ap h))
+          is-equiv-comp-ap = is-equiv-∼ (sym-∼ (ap-comp-∼ h g)) is-equiv-ap-comp
 
-              is-equiv-ap-g : is-equiv (ap {x = h x} {y = h y} g)
-              is-equiv-ap-g = is-emb.ap-equiv is-emb-g (h x) (h y)
+          is-equiv-ap-g : is-equiv (ap {x = h x} {y = h y} g)
+          is-equiv-ap-g = is-emb-g (h x) (h y)
 
-              emb' : is-equiv (ap h)
-              emb' = is-equiv-decomp is-equiv-ap-g is-equiv-comp-ap
+          emb' : is-equiv (ap h)
+          emb' = is-equiv-decomp is-equiv-ap-g is-equiv-comp-ap
 
       backward : is-emb h → is-emb f
-      backward is-emb-h = Embed emb
+      backward is-emb-h = emb 
         where
           is-emb-ap-comp : is-emb (g ∘ h)
-          is-emb-ap-comp = Embed emb'
+          is-emb-ap-comp = emb'
             where
               emb' : (x y : A) → is-equiv (ap (g ∘ h))
               emb' x y = is-equiv-ap-comp
                 where
                   is-equiv-ap-g : is-equiv (ap {x = h x} {y = h y} g)
-                  is-equiv-ap-g = is-emb.ap-equiv is-emb-g (h x) (h y)
+                  is-equiv-ap-g = is-emb-g (h x) (h y)
 
                   is-equiv-comp-ap : is-equiv ((ap g) ∘ (ap h))
-                  is-equiv-comp-ap = is-equiv-comp is-equiv-ap-g (is-emb.ap-equiv is-emb-h x y)
+                  is-equiv-comp-ap = is-equiv-comp is-equiv-ap-g (is-emb-h x y)
 
                   is-equiv-ap-comp : is-equiv (ap (g ∘ h))
                   is-equiv-ap-comp = is-equiv-∼ (ap-comp-∼ h g) is-equiv-comp-ap
 
           emb : (x y : A) → is-equiv (ap f)
-          emb x y = is-emb.ap-equiv ((_↔_.from $ 11•3.ex H) is-emb-ap-comp) x y
+          emb x y = ((_↔_.from $ 11•3.ex H) is-emb-ap-comp) x y
 
   ex-b-aux : (is-equiv h) → (is-emb g → is-emb f)
   ex-b-aux is-equiv-h = backward
@@ -271,9 +268,9 @@ module 11•5 {A B C : Set} (f : A ↪ B) (g : B ↪ C) where
           -- TODO: refactor, or not
           has-inverse-f : has-inverse (fst f)
           has-inverse-f =
-            (f-inv ,  (λ x → `sec (is-emb.ap-equiv (snd g) (fst f (f-inv x)) x) (is-equiv-g∘f .fst .snd (fst g x)))
-                     , λ x → f .snd .is-emb.ap-equiv (f-inv (fst f x)) (id x) .snd .fst
-                               (g .snd .is-emb.ap-equiv (f .fst (f-inv (fst f x)))
+            (f-inv ,  (λ x → `sec ((snd g) (fst f (f-inv x)) x) (is-equiv-g∘f .fst .snd (fst g x)))
+                     , λ x → f .snd (f-inv (fst f x)) (id x) .snd .fst
+                               (g .snd (f .fst (f-inv (fst f x)))
                                (f .fst (id x)) .fst .fst
                                (is-equiv-g∘f .fst .snd (fst g (fst f x)))))
 
@@ -285,7 +282,7 @@ module 11•5 {A B C : Set} (f : A ↪ B) (g : B ↪ C) where
 
           has-inverse-g : has-inverse (fst g)
           has-inverse-g = g-inv , is-equiv-g∘f .fst .snd , λ x →
-                                                                g .snd .is-emb.ap-equiv (g-inv (fst g x)) (id x) .fst .fst
+                                                                g .snd (g-inv (fst g x)) (id x) .fst .fst
                                                                 (is-equiv-g∘f .fst .snd (fst g x))
 
           is-equiv-g : is-equiv (fst g)
@@ -350,7 +347,7 @@ module 11•8 {A : Set ℓ}  where
 
 module 11•9 {A B : Set} {f : A → B} where
   ex : (∀ (x y : A) → section (ap {x = x} {y = y} f)) → is-emb f
-  ex sec-ap-f = Embed λ x y → 11•8.part-e x (λ y → ap {x = x} {y = y} f) (sec-ap-f x) y
+  ex sec-ap-f x y = 11•8.part-e x (λ y → ap {x = x} {y = y} f) (sec-ap-f x) y
 
 
 -- We say that map f : A → B is path split when
@@ -366,7 +363,7 @@ module 11•10 {A B : Set} {f : A → B} where
 
   -- Note that any equivalence is an embedding,
   i→ii : is-equiv f → is-path-split f
-  i→ii is-equiv-f = (is-equiv-f .fst) , λ x y → fst (lem .is-emb.ap-equiv x y)
+  i→ii is-equiv-f = (is-equiv-f .fst) , λ x y → fst (lem x y)
       where
         lem = Equiv⇒Embedding (f , is-equiv-f)
 

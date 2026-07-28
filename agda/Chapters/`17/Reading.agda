@@ -20,77 +20,112 @@ private
     𝐁 : A → Set ℓ
 
 --------------------------------------------------------------------------------
--- AH> Before going any further, there are a handful of properties about 
--- type equivalence that will prove necessary. I'm not sure a better place to put
--- these.
+-- We will need a handful of lemmas about type equivalence. 
+--------------------------------------------------------------------------------
+-- Congruence properties of _≃_ 
+-- 1. Congruence w.r.t. Σ 
+-- 2. Congruence w.r.t. _≃_ 
 
-module _ where 
-  open import Relation.Binary.PropositionalEquality.Properties using (isEquivalence)  
-  
-  ×-is-contr : is-contr A → is-contr B → is-contr (A × B)
-  ×-is-contr = {!!} 
+-- Postulated because lazy
+postulate 
+  -- Likewise, _≃_ is congruent over _≃_. 
+  -- Not certain if this is proven elsewhere.
+  cong-≃ : ∀ {A : Set ℓ₁} {B : Set ℓ₂} {X : Set ι₁} {Y : Set ι₂} → 
+                 A ≃ X → 
+                 B ≃ Y → 
+                 (A ≃ B) ≃ (X ≃ Y)                                   
 
-  section-is-contr : (f : A → B) → is-equiv f → is-contr (section f)
-  section-is-contr f eqv@((σ , sec) , _) with is-equiv⇒is-contr-map (f ∘_) {!!} id
-  ... | ((g , eq) , contr) = (g , htpy-eq _ _ eq) , {!eq!} -- is-equiv⇒is-contr-map (_∘ f) ? id
+--------------------------------------------------------------------------------
+-- Contractibility is closed under _×_ and _≃_ 
 
-  retraction-is-contr : (f : A → B) → is-equiv f → is-contr (retraction f)
-  retraction-is-contr f eqv = {!!} , {!!} 
-  
+-- contractability is closed under _×_ 
+open Chapters.`10.Exercises ; open 10-5
+×-is-contr : is-contr A → is-contr B → is-contr (A × B)
+×-is-contr = curry 10-5-i⇒ii 
+
+--------------------------------------------------------------------------------
+-- The next main result is that:
+-- - is-equiv f is a prop, meaning
+-- - we have (f , 
+
+module _ (f : A → B) where 
+  open ≃-Reasoning
+--------------------------------------------------------------------------------
+--   
+  -- We will prove that, if f is an equivalence, then
+  -- the sections/retractions of f are contractible. 
+  -- The trick is to observe that the type (fib (f ∘_) id) is *almost*
+  -- exactly what we need.
+  --     is-contr (fib (f ∘_) id)
+  --   ≡ is-contr (Σ[ g ∈ B → A ] (f ∘ g ≡ id))
+  -- Unfortunately, fibers are w.r.t. equality and sections are w.r.t. homotopy:
+  --   is-contr (section f) 
+  -- ≡ is-contr (Σ[ g ∈ B → A ] (f ∘ g ∼ id))
+  -- Fortunately, by functional extensionality, we have: 
+  --   f ∘ g ≡ id ≃ f ∘ g ∼ id 
+  fib-≃-section : fib (f ∘_) id ≃ section f 
+  fib-≃-section = 
+    fib (f ∘_) id                 ≃⟨ refl-≃ ⟩ 
+    Σ[ g ∈ (B → A) ] (f ∘ g ≡ id) ≃⟨ ≃-distrib-Σ refl-≃ (λ g → eq-≃-htpy (f ∘ g) id) ⟩ 
+    Σ[ g ∈ (B → A) ] (f ∘ g ∼ id) ≃⟨ refl-≃ ⟩
+    section f ∎ 
+
+  -- likewise, the fibers of precomposition are equivalent to retractions
+  fib-≃-retraction : fib (_∘ f) id ≃ retraction f 
+  fib-≃-retraction = 
+    fib (_∘ f) id                 ≃⟨ refl-≃ ⟩ 
+    Σ[ g ∈ (B → A) ] (g ∘ f ≡ id) ≃⟨ ≃-distrib-Σ refl-≃ (λ g → eq-≃-htpy (g ∘ f) id) ⟩ 
+    Σ[ g ∈ (B → A) ] (g ∘ f ∼ id) ≃⟨ refl-≃ ⟩
+    retraction f ∎ 
+
+  -- Observe that f is an equivalence iff (f ∘_) is an equivalence.
+  -- Since (f ∘_) is an equivalence, its fibers are contractible. Notably,
+  -- we have 
+  --   is-contr (fib (f ∘_) id)
+  -- which we show above is equivalent to
+  --  is-contr (section f). 
+  section-is-contr : is-equiv f → is-contr (section f)
+  section-is-contr eqv = ≃-is-contr fib-≃-section contr-fibers
+    where 
+      contr-fibers : is-contr (fib (f ∘_) id) 
+      contr-fibers = is-equiv⇒is-contr-map (f ∘_) (post-composition-equiv f ._↔_.from eqv B) id
+
+
+  retraction-is-contr : is-equiv f → is-contr (retraction f)
+  retraction-is-contr eqv = ≃-is-contr fib-≃-retraction contr-fibers
+    where 
+      contr-fibers : is-contr (fib (_∘ f) id) 
+      contr-fibers = is-equiv⇒is-contr-map (_∘ f) (is-equiv⇒Hom-equiv f eqv) id
+
   -- Being an equivalence is a prop.
-  -- A better proof route:
-  -- 1. Show that section f and retraction f are contractible:
-  --    - retraction f → is-contr (section f)
-  --    - section f → is-contr (retraction f)
-  --    These proofs follow from how post-composition (f ∘_) is an equivalence
-  --    if f is an equivalence.
-  -- 2. Therefore is-equiv f := section f × retraction f is contractible,
-  --    as the product of contractible types is contractible.
-  -- 3. Therefore is-equiv f is a prop. 
-  is-prop-is-equiv : (f : A → B) → is-prop (is-equiv f)
-  is-prop-is-equiv {A = A} {B = B} f = 
+  is-prop-is-equiv : is-prop (is-equiv f)
+  is-prop-is-equiv = 
     (const⋆-embedding⇒is-prop ∘
       contractibleIfInhabited→const⋆-embedding {A = is-equiv f})
       ifInhabited 
     where
       ifInhabited : is-equiv f → is-contr (is-equiv f)
-      ifInhabited eqv = ×-is-contr (section-is-contr f eqv) (retraction-is-contr f eqv) 
-    -- Irrelevant⇒is-prop irrelevant-is-equiv
-    -- where 
-    --   eq-sections : (σ₁ σ₂ : B → A) (sec₁ : f ∘ σ₁ ∼ id) (sec₂ : f ∘ σ₂ ∼ id)
-    --                 (ret₁ : σ₁ ∘ f ∼ id) → 
-    --                 σ₁ ∼ σ₂ 
-    --   eq-sections σ₁ σ₂ sec₁ sec₂ ret₁ = begin 
-    --         σ₁          ∼⟨ ap σ₁ ∘ sec₁ ⁻¹ ⟩ 
-    --         σ₁ ∘ f ∘ σ₁ ∼⟨ σ₁ ·ₗ (sec₁ ○ (sec₂ ⁻¹)) ⟩ 
-    --         σ₁ ∘ f ∘ σ₂ ∼⟨ ret₁ ·ᵣ σ₂ ⟩ 
-    --         σ₂ ∎
-    --     where open HomReasoning 
+      ifInhabited eqv = ×-is-contr (section-is-contr eqv) (retraction-is-contr eqv) 
 
-    --   special-p : ∀ {y z : B} → ((σ , sec) : section f) → (p : y ≡ z) → p ≡ sec y ⁻¹ ○ ap (f ∘ σ) p ○ sec z
-    --   special-p {y = y} {z} (σ , sec) refl = sym (begin
-    --     ((sec y ⁻¹) ○ refl) ○ (sec y) ≡⟨ (right-identity (sec y ⁻¹) ⋆ₗ (sec y)) ⟩ 
-    --     sec y ⁻¹ ○ sec y ≡⟨ left-inv (sec y) ⟩ 
-    --     refl ∎) 
-    --     where open PathReasoning
+-- It immediately follows that is-equiv is a subtype of (A → B)
+is-equiv-subtype : ⟨ is-equiv f ∣ f ∈ (A → B) ⟩ ⊆ (A → B) 
+is-equiv-subtype = is-prop-is-equiv
 
-    --   irrelevant-is-equiv : Irrelevant (is-equiv f) 
-    --   irrelevant-is-equiv eqv₁@((σ₁ , sec₁) , ρ₁ , ret₁) eqv₂@((σ₂ , sec₂) , ρ₂ , ret₂) 
-    --     with fun-ext _ _ (is-equiv⇒equalSplits eqv₁) 
-    --        | fun-ext _ _ (is-equiv⇒equalSplits eqv₂)
-    --   ... | refl | refl with fun-ext _ _ (eq-sections σ₁ σ₂ sec₁ sec₂ ret₁)
-    --   ... | refl   = ap₂ _,_ (ap (σ₁ ,_) (fun-ext _ _ (λ x → special-p (σ₁ , sec₁) (sec₁ x) ○ {! (special-p (σ₁ , sec₁) (sec₁ x) ⁻¹)  !}))) {!   !} 
+≃-subtype : ⟨ is-equiv (fst e) ∣ e ∈ (A ≃ B) ⟩ ⊆ (A ≃ B)
+≃-subtype = is-prop-is-equiv ∘ fst 
 
-  -- Because (is-equiv f) is a prop, it's sufficent to compare
-  -- just the maps of given equivalences.
-  eq-≃ : {e₁ e₂ : A ≃ B} → (fst e₁ ≡ fst e₂) → e₁ ≡ e₂ 
-  eq-≃ {e₁ = (f , eqv₁)} {(.f , eqv₂)} refl = ap (f ,_) (is-prop⇒Irrelevant (is-prop-is-equiv f) eqv₁ eqv₂) 
+-- Because (is-equiv f) is a prop, it's sufficient to compare
+-- just the maps of given equivalences.
+eq-≃ : {e₁ e₂ : A ≃ B} → (fst e₁ ≡ fst e₂) → e₁ ≡ e₂ 
+eq-≃ {e₁ = e₁} {e₂}  = fst-inj is-equiv-subtype
 
-  sym-≃-involutive : ∀ {A : Set ℓ₁} {B : Set ℓ₂} → sym-≃ ∘ (sym-≃ {A = A} {B = B}) ∼ id
-  sym-≃-involutive x = eq-≃ refl 
-  
-  sym-≃² : ∀ {A : Set ℓ₁} {B : Set ℓ₂} → (A ≃ B) ≃ (B ≃ A) 
-  sym-≃² = sym-≃ , has-inverse⇒is-equiv (sym-≃ , sym-≃-involutive , sym-≃-involutive) 
+-- sym-≃ is involutive
+sym-≃-involutive : ∀ {A : Set ℓ₁} {B : Set ℓ₂} → sym-≃ ∘ (sym-≃ {A = A} {B = B}) ∼ id
+sym-≃-involutive x = eq-≃ refl 
+
+-- Which is needed to show the following 
+sym-≃² : ∀ {A : Set ℓ₁} {B : Set ℓ₂} → (A ≃ B) ≃ (B ≃ A) 
+sym-≃² = sym-≃ , has-inverse⇒is-equiv (sym-≃ , sym-≃-involutive , sym-≃-involutive) 
 
 
 --------------------------------------------------------------------------------
@@ -180,7 +215,7 @@ module _ {ℓ} where
     𝒰 = Set ℓ
   -- A type is 𝒰 small if it is equivalent to a 𝒰-type.
   is-small : Set ι → Set _
-  is-small A = Σ[ X ∈ 𝒰 ] (A ≃ X)
+  is-small A = ⟨ X ∈ 𝒰 ∣ A ≃ X ⟩
 
   -- Similarly, a map f : A → B is said to be 𝒰-small
   -- if all of its fibers are 𝒰-small.
@@ -200,8 +235,8 @@ module _ {ℓ} where
   -- - eq : A ≃ X 
   -- but (eq-equiv eq) is ill-formed, as
   -- the type A ≡ X is ill-formed.
-  bad : ∀ (A : Set ι) → ((X , _) : is-small A) → Set {! !}
-  bad A (X , eq) = {!eq-equiv eq !}
+  -- bad : ∀ (A : Set ι) → ((X , _) : is-small A) → Set {! cong-≃ !}
+  -- bad A (X , eq) = {!eq-equiv eq !}
 
   --------------------------------------------------------------------------------
   -- Example 17.1.4
@@ -263,34 +298,7 @@ module _ {ℓ} where
     where
       open PathReasoning
 
-  -- Likewise, we need to prove That _≃_ distributes over Σ---which is a consequence
-  -- of Thm 11.1.6. Unfortunately, Thm 1.1.6 (as it is proven) is not universe polymorphic,
-  -- and I don't have it in me to rectify that.
-  postulate 
-    ≃-distrib-Σ : ∀ {A₁ : Set ℓ₁} {A₂ : Set ℓ₂}
-                  {B₁ : A₁ → Set ι₁} {B₂ : A₂ → Set ι₂} →
-                  ((f , e) : A₁ ≃ A₂) → 
-                  ((x : A₁) → B₁ x ≃ B₂ (f x)) → 
-                  Σ A₁ B₁ ≃ Σ A₂ B₂ 
-    -- ≃-distrib-Σ (f , e) b  = {!11•1•6 !} 
-
-  -- We're learning that we haven't really catalogued a number of 
-  -- congruences over _≃_. Above, we need congruence over Σ; 
-  -- Here, we need congruence over _≃_.
-  -- Note that univalence is restricted to specific *universes*:
-  -- We **cannot** simply prove this via
-  --   ap (_≃ Y) ∘ eq-equiv 
-  -- because A and B are not in the same universe.
-  -- 
-  -- Proofs are left as exercise to the reader. (Apoorv?)
-  postulate
-    ≃-distribₗ : ∀ {A : Set ℓ₁} {B : Set ℓ₂} {Y : Set ι} → 
-                 A ≃ B → (A ≃ Y) ≃ (B ≃ Y)
-    -- ≃-distribₗ e = {!!}    
-
-  -- Some more definitions 
-                                 
-
+                                
   is-small-prop : ∀ (A : Set ι) → is-prop (is-small A)
   is-small-prop A = (const⋆-embedding⇒is-prop ∘
                        contractibleIfInhabited→const⋆-embedding {A = is-small A})
@@ -301,11 +309,12 @@ module _ {ℓ} where
         is-contr-≃ 
           (is-small X) 
           (is-small A) 
-          (≃-distrib-Σ refl-≃ (λ Y → ≃-distribₗ (sym-≃ e))) 
+          (≃-distrib-Σ refl-≃ (λ Y → cong-≃ (sym-≃ e) refl-≃)) 
           is-contr-is-small-X
         where
           is-contr-is-small-X : is-contr (is-small X)
           is-contr-is-small-X = equiv-contractible X 
+
   --------------------------------------------------------------------------------
   -- Corollary 17.1.6: Consider a univalent universe 𝒰 and univalent universe 𝒱 
   -- containing all types in 𝒰. Then the universe inclusion i : 𝒰 → 𝒱 is an embedding.
@@ -319,66 +328,91 @@ module _ {ℓ} where
   --       𝒾 : Set ℓ → Set (lsuc ℓ)
   --     where lift : A → 𝒾 A is an equivalence.
 
-  data 𝒾 (A : Set ℓ) : Set (lsuc ℓ) where 
-    lift : (x : A) → 𝒾 A 
-  
-  unlift : 𝒾 A → A 
-  unlift (lift x) = x 
-
-  𝒾so : ∀ {ℓ} → is-equiv (lift {ℓ})
-  𝒾so = has-inverse⇒is-equiv (unlift , (λ { (lift x) → refl }) , Refl)
-
-  module _ where 
-    𝒱 = Set (lsuc ℓ) 
+  module 𝒱-inclusion₁ where 
+    data 𝒾 (A : Set ℓ) : Set (lsuc ℓ) where 
+      lift : (x : A) → 𝒾 A 
     
-    -- "Since 𝒱 is assumed to be univalent, it follows that 
-    --   fib 𝒾 A ≃ is-small A". Observe that
-    --     fib 𝒾 A 
-    --   ≡ Σ[ X ∈ 𝒰 ] (𝒾 X ≡ A) 
-    -- and 
-    --     is-small A 
-    --   ≡ Σ[ X ∈ 𝒰 ] (A ≃ X) 
-    -- The proof is that, by ≃-distrib-Σ, we need only prove second
-    -- components are equivalent. Then:
-    --   (𝒾 X ≡ A) 
-    --   {by univalence}
-    -- ≃ (𝒾 X ≃ A)
-    --    {as 𝒾 X ≃ X}
-    -- ≃ (X ≃ A) 
-    --    {by symmetry}
-    -- ≃ (A ≃ X)
+    unlift : 𝒾 A → A 
+    unlift (lift x) = x 
+
+    𝒾so : ∀ {ℓ} → is-equiv (lift {ℓ})
+    𝒾so = has-inverse⇒is-equiv (unlift , (λ { (lift x) → refl }) , Refl)
+
+    module _ where 
+      𝒱 = Set (lsuc ℓ) 
+      
+      -- "Since 𝒱 is assumed to be univalent, it follows that 
+      --   fib 𝒾 A ≃ is-small A". Observe that
+      --     fib 𝒾 A 
+      --   ≡ Σ[ X ∈ 𝒰 ] (𝒾 X ≡ A) 
+      -- and 
+      --     is-small A 
+      --   ≡ Σ[ X ∈ 𝒰 ] (A ≃ X) 
+      -- The proof is that, by ≃-distrib-Σ, we need only prove second
+      -- components are equivalent. Then:
+      --   (𝒾 X ≡ A) 
+      --   {by univalence}
+      -- ≃ (𝒾 X ≃ A)
+      --    {as 𝒾 X ≃ X}
+      -- ≃ (X ≃ A) 
+      --    {by symmetry}
+      -- ≃ (A ≃ X)
+
+      fib≃is-small : (A : 𝒱) → fib 𝒾 A ≃ is-small A
+      fib≃is-small A = ≃-distrib-Σ refl-≃ s
+        where
+          𝒾-eqv : (X : 𝒰) → X ≃ 𝒾 X
+          𝒾-eqv X = (lift , 𝒾so)       
+
+          s : (X : 𝒰) → (𝒾 X ≡ A) ≃ (A ≃ X)
+          s X = 
+            (𝒾 X ≡ A) ≃⟨ univ (𝒾 X) A ⟩ 
+            (𝒾 X ≃ A) ≃⟨ cong-≃ (sym-≃ (𝒾-eqv X)) refl-≃ ⟩ 
+            (X ≃ A)   ≃⟨ sym-≃² ⟩
+            (A ≃ X) ∎
+            where 
+              open ≃-Reasoning
+      
+      --  Equivalent types are the same k-types; since (is-small A) is a prop (proven above),
+      -- we know that fib 𝒾 A is a prop.
+      𝒾-prop-fibers : (A : 𝒱) → is-prop (fib 𝒾 A) 
+      𝒾-prop-fibers A = ≃-is-prop (sym-≃ (fib≃is-small A)) (is-small-prop A) 
+      
+      -- Having propositional fibers is equivalent to being an embedding,
+      -- completing the proof.
+      𝒾-emb : is-emb 𝒾 
+      𝒾-emb = prop-fibers⇒is-emb 𝒾 𝒾-prop-fibers  
+
+  --------------------------------------------------------------------------------
+  -- The only aspect of "intensional cumulativity" we really needed was
+  -- that 𝒾 X ≃ X, so let's just generalize that. 
+
+  module 𝒱-inclusion₂ 
+    {ι} 
+    (𝒾 : 𝒰 → Set ι) 
+    (𝒾-eqv : (X : 𝒰) → X ≃ 𝒾 X) where 
+
+    𝒱 = Set ι
 
     fib≃is-small : (A : 𝒱) → fib 𝒾 A ≃ is-small A
-    fib≃is-small A = ≃-distrib-Σ refl-≃ s
-      where
-        𝒾-eqv : (X : 𝒰) → X ≃ 𝒾 X
-        𝒾-eqv X = (lift , 𝒾so)       
-
-        s : (X : 𝒰) → (𝒾 X ≡ A) ≃ (A ≃ X)
-        s X = 
-          (𝒾 X ≡ A) ≃⟨ univ (𝒾 X) A ⟩ 
-          (𝒾 X ≃ A) ≃⟨ ≃-distribₗ (sym-≃ (𝒾-eqv X)) ⟩ 
-          (X ≃ A)   ≃⟨ sym-≃² ⟩
-          (A ≃ X) ∎
-          where 
-            open ≃-Reasoning
+    fib≃is-small A = ≃-distrib-Σ refl-≃ (λ X → 
+       (𝒾 X ≡ A)    ≃⟨ univ (𝒾 X) A ⟩ 
+       (𝒾 X ≃ A) ≃⟨ cong-≃ (sym-≃ (𝒾-eqv X)) refl-≃ ⟩ 
+       (X ≃ A)   ≃⟨ sym-≃² ⟩
+       (A ≃ X) ∎)
+      where   
+        open ≃-Reasoning
     
     --  Equivalent types are the same k-types; since (is-small A) is a prop (proven above),
     -- we know that fib 𝒾 A is a prop.
     𝒾-prop-fibers : (A : 𝒱) → is-prop (fib 𝒾 A) 
     𝒾-prop-fibers A = ≃-is-prop (sym-≃ (fib≃is-small A)) (is-small-prop A) 
     
-    -- AH> This is Theorem 12.2.3, which isn't proven over heterogeneous universes.
-    --     I am done refactoring levels in old theorems!
-    postulate 
-      prop-fibers⇒is-emb : ∀ {A : Set ℓ₁} {B : Set ℓ₂} (f : A → B) → 
-                              ((b : B) → is-prop (fib f b)) → is-emb f
-    
     -- Having propositional fibers is equivalent to being an embedding,
     -- completing the proof.
     𝒾-emb : is-emb 𝒾 
     𝒾-emb = prop-fibers⇒is-emb 𝒾 𝒾-prop-fibers  
-    
+
   --------------------------------------------------------------------------------
   -- § 17.2 Propositional Extensionality
 

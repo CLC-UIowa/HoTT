@@ -124,7 +124,7 @@ module _ where
 
   -- This is a simple trick that will "give us" an X in the next proof step.
   lemmer : {X : Set ℓ₁} {Y : Set ℓ₂} → {f : X → Y} → (X → is-emb f) → is-emb f
-  lemmer {f = f} m = Embed λ x y → m x .is-emb.ap-equiv x y
+  lemmer {f = f} m x y = m x x y
 
   -- (iii → iv)
   -- Helpers:
@@ -156,7 +156,7 @@ module _ where
   -- AH> Here we deviate from Rijke. It's *much simpler* to prove that,
   --     if (λ (x : A) → tt) is an embedding, that all x, y : A are equal.
   const⋆-embedding⇒Irrelevant  : is-emb {A = A} (λ (x : A) → tt) → Irrelevant A
-  const⋆-embedding⇒Irrelevant (Embed ap-equiv) x y = ap-equiv x y .fst .fst refl
+  const⋆-embedding⇒Irrelevant ap-equiv x y = ap-equiv x y .fst .fst refl
 
   -- AH> Now use the implication from Irrelevant A to is-prop A to complete the proof.
   const⋆-embedding⇒is-prop : is-emb {A = A} (λ (x : A) → tt) → is-prop A
@@ -181,19 +181,21 @@ propositionalEquivalence {P = P} {Q = Q} prop-p prop-q =
 -- Definition 12.2.1
 -- A type family B over A is said to be a subtype of A if for each x : A, B x is a proposition.
 -- When B is a subtype of A, we also say that B x is a _property_ of x : A.
--- AH> For fun, see "Five stages of accepting constructive mathematics" by Andrej Baujer:
---     https://www.ams.org/journals/bull/2017-54-03/S0273-0979-2016-01556-4/S0273-0979-2016-01556-4.pdf
---     In particular, Theorem 2.1. Can you spot why we assert the property 𝐁 is a prop?
 is-subtype : (A → Set ℓ) → Set _ 
 is-subtype {A = A} 𝐁 = ∀ (x : A) → is-prop (𝐁 x)
 
--- syntax for set comprehensions
-comprehension-syntax : ∀ {a b} → (A : Set a) → (A → Set b) → Set (a ⊔ b)
-comprehension-syntax A B = is-subtype B
+-- infix notation for subsets
+subset-syntax : ∀ {a b} → (A : Set a) → (A → Set b) → Set (a ⊔ b)
+subset-syntax A B = is-subtype B
 
-syntax comprehension-syntax A B = B ⊆ A
+syntax subset-syntax A B = B ⊆ A
 
+predicate-syntax : (A : Set ℓ₁) (P : A → Set ℓ₂) → (A → Set ℓ₂)
+predicate-syntax A P = P 
 
+syntax predicate-syntax A (λ x → P) = ⟨ P ∣ x ∈ A ⟩
+
+------------------------------------------------------------------------------
 -- Lemma 12.2.2
 -- Let A B by types, let e : A ≃ B then we have
 -- is-prop A ↔ is-prop B
@@ -216,32 +218,34 @@ syntax comprehension-syntax A B = B ⊆ A
 -- 
 ≃-is-prop : ∀ {A : Set ℓ₁} {B : Set ℓ₂} → (A ≃ B) → is-prop A → is-prop B
 ≃-is-prop eqv@(f , (f⁻¹ , sec) , retr) isProp x y  = 
-  10-3.contr-codomain⇒contr-domain (ap f⁻¹) (isProp (f⁻¹ x) (f⁻¹ y)) (ap-equiv x y) 
+  10-3.contr-codomain⇒contr-domain (ap f⁻¹) (isProp (f⁻¹ x) (f⁻¹ y)) (f⁻¹-isEmbedding x y) 
   where
     f⁻¹-isEquiv : is-equiv f⁻¹
     f⁻¹-isEquiv = equivalence-inverse-equivalence ((f⁻¹ , sec) , retr)  
     
     f⁻¹-isEmbedding : is-emb f⁻¹ 
     f⁻¹-isEmbedding = Equiv⇒Embedding (f⁻¹ , f⁻¹-isEquiv) 
-    open is-emb f⁻¹-isEmbedding
 
 lem•12•2•2 : {A B : Set ℓ} → (A ≃ B) → is-prop A ↔ is-prop B
 lem•12•2•2 {A = A} {B = B} eqv = ≃-is-prop eqv , ≃-is-prop (sym-≃ eqv)
 
+-- contractability is closed under _≃_ 
+≃-is-contr : A ≃ B → is-contr A → is-contr B 
+≃-is-contr (_ , eqv) = flip (contr-domain⇒contr-codomain _) eqv
 
 -- Theorem 12.2.3
 -- Consider a map f : A → B. The following are equivalent
 -- (i) map f is an embedding
 -- (ii) the fiber fib f b is a proposition for each b : B
-module 12•2•3 {A B : Set ℓ} {f : A → B} where
-  i→ii : is-emb f → ((b : B) → is-prop (fib f b))
-  i→ii (Embed p) b (a , fa≡b) (a′ , fa′≡b) = _↔_.to (lem•12•2•2 (lem2 a b fa≡b)) ({!!}  ) (a , fa≡b) (a′ , fa′≡b)
+module _ {A : Set ℓ₁} {B : Set ℓ₂} (f : A → B) where
+  is-emb⇒prop-fibers : is-emb f → ((b : B) → is-prop (fib f b))
+  is-emb⇒prop-fibers p b (a , fa≡b) (a′ , fa′≡b) = _↔_.to (lem•12•2•2 (lem2 a b fa≡b)) ({!!}  ) (a , fa≡b) (a′ , fa′≡b)
     where
       fwd : is-emb f → (∀ x → is-contr (Σ[ y ∈ A ] (f x ≡ f y)))
       fwd ef x = {!10-3.contr-domain⇒contr-codomain (ap f) ? ?  !}
 
       bwk : (∀ x → is-contr (Σ[ y ∈ A ] (f x ≡ f y))) → is-emb f
-      bwk ctr = Embed (λ x y → 10-3.contr-domains⇒is-equiv (ap f) {!!} {!!})
+      bwk ctr x y = 10-3.contr-domains⇒is-equiv (ap f) {!!} {!!}
 
 
       lem : is-emb f ↔ (∀ x → is-contr (Σ[ y ∈ A ] (f x ≡ f y)))
@@ -250,15 +254,65 @@ module 12•2•3 {A B : Set ℓ} {f : A → B} where
       lem2 : ∀ y b → (e : f y ≡ b) → fib f (f y) ≃ fib f b
       lem2 y b refl = id , (id , refl-∼) , id , refl-∼
 
+  prop-fibers⇒is-emb : ((b : B) → is-prop (fib f b)) → is-emb f
+  prop-fibers⇒is-emb prop-fibs x y = 
+    fund-thm-id x refl (λ y → ap {x = x} {y} f) pf .family-equivalence y 
+    where 
+      open is-contr ; open PathReasoning
 
-  ii→i : ((b : B) → is-prop (fib f b)) → is-emb f
-  ii→i p = Embed (λ x y → 10-3.contr-domains⇒is-equiv (ap f) {!!} {! p (f y)!})
+      C : (p : Σ[ z ∈ A ] (f x ≡ f z)) → (x , refl) ≡ p 
+      C (x′ , eq) with pair-eq (prop-fibs (f x) (x , refl) (x′ , sym eq) .center)
+      ... | refl , c = cong (x′ ,_) 
+        (begin 
+          refl         ≡⟨ ap sym c ⟩ 
+          sym (sym eq) ≡⟨ involution eq ⟩
+          eq ∎ ) 
+                  
+      pf : IdFundProof x refl (λ y → ap {x = x} {y} f)
+      pf = spaceContractible ((x , refl) , C)
+
+
+  -- ii→i : ((b : B) → is-prop (fib f b)) → is-emb f
+  -- ii→i p = Embed (λ x y → 10-3.contr-domains⇒is-equiv (ap f) {!!} {! p (f y)!})
 
 --------------------------------------------------------------------------------  
 -- Corollary 12.2.4: Consider a family B of types over A. The following are equivalent
 -- (i) The map pr₁ : Σ_{x : A} B x → A is an embedding
 -- (ii) The type B x is a proposition for each x : A
+-- 
+-- AH> This corollary is a bit undersold: what we're really saying is that
+-- we need only equate the first components of any given subtype. 
+-- A predicate P is a subtype of A if it is a family of propositions.
+-- Now, the type Σ A P restricts the elements of A to a subset X ⊆ A.
+-- Since P is a family of propositions, then naturally, to compare 
+-- p₁ , p₂ : Σ A P, it suffices to only equate the first component.
 
+-- `fst` forms an embedding.
+fst-emb : {P : A → Set ℓ} → 
+          ⟨ P x ∣ x ∈ A ⟩ ⊆ A → 
+          is-emb {A = Σ[ x ∈ A ](P x)} {B = A} fst 
+fst-emb {A = A} {P = P} sub =   
+  prop-fibers⇒is-emb fst (Irrelevant⇒is-prop ∘ irrelevant-fibers)
+  where
+    irrelevant-fibers : (a : A) → Irrelevant (fib (fst {B = P}) a) 
+    irrelevant-fibers a ((i , Q) , refl) ((j , K) , refl) = 
+      ap (λ x → (a , x) , refl) (is-prop⇒Irrelevant (sub a) Q K) 
+
+fst-inj : {P : A → Set ℓ} → 
+          ⟨ P x ∣ x ∈ A ⟩ ⊆ A → 
+          is-inj {A = Σ[ x ∈ A ](P x)} {B = A} fst 
+fst-inj = emb-injective ∘ fst-emb           
+
+-- Each subtype has a canonical injection
+sub-emb : {P : A → Set ℓ} → 
+             ⟨ P x ∣ x ∈ A ⟩ ⊆ A → 
+            (Σ[ x ∈ A ] (P x)) ↪ A 
+sub-emb sub  = fst , (fst-emb sub)
+
+fst-emb⇒subtype : {P : A → Set ℓ} → 
+                   is-emb {A = Σ[ x ∈ A ](P x)} {B = A} fst → 
+                   ⟨ P x ∣ x ∈ A ⟩ ⊆ A 
+fst-emb⇒subtype emb x = Irrelevant⇒is-prop (λ p₁ p₂ → {! Equiv⇒Embedding  !}) 
 
 --------------------------------------------------------------------
 -- § 12.3 Sets
@@ -474,7 +528,7 @@ k-type-closed-under-equivalence (succT k) (f , f-equiv) B-k-type x y = {!k-type-
 k+1-domain : {A B : Set ℓ} (f : A → B) → is-emb f → (k : 𝕋) → 
              is-trunc (succT k) B → is-trunc (succT k) A
 k+1-domain f isEmb k k+1-B x y = 
-  k-type-closed-under-equivalence k (ap f , isEmb .is-emb.ap-equiv x y) (k+1-B (f x) (f y)) 
+  k-type-closed-under-equivalence k (ap f , isEmb x y) (k+1-B (f x) (f y)) 
 
 -- Theorem 12.4.7
 -- Let f : A → B. The following are equivalent:

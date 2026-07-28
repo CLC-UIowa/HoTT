@@ -94,7 +94,7 @@ open 11•1•3 using (is-equiv-tot↔-is-equiv-fx) public
 -- If 𝑓 is an equivalence,then the map
 --       σ_f (𝐶) : λ (x, z). (f x, z) : Σ_{x: A} 𝐶 (f x) → Σ_{y: B} 𝐶 (y)
 -- is and equivalence
-module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
+module 11•1•4 {A : Set ℓ₁} {B : Set ℓ₂} {𝐂 : B → Set ℓ₃}(f : A → B) where
   -- We first define the map σ
   σ : Σ[ x ∈ A ] (𝐂 (f x)) → Σ B 𝐂
   σ (x , z) =  f x , z
@@ -146,7 +146,7 @@ module 11•1•4 {A B : Set ℓ} {𝐂 : B → Set ℓ}(f : A → B) where
 -- We define tot_f g : Σ_{x : A} C x → Σ_{y:B} D y
 -- we say g is a family of maps over f
 
-tot[_]_ : {𝐂 : A → Set ℓ} {𝐃 : B → Set ℓ} (f : A → B) (g : (x : A) → 𝐂 x → 𝐃 (f x))
+tot[_]_ : {𝐂 : A → Set ℓ₁} {𝐃 : B → Set ℓ₂} (f : A → B) (g : (x : A) → 𝐂 x → 𝐃 (f x))
      → Σ A 𝐂  → Σ[ y ∈ B ] (𝐃 y)
 tot[ f ] g = λ (x , z) → (f x , g x z)
 
@@ -199,7 +199,7 @@ is-equiv-decomp' is-equiv-g is-equiv-f∘g =
 -- then the following are equivalent
 -- (i) The family of maps g over f is a family of equivalences
 -- (ii) the map tot_f (g) is an equivalence
-module 11•1•6 {A B : Set ℓ} {𝐂 : A → Set ℓ} (𝐃 : B → Set ℓ) (f : A → B) (equiv-f : is-equiv f)
+module 11•1•6 {ℓ₄} {A : Set ℓ₁} {B : Set ℓ₂} {𝐂 : A → Set ℓ₃} (𝐃 : B → Set ℓ₄) (f : A → B) (equiv-f : is-equiv f)
               (g : (x : A) → 𝐂 x → 𝐃 (f x)) where
 
   lem1 : is-equiv (tot g) ↔ ((x : A) → is-equiv (g x))
@@ -245,6 +245,17 @@ module 11•1•6 {A B : Set ℓ} {𝐂 : A → Set ℓ} (𝐃 : B → Set ℓ) 
   thm = _↔_.to lem3 ∘ _↔_.from lem1 , _↔_.to lem1 ∘ _↔_.from lem3
 
 
+-- A consequence of Thm 11.1.6
+≃-distrib-Σ : ∀ {ι₁ ι₂} {A₁ : Set ℓ₁} {A₂ : Set ℓ₂}
+              {B₁ : A₁ → Set ι₁} {B₂ : A₂ → Set ι₂} →
+              ((f , e) : A₁ ≃ A₂) → 
+              ((x : A₁) → B₁ x ≃ B₂ (f x)) → 
+              Σ A₁ B₁ ≃ Σ A₂ B₂ 
+≃-distrib-Σ {B₁ = B₁} {B₂} (f , e) g  = 
+  (λ { (a , b) → (f a , g a .fst b) }) , thm B₂ f e (λ x y → g x .fst y) .to (snd ∘ g)               
+  where 
+    open _↔_ 
+    open 11•1•6
 
 --------------------------------------------------------------------
 -- § 11.2 The fundamental theorem
@@ -463,25 +474,24 @@ module 11•3•1 where
 
 -- Embeddings are homotopical analogue of the set theoretic notion of injective map
 -- Def 11.4.1
-record is-emb {A : Set ℓ₁} {B : Set ℓ₂} (f : A → B) : Set (ℓ₁ ⊔ ℓ₂) where
-  constructor Embed
-  field
-    ap-equiv : (x y : A) → is-equiv (ap {x = x} {y = y} f)
+is-emb : {A : Set ℓ₁} {B : Set ℓ₂} (f : A → B) → Set (ℓ₁ ⊔ ℓ₂)
+is-emb {A = A} f = (x y : A) → is-equiv (ap {x = x} {y = y} f)
 
-  map : A → B
-  map = f
-
-_↪_ : Set ℓ → Set ℓ → Set ℓ
+_↪_ : Set ℓ₁ → Set ℓ₂ → Set _
 A ↪ B = Σ[ f ∈ (A → B) ] is-emb f
 
+-- The interesting bit (injectivity)
+is-inj : {A : Set ℓ₁} {B : Set ℓ₂} (f : A → B) → Set _ 
+is-inj {A = A} f = {x y : A} → f x ≡ f y → x ≡ y 
+
 -- AH> The helper we will want most of the time
-emb-injective : {f : A → B} → is-emb f → (x y : A) → f x ≡ f y → x ≡ y
-emb-injective {f = f} (Embed ap-equiv) x y = `sec (ap-equiv x y) 
+emb-injective : {f : A → B} → is-emb f → is-inj f
+emb-injective {f = f} ap-equiv {x} {y} = `sec (ap-equiv x y) 
 
 -- Theorem 11.4.1 Any Equivalence is an embedding
 Equiv⇒Embedding : (e : A ≃ B) → (is-emb (fst e))
 Equiv⇒Embedding {A = A} {B = B} (f , f-equiv) = 
-  Embed (λ x y → from (11•2•2.i↔ii x refl (λ y → ap {x = x} {y = y} f)) (is-contr-total-space x) y)
+  (λ x y → from (11•2•2.i↔ii x refl (λ y → ap {x = x} {y = y} f)) (is-contr-total-space x) y)
   where
     open _↔_
     -- we have that the fiber `fib f (f x)` is contractible for each x

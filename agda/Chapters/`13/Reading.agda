@@ -9,7 +9,7 @@ open import Chapters.`11.Reading
 open import Chapters.`11.Exercises
 open import Chapters.`12.Reading
 
-open import Function
+open import Function hiding (_↔_)
 --------------------------------------------------------------------------------
 -- 13.1 Equivalent forms of function extensionality
 
@@ -73,6 +73,10 @@ module FunExt {ℓ₁ ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂}
   -- AH> The straightforward use of this axiom
   fun-ext : (f g : (x : A) → 𝐁 x)  → (f ∼ g) → f ≡ g
   fun-ext f g = `sec (Fun-Ext f g)  
+
+  -- The axiom stated as an equivalence
+  eq-≃-htpy : (f g : (x : A) → 𝐁 x) → (f ≡ g) ≃ (f ∼ g)
+  eq-≃-htpy f g  = htpy-eq f g , Fun-Ext f g 
 
   -- We bundle the equivalent forms of functional extensionality
   -- by invoking the fundamental theorem of identity types.
@@ -528,7 +532,7 @@ module _ (A : Set ℓ) (cntr : is-contr A) where
 -- 
 -- AH> Something feels inherently Yoneda-ey here, but contra-variant. 
 
-module _ {A B : Set ℓ} (f : A → B) where 
+module _ {A : Set ℓ₁} {B : Set ℓ₂} (f : A → B) where 
 
   -- This is the contravariant Hom-functor made dependent.
   Hom[—,X]-dep : ∀ {P : B → Set ℓ} → ((y : B) → P y) → ((x : A) → P (f x))
@@ -557,7 +561,7 @@ module _ {A B : Set ℓ} (f : A → B) where
       g h y =   tr P (G y) (h (f⁻¹ y))
 
   -- The other direction
-  Hom-equiv⇒is-equiv : (∀ (X : Set ℓ) → is-equiv (_∘ f))  → is-equiv f 
+  Hom-equiv⇒is-equiv : (∀ {ℓ} (X : Set ℓ) → is-equiv (_∘ f))  → is-equiv f 
   Hom-equiv⇒is-equiv eqv with 
     is-equiv⇒is-contr-map _ (eqv A) id | is-equiv⇒is-contr-map _ (eqv B) f 
   ... | ((h , H) , h-cntr) | ((g , G) , g-cntr)  = 
@@ -566,12 +570,16 @@ module _ {A B : Set ℓ} (f : A → B) where
       -- The type Σ[ g ∈ B → B ] (g ∘ f ≡ f) is contractible,
       -- with center of contraction `g`.
       -- As (f ∘ h) : B → B, we have (f ∘ h) ≡ g
-      f (h x) ≡⟨ ap (λ f′ → f′ x) (ap fst (g-cntr (f ∘ h , fun-ext _ _ (λ y → ap (λ f′ → (f (f′ y))) H)))) ⁻¹  ⟩ -- ap (λ f′ → f′ x) (ap fst (g-cntr (f ∘ h , fun-ext _ _ (λ y → ap (λ f′ → f (f′ y)) H)))) ⁻¹  ⟩ 
+      f (h x) ≡⟨ ap (λ f′ → f′ x) (ap fst (g-cntr (f ∘ h , fun-ext _ _ (λ y → ap (λ f′ → (f (f′ y))) H)))) ⁻¹  ⟩
         g x ≡⟨ ap (λ f′ → f′ x) (ap fst (g-cntr (id , refl)))  ⟩ 
         x ∎)) ,
     h , λ x → ap (λ f′ → f′ x) H
     where
       open PathReasoning
+    
+  postulate 
+    -- Exercise 13.12 (d)
+    post-composition-equiv : (∀ (X : Set ℓ) → is-equiv (λ (g : X → A) → f ∘ g)) ↔ is-equiv f 
 
 --------------------------------------------------------------------------------
 -- § 13.5: The strong induction principle of ℕ 
