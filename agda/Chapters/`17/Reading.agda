@@ -501,3 +501,34 @@ module _ {ℓ} where
     --     the same computational content as the simpler def'n.
     δ-iff-eq : ` eq-iff ∼ `eq-iff
     δ-iff-eq refl = refl 
+  --------------------------------------------------------------------------------
+  -- Corollary 17.2.4:
+  -- The type of decidable propositions in 𝒰 is equivalent to Bool.
+
+  open import Data.Empty.Polymorphic renaming (⊥ to ⊥ₚ)
+
+  DProp : Set _ 
+  DProp = ⟨ P ∈ Prop[ ℓ ] ∣ Decidable (P .fst) ⟩ 
+
+  DProp≃Bool : DProp ≃ Bool 
+  DProp≃Bool = 
+    DProp                                                         ≃⟨ dstrb ⟩ 
+    ((⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩)) ≃⟨ {!   !} ⟩ 
+    Bool ∎  
+    where 
+      open ≃-Reasoning
+      -- Need to prove a distributivity property for (dependent) products over sums 
+      dstrb : DProp ≃ ((Σ[ P ∈ Prop[ ℓ ] ] (P .fst)) + (Σ[ Q ∈ Prop[ ℓ ] ] (¬ (Q .fst))))
+      dstrb = 
+        DProp                                                           ≃⟨ refl-≃ ⟩ 
+        (⟨ P ∈ Prop[ ℓ ] ∣ (P .fst + ¬ (P .fst)) ⟩)                      ≃⟨ {!   !} ⟩ 
+        (⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + (¬ ⟨ Q ∈ Prop[ ℓ ] ∣ (Q .fst) ⟩)) ≃⟨ {!   !} ⟩ 
+        (⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ (Q .fst) ⟩) ∎ 
+
+      -- Clean this all up...
+      theGoods : ((⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩)) ≃ Bool 
+      theGoods = 
+        [ const true , const false ] , has-inverse⇒is-equiv 
+        ((λ { true → inj₁ ((⊤ₚ , is-contr⇒is-prop ⊤ₚ {!   !}) , ttₚ) ; 
+              false → inj₂ ((⊥ₚ , {!   !}) , λ ()) }) , 
+          {!   !})
