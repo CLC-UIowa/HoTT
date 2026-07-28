@@ -228,8 +228,34 @@ module _ {ℓ} where
   equiv-contractible A = univ-forms .space-contractible 
 
   -- We have an identity system
-  equiv-induction : (A : 𝒰) (P : (X : 𝒰) → A ≃ X → Set (lsuc ℓ)) → EquivInduction A P
-  equiv-induction A P = univ-forms .id-system P  
+  module _ where private 
+    -- AH> Here is how we can derive EquivInduction from the fundamental theorem
+    --     of identity types...
+    --     However, the identity system code in Ch. 11 is not sufficiently general in its levels;
+    --     in particular, we want the type family P to eliminate into an arbitrary universe (Set ι).
+    --     (See below that we're forced to let P eliminate into 𝒰₁).
+    --     I tried to fix the code in Chapter 11 to permit an arbitrary level for the motive P,
+    --     but that's causing my Agda to hang. (??) 
+    equiv-induction : (A : 𝒰) (P : (X : 𝒰) → A ≃ X → 𝒰₁) → EquivInduction A P
+    equiv-induction A P = univ-forms .id-system P  
+  
+  -- AH> Instead, I'm going to postulate EquivInduction at arbitrary motive level.
+  --     I don't see any harm in this---equiv-induction, defined above,
+  --     fundamentally relies on the postulation of Univalence made above.
+  postulate 
+    equiv-induction : ∀ {ι} → (A : 𝒰) (P : (X : 𝒰) → A ≃ X → Set ι) → EquivInduction A P
+  {- 
+  
+  -- But here's a rough sketch of how you'd prove it using univalence.
+  equiv-induction A P = eval-equiv , {!   !} 
+    where 
+      eval-equiv : P A refl-≃ → (X : 𝒰) → (e : A ≃ X) → P X e 
+      eval-equiv p X e with eq-equiv e 
+      ... | refl = tr (P X) pf e 
+        where 
+          pf : e ≡ refl-≃ 
+          pf = {! is-contr⇒is-prop _ (equiv-contractible X) (X , e) (X , refl-≃) .center   !} 
+  -} 
 
 --------------------------------------------------------------------------------
 -- Def 17.1.3: A type X is said to be 𝒰-small if it comes equipped with an element of type:
@@ -287,8 +313,12 @@ module _ {ℓ} where
   -- Stating the dual, for use elsewhere.
   ⊥-≃-is-empty : ∀ (A : Set ι) → (A → ⊥ₚ {ℓ}) → A ≃ (⊥ₚ {ℓ})
   ⊥-≃-is-empty A ¬A = ¬A , has-inverse⇒is-equiv 
-    ((λ ()) , (λ ()) , ⊥ₚ-elim ∘ ¬A)
+    (¬A⁻¹ , (λ ()) , λ x → ⊥ₚ-elim {Whatever = λ _ → ¬A⁻¹ (¬A x) ≡ x} (¬A x) )
+    where 
+      ¬A⁻¹ : ⊥ₚ {ℓ} → A 
+      ¬A⁻¹ () 
 
+  -- Any empty type is 𝒰-small 
   is-empty-small : ∀ (A : Set ι) → (A → ⊥ₚ) → is-small A
   is-empty-small A ¬A = ⊥ₚ , ⊥-≃-is-empty A ¬A 
 
@@ -515,57 +545,117 @@ module _ {ℓ} where
   -- Corollary 17.2.4:
   -- The type of decidable propositions in 𝒰 is equivalent to Bool.
 
-  -- DProp := Σ[ P ∈ Set ℓ ](is-prop P × Decidable P)
-  DProp : Set _ 
-  DProp = ⟨ P ∈ Prop[ ℓ ] ∣ Decidable (P .fst) ⟩ 
+  module _ where 
+    open ≃-Reasoning 
 
-  -- AH> Just to be clear about what DProp is
-  DecidableProp : Set _
-  DecidableProp = Σ[ P ∈ 𝒰 ] (is-prop P × Decidable P) 
+    DProp : Set _ 
+    DProp = ⟨ P ∈ Prop[ ℓ ] ∣ Decidable (P .fst) ⟩ 
 
-  _ : DProp ≃ DecidableProp
-  _ = (λ { ((P , prop) , dec) → (P , prop , dec) }) , 
-    (has-inverse⇒is-equiv 
-      ((λ { (P , prop , dec) → ((P , prop) , dec) })  , 
-      Refl , 
-      Refl)) 
-  
-  -- AH> An observation I made a while ago
-  _ : ((P , _) : DecidableProp) → (is-contr P + is-empty P)
-  _ = λ { (P , is-prop , is-dec) → ⊤-or-⊥ P is-prop is-dec } 
+    -- AH> Just to be clear about what DProp is
+    DecidableProp : Set _
+    DecidableProp = Σ[ P ∈ 𝒰 ] (is-prop P × Decidable P) 
 
-  DProp≃Bool : DProp ≃ Bool 
-  DProp≃Bool = 
-    DProp                                                         ≃⟨ Σ-distrib-+ {A = Prop[ ℓ ]} {fst} {¬_ ∘ fst} ⟩ 
-    ((⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩)) ≃⟨ ≃-distrib-+ (⊤-≃-contr _ P-contr) ((⊤-≃-contr _ ¬Q-contr)) ⟩ 
-    (⊤ₚ {ℓ} + ⊤ₚ {ℓ})                                              ≃⟨ sym-≃ Bool≃⊤+⊤ ⟩ 
-    Bool ∎  
-    where 
-      open ≃-Reasoning
-      P-contr : is-contr (⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩) 
-      P-contr = 
-        ((⊤ₚ , is-prop-⊤ₚ) , ttₚ) , 
-        (λ { ((X , prop-X) , x) → fst-inj 
-          snd 
+    _ : DProp ≃ DecidableProp
+    _ = (λ { ((P , prop) , dec) → (P , prop , dec) }) , 
+      (has-inverse⇒is-equiv 
+        ((λ { (P , prop , dec) → ((P , prop) , dec) })  , 
+        Refl , 
+        Refl)) 
+    
+
+    -- AH> An observation I made a while ago.
+    --     We aren't going to use it...
+    decProp⇒contr-or-empty : ((P , _) : DecidableProp) → (is-contr P + is-empty P)
+    decProp⇒contr-or-empty = λ { (P , is-prop , is-dec) → ⊤-or-⊥ P is-prop is-dec } 
+
+    -- The proof structure is as follows:
+    -- 1. Prove that 
+    --      DProp ≃ ⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩
+    -- 2. Prove that 
+    --      ⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ and ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩ 
+    --    are contractible. 
+    -- 3. Since they're contractible, they're each equivalent to ⊤. 
+    -- 4. Because _≃_ is congruent over _＋_, we have 
+    --      DProp ≃ ⊤ + ⊤ 
+    -- 5. By Rijke's definition, this is Bool! By ours, we have to also
+    --    prove that
+    --      Bool ≃ ⊤ + ⊤ 
+
+    -- (2) Prove contractibility
+    P-contr : is-contr (⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩) 
+    P-contr = 
+      ((⊤ₚ , is-prop-⊤ₚ) , ttₚ) , 
+      (λ { ((X , prop-X) , x) → fst-inj 
+        snd 
+        (fst-inj 
+          (λ _ → is-prop²) 
+          (eq-equiv (sym-≃ (⊤-≃-contr X (is-prop⇒contractibleIfInhabited prop-X x))))) }) 
+    
+    ¬Q-contr : is-contr ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩
+    ¬Q-contr = 
+      ((⊥ₚ , is-prop-⊥ₚ) , λ ()) ,
+      (λ { ((X , prop-X) , ¬X) → 
+        fst-inj 
+          (λ { (Y , prop-Y) → ¬P-prop Y }) 
           (fst-inj 
             (λ _ → is-prop²) 
-            (eq-equiv (sym-≃ (⊤-≃-contr X (is-prop⇒contractibleIfInhabited prop-X x))))) }) 
-      
-      ¬Q-contr : is-contr ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩
-      ¬Q-contr = 
-        ((⊥ₚ , is-prop-⊥ₚ) , λ ()) ,
-        (λ { ((X , prop-X) , ¬X) → 
-          fst-inj 
-            (λ { (Y , prop-Y) → ¬P-prop Y }) 
-            (fst-inj 
-              (λ _ → is-prop²) 
-              (eq-equiv (sym-≃ (⊥-≃-is-empty X (⊥-elim ∘ ¬X))))) })
+            (eq-equiv (sym-≃ (⊥-≃-is-empty X (⊥-elim ∘ ¬X))))) })
 
-      Bool≃⊤+⊤ : Bool ≃ (⊤ₚ {ℓ₁} + ⊤ₚ {ℓ₂})
-      Bool≃⊤+⊤ = (λ { true → inj₁ ttₚ ; false → inj₂ ttₚ }) , 
-        has-inverse⇒is-equiv 
-          ((λ { (inj₁ x) → true  ; (inj₂ y) → false }) , 
-          (λ { (inj₁ ttₚ) → refl
-             ; (inj₂ ttₚ) → refl }) , 
-          λ { false → refl
-            ; true → refl })
+    -- (4) Prove Bool ≃ ⊤ₚ {ℓ₁} + ⊤ₚ {ℓ₂}
+    Bool≃⊤+⊤ : Bool ≃ (⊤ₚ {ℓ₁} + ⊤ₚ {ℓ₂})
+    Bool≃⊤+⊤ = (λ { true → inj₁ ttₚ ; false → inj₂ ttₚ }) , 
+      has-inverse⇒is-equiv 
+        ((λ { (inj₁ x) → true  ; (inj₂ y) → false }) , 
+        (λ { (inj₁ ttₚ) → refl
+            ; (inj₂ ttₚ) → refl }) , 
+        λ { false → refl
+          ; true → refl })
+
+    -- Finally, chain together the above. The first step is postulated in Ch. 9. 
+    DProp≃Bool : DProp ≃ Bool 
+    DProp≃Bool = 
+      DProp                                                         ≃⟨ Σ-distrib-+ {A = Prop[ ℓ ]} {fst} {¬_ ∘ fst} ⟩ 
+      ((⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩)) ≃⟨ ≃-distrib-+ (⊤-≃-contr _ P-contr) ((⊤-≃-contr _ ¬Q-contr)) ⟩ 
+      (⊤ₚ {ℓ} + ⊤ₚ {ℓ})                                              ≃⟨ sym-≃ Bool≃⊤+⊤ ⟩ 
+      Bool ∎  
+
+  --------------------------------------------------------------------------------
+  -- § 17.3 Univalence implies function extensionality 
+  
+  --------------------------------------------------------------------------------
+  -- Lemma 17.3.1 : For any equivalence e : X ≃ Y in a univalent universe 𝒰,
+  -- and any type A, the post-composition map:
+  --   e ∘ — : (A → X) → (A → Y)
+  -- is an equivalence. 
+  
+  -- AH> N.b. this is postulated in Ch. 13, and is the solution to Ex 13.12 (d).
+  --     We prove it again here, because (1) it's postulated!, and (2) were we
+  --     to prove it there, we would use function extensionality. So we'll avoid
+  --     circularity.
+
+-- This proof is very subtle.
+-- The idea behind equiv-induction is that, provided a motive:
+--   P : (Y : 𝒰) → X ≃ Y → Set ι 
+-- if we can prove P X refl≃, then we know P Y e holds. 
+-- Here, we let:
+--   P Y e = is-equiv ((` e) ∘_)
+-- So now we have
+--  P X refl≃ = is-equiv (` refl≃) ∘_) 
+-- But (` refl≃) = id, so we must prove:
+--  is-equiv (id ∘_)
+-- where
+--  (id ∘ _) : (A → X) → (A → X)
+-- But we have
+--   id : (A → X) → A → X 
+-- and 
+--   (id ∘ _) ≡ id 
+-- so we must prove (is-equiv id), which we have already  done:
+--   is-equiv-id : ∀ {A} → is-equiv id
+-- Hence we have proven P x refl≃, and so: 
+--  P y e = is-equiv ((` e) ∘_) 
+-- holds.  
+  post-comp-equivalence : {X Y : 𝒰} → (e : X ≃ Y) → 
+                          (A : Set ι) → is-equiv (_∘_ {A = A} (` e)) 
+  post-comp-equivalence {X = X} {Y} e@(f , ((σ , sec) , (ρ , retr))) A  = 
+    equiv-induction X (λ Y e → is-equiv (_∘_ {A = A} (` e))) .fst is-equiv-id Y e 
+                       
