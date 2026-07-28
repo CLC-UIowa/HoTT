@@ -45,6 +45,8 @@ noFunnyBusiness A .snd .fst = (λ { (c , cntr) → c , cntr }) , (λ _ → refl)
 noFunnyBusiness A .snd .snd = (λ { (c , cntr) → c , cntr }) , (λ _ → refl)
 
 -- Example 10.1.3: The unit type is contractible
+⊤ₚ-contr : is-contr (⊤ₚ {ℓ}) 
+⊤ₚ-contr = ttₚ , λ { ttₚ → refl }
 
 -- Rijke's proof, which pattern matches on x : ⊤
 ⊤-contr : is-contr ⊤

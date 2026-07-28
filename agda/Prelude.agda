@@ -13,6 +13,7 @@ open import Data.Sum
 open import Data.Unit using (⊤ ; tt) public
 open import Data.Unit.Polymorphic renaming (⊤ to ⊤ₚ ; tt to ttₚ) public
 open import Data.Empty using (⊥ ; ⊥-elim) public
+open import Data.Empty.Polymorphic renaming (⊥ to ⊥ₚ ; ⊥-elim to ⊥ₚ-elim) public
 open import Data.Fin
   using (Fin ; fromℕ)
   renaming (zero to fzero ; suc to fsuc) public
@@ -30,7 +31,7 @@ open import Relation.Nullary using (¬_) public
 open import Data.String using (String)
 
 -----------------------------------------------------------------------------
--- Rewriting 
+-- Rewriting  
 
 open import Agda.Builtin.Equality.Rewrite public 
 

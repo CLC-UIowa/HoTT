@@ -49,13 +49,18 @@ is-contr⇒is-prop A (c , cntr) x y =
   (cntr x ⁻¹ ○ cntr y) , λ { refl → left-inv (cntr x) }
 
 
--- AH> I would really prefer we use Agda stdlib's ⊤ and ⊥ over 𝟙 and ∅,
---     and yes I am fully aware of the irony in asserting this simply
---     because 𝟙 does not render in my emacs font.
+-- ⊥ is a prop 
+is-prop-⊥ₚ : is-prop (⊥ₚ {ℓ})
+is-prop-⊥ₚ ()
+
 is-prop-⊥ : is-prop ⊥
 is-prop-⊥ ()
+
 is-prop-⊤ : is-prop ⊤
 is-prop-⊤ = is-contr⇒is-prop ⊤ ⊤-contr
+
+is-prop-⊤ₚ : is-prop (⊤ₚ {ℓ})
+is-prop-⊤ₚ = is-contr⇒is-prop ⊤ₚ ⊤ₚ-contr
 
 ----------------------------------------
 -- Proposition 12.1.3
@@ -119,7 +124,11 @@ module _ where
   --       isProp a : ∀ (y : A) → a ≡ y
   --     be the contraction.
   Irrelevant⇒contractibleIfInhabited : Irrelevant A → (A → is-contr A)
-  Irrelevant⇒contractibleIfInhabited isProp a = (a , isProp a)
+  Irrelevant⇒contractibleIfInhabited irr a = (a , irr a)
+
+  -- For use elsewhere
+  is-prop⇒contractibleIfInhabited : is-prop A → A → is-contr A 
+  is-prop⇒contractibleIfInhabited = Irrelevant⇒contractibleIfInhabited ∘ is-prop⇒Irrelevant
 
   -- The other direction, for use elsewhere
   contractibleIfInhabited⇒is-prop : (A → is-contr A) → is-prop A 
@@ -527,6 +536,21 @@ k-type⇒identity-k-types k A A-is-k-type = k-type⇒k+1-type k A A-is-k-type
 k-type-closed-under-equivalence : {A B : Set ℓ} → (k : 𝕋) (e : A ≃ B) → is-trunc k B → is-trunc k A
 k-type-closed-under-equivalence -𝟚T (f , f-equiv) B-k-type = 10-3.contr-codomain⇒contr-domain f B-k-type f-equiv
 k-type-closed-under-equivalence (succT k) (f , f-equiv) B-k-type x y = {!k-type-closed-under-equivalence {A = x ≡ y}  k!}
+
+open Chapters.`10.Exercises ; open 10-5
+
+-- AH> k-types are closed under _×_
+×-k-type : {A : Set ℓ₁} {B : Set ℓ₂} → (k : 𝕋) → is-trunc k A → is-trunc k B → is-trunc k (A × B) 
+×-k-type -𝟚T = curry 10-5-i⇒ii 
+×-k-type (succT k) trunc-a trunc-b (a₁ , b₁) (a₂ , b₂) = k-type-closed-under-equivalence k pair-eqv (×-k-type k (trunc-a a₁ a₂) (trunc-b b₁ b₂)) 
+  where 
+    pair-eqv : ((a₁ , b₁) ≡ (a₂ , b₂)) ≃ (a₁ ≡ a₂ × b₁ ≡ b₂)
+    pair-eqv = (λ { refl → refl , refl }) , 
+      has-inverse⇒is-equiv 
+       ((λ { (refl , refl) →  refl }) , 
+       (λ { (refl , refl) → refl }) , 
+       (λ { refl → refl }))
+
 
 -- Corollary 12.4.6: if f : A → B is an embedding, and B is a (k + 1)-type, then so is A.
 k+1-domain : {A B : Set ℓ} (f : A → B) → is-emb f → (k : 𝕋) → 

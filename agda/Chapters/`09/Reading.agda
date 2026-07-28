@@ -126,6 +126,11 @@ open import Data.Empty
   H = λ { (inj₁ x) → refl }
 
 
+-- AH> Grumble mumble mumble 
+postulate 
+  Σ-distrib-+ : {A : Set ℓ} {P : A → Set ℓ₂} {Q : A → Set ℓ₂} → 
+                (Σ[ x ∈ A ] (P x + Q x)) ≃ ((Σ[ x ∈ A ] (P x)) + (Σ[ x ∈ A ] (Q x)))
+
 ×-distrib-+ : {A B C : Set ℓ} → (A × (B + C)) ≃ ((A × B) + (A × C))
 ×-distrib-+ {A = A} {B} {C} = α , has-inverse⇒is-equiv (β , (G , H)) where
   α : A × (B + C) → (A × B) + (A × C)

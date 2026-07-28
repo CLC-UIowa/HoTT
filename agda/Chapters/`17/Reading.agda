@@ -36,19 +36,21 @@ postulate
   cong-≃ : ∀ {A : Set ℓ₁} {B : Set ℓ₂} {X : Set ι₁} {Y : Set ι₂} → 
                  A ≃ X → 
                  B ≃ Y → 
-                 (A ≃ B) ≃ (X ≃ Y)                                   
+                 (A ≃ B) ≃ (X ≃ Y)   
+
+  -- I'll need this too 
+  ≃-distrib-+ : ∀ {A : Set ℓ₁} {B : Set ℓ₂} {X : Set ι₁} {Y : Set ι₂} → 
+                  (A ≃ X) → (B ≃ Y) → (A + B) ≃ (X + Y)                                 
 
 --------------------------------------------------------------------------------
 -- Contractibility is closed under _×_ and _≃_ 
 
 -- contractability and propositionality are closed under _×_ 
 ×-is-contr : is-contr A → is-contr B → is-contr (A × B)
-×-is-contr = curry 10-5-i⇒ii 
+×-is-contr = ×-k-type -𝟚T 
 
--- AH> There's got to be a better way to transfer properties of contractible types
---     to properties of propositions
 ×-is-prop : is-prop A → is-prop B → is-prop (A × B) 
-×-is-prop prop-A prop-B = contractibleIfInhabited⇒is-prop (λ { (a , b) → ×-is-contr (a , center ∘ prop-A  a) ((b , center ∘ prop-B b)) })       
+×-is-prop = ×-k-type (succT -𝟚T) 
 
 --------------------------------------------------------------------------------
 --   Now's as good a time as any to prove the following
@@ -277,10 +279,18 @@ module _ {ℓ} where
   ⊤-≃-contr A (c , C) = 
     (const ttₚ , 
     has-inverse⇒is-equiv (const c , (λ { ttₚ → refl } ) , C))  
-  
+
   -- Proof of (ii)
   contractible-small : ∀ (A : Set ι) → is-contr A → is-small A
   contractible-small A C = ⊤ₚ , ⊤-≃-contr A C 
+
+  -- Stating the dual, for use elsewhere.
+  ⊥-≃-is-empty : ∀ (A : Set ι) → (A → ⊥ₚ {ℓ}) → A ≃ (⊥ₚ {ℓ})
+  ⊥-≃-is-empty A ¬A = ¬A , has-inverse⇒is-equiv 
+    ((λ ()) , (λ ()) , ⊥ₚ-elim ∘ ¬A)
+
+  is-empty-small : ∀ (A : Set ι) → (A → ⊥ₚ) → is-small A
+  is-empty-small A ¬A = ⊥ₚ , ⊥-≃-is-empty A ¬A 
 
   -- (iii) For any family P of 𝒰-small types over a 𝒰-small type A, the dependent
   --       product (x : A) → B x is 𝒰-small.
@@ -505,30 +515,51 @@ module _ {ℓ} where
   -- Corollary 17.2.4:
   -- The type of decidable propositions in 𝒰 is equivalent to Bool.
 
-  open import Data.Empty.Polymorphic renaming (⊥ to ⊥ₚ)
-
+  -- DProp := Σ[ P ∈ Set ℓ ](is-prop P × Decidable P)
   DProp : Set _ 
   DProp = ⟨ P ∈ Prop[ ℓ ] ∣ Decidable (P .fst) ⟩ 
 
+  -- A cleaner way to look at it. There is a generalization here
+  -- to be made about (certain forms of) Σ associativity.
+  _ : DProp ≃ ⟨ P ∈ Set ℓ ∣ is-prop P × Decidable P ⟩ 
+  _ = (λ { ((P , prop) , dec) → (P , prop , dec) }) , 
+    (has-inverse⇒is-equiv 
+      ((λ { (P , prop , dec) → ((P , prop) , dec) })  , 
+      Refl , 
+      Refl)) 
+
   DProp≃Bool : DProp ≃ Bool 
   DProp≃Bool = 
-    DProp                                                         ≃⟨ dstrb ⟩ 
-    ((⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩)) ≃⟨ {!   !} ⟩ 
+    DProp                                                         ≃⟨ Σ-distrib-+ {A = Prop[ ℓ ]} {fst} {¬_ ∘ fst} ⟩ 
+    ((⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩)) ≃⟨ ≃-distrib-+ (⊤-≃-contr _ P-contr) ((⊤-≃-contr _ ¬Q-contr)) ⟩ 
+    (⊤ₚ {ℓ} + ⊤ₚ {ℓ})                                              ≃⟨ sym-≃ Bool≃⊤+⊤ ⟩ 
     Bool ∎  
     where 
       open ≃-Reasoning
-      -- Need to prove a distributivity property for (dependent) products over sums 
-      dstrb : DProp ≃ ((Σ[ P ∈ Prop[ ℓ ] ] (P .fst)) + (Σ[ Q ∈ Prop[ ℓ ] ] (¬ (Q .fst))))
-      dstrb = 
-        DProp                                                           ≃⟨ refl-≃ ⟩ 
-        (⟨ P ∈ Prop[ ℓ ] ∣ (P .fst + ¬ (P .fst)) ⟩)                      ≃⟨ {!   !} ⟩ 
-        (⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + (¬ ⟨ Q ∈ Prop[ ℓ ] ∣ (Q .fst) ⟩)) ≃⟨ {!   !} ⟩ 
-        (⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ (Q .fst) ⟩) ∎ 
+      P-contr : is-contr (⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩) 
+      P-contr = 
+        ((⊤ₚ , is-prop-⊤ₚ) , ttₚ) , 
+        (λ { ((X , prop-X) , x) → fst-inj 
+          snd 
+          (fst-inj 
+            (λ _ → is-prop²) 
+            (eq-equiv (sym-≃ (⊤-≃-contr X (is-prop⇒contractibleIfInhabited prop-X x))))) }) 
+      
+      ¬Q-contr : is-contr ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩
+      ¬Q-contr = 
+        ((⊥ₚ , is-prop-⊥ₚ) , λ ()) ,
+        (λ { ((X , prop-X) , ¬X) → 
+          fst-inj 
+            (λ { (Y , prop-Y) → ¬P-prop Y }) 
+            (fst-inj 
+              (λ _ → is-prop²) 
+              (eq-equiv (sym-≃ (⊥-≃-is-empty X (⊥-elim ∘ ¬X))))) })
 
-      -- Clean this all up...
-      theGoods : ((⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩)) ≃ Bool 
-      theGoods = 
-        [ const true , const false ] , has-inverse⇒is-equiv 
-        ((λ { true → inj₁ ((⊤ₚ , is-contr⇒is-prop ⊤ₚ {!   !}) , ttₚ) ; 
-              false → inj₂ ((⊥ₚ , {!   !}) , λ ()) }) , 
-          {!   !})
+      Bool≃⊤+⊤ : Bool ≃ (⊤ₚ {ℓ₁} + ⊤ₚ {ℓ₂})
+      Bool≃⊤+⊤ = (λ { true → inj₁ ttₚ ; false → inj₂ ttₚ }) , 
+        has-inverse⇒is-equiv 
+          ((λ { (inj₁ x) → true  ; (inj₂ y) → false }) , 
+          (λ { (inj₁ ttₚ) → refl
+             ; (inj₂ ttₚ) → refl }) , 
+          λ { false → refl
+            ; true → refl })
