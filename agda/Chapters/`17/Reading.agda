@@ -19,6 +19,9 @@ private
     A B C : Set ℓ 
     𝐁 : A → Set ℓ
 
+open Chapters.`10.Exercises ; open 10-5
+open is-contr    
+
 --------------------------------------------------------------------------------
 -- We will need a handful of lemmas about type equivalence. 
 --------------------------------------------------------------------------------
@@ -38,10 +41,14 @@ postulate
 --------------------------------------------------------------------------------
 -- Contractibility is closed under _×_ and _≃_ 
 
--- contractability is closed under _×_ 
-open Chapters.`10.Exercises ; open 10-5
+-- contractability and propositionality are closed under _×_ 
 ×-is-contr : is-contr A → is-contr B → is-contr (A × B)
 ×-is-contr = curry 10-5-i⇒ii 
+
+-- AH> There's got to be a better way to transfer properties of contractible types
+--     to properties of propositions
+×-is-prop : is-prop A → is-prop B → is-prop (A × B) 
+×-is-prop prop-A prop-B = contractibleIfInhabited⇒is-prop (λ { (a , b) → ×-is-contr (a , center ∘ prop-A  a) ((b , center ∘ prop-B b)) })       
 
 --------------------------------------------------------------------------------
 --   Now's as good a time as any to prove the following
@@ -147,7 +154,7 @@ sym-≃² = sym-≃ , has-inverse⇒is-equiv (sym-≃ , sym-≃-involutive , sym
 -- Ch. 17 The Univalence Axiom
   
 --------------------------------------------------------------------------------
--- §17.1 Equivalence forms of the Univalence Axiom 
+-- §17.1 Equivalent forms of the Univalence Axiom 
 -- AH> I will first characterize each equivalent form. That they are equivalent
 --     follows form the fundamental theorem of identity types.
 
@@ -190,6 +197,7 @@ module _ {ℓ} where
   private
     𝒰 = Set ℓ 
     𝒰₁ = Set (lsuc ℓ)
+
 
   postulate 
     -- AH> We are postulating that all universes
@@ -261,7 +269,6 @@ module _ {ℓ} where
   all-𝒰 : (A : 𝒰) → is-small A
   all-𝒰 A = A , refl-≃
   
-  open is-contr
   -- (ii) Any contractible type is 𝒰-small with respect to any universe 𝒰
   -- the idea: every contractible type is isomorphic to the unit type 
   -- (at any universe level). We've proven this fact for ⊤ at level lzero elsewhere;
@@ -287,7 +294,7 @@ module _ {ℓ} where
   family-small A (X , (f , eq)) P sm-P with is-equiv⇒has-inverse eq
   ... | f⁻¹ , f∘f⁻¹ , f⁻¹∘f = 
       -- I can't be bothered to prove these inverses.
-      Y , (g , has-inverse⇒is-equiv (g⁻¹ , {!univ!} , {!!}))
+      Y , (g , has-inverse⇒is-equiv (g⁻¹ , {!!} , {!!}))
       where
         Y : 𝒰 
         Y = (x : X) → sm-P (f⁻¹ x) .fst
@@ -467,23 +474,30 @@ module _ {ℓ} where
            (prop-P : is-prop P) 
            (prop-Q : is-prop Q)  where 
     open _↔_
-    iff-eq : P ≡ Q → P ↔ Q 
-    iff-eq refl = (id , id) 
+    open ≃-Reasoning
 
-    ↔-irr : Irrelevant (P ↔ Q) 
-    ↔-irr p q = {! tr id (eq-equiv ↔-≃-×) p        !} -- Irrelevant⇒is-prop λ { (to₁ , from₁) (to₂ , from₂) → {!   !}  }
+    `eq-iff : P ≡ Q → P ↔ Q 
+    `eq-iff refl = (id , id) 
 
-    iff-eq-eqv : is-equiv iff-eq 
-    iff-eq-eqv = tr is-equiv same (chain .snd)
-      where 
-        open ≃-Reasoning 
-        chain : (P ≡ Q) ≃ (P ↔ Q)
-        chain = 
-          P ≡ Q ≃⟨ univ P Q ⟩ 
-          (P ≃ Q) ≃⟨ propositionalEquivalence (≃-prop prop-P prop-Q) (Irrelevant⇒is-prop ↔-irr) .from (propositionalEquivalence prop-P prop-Q) ⟩ 
-          (P ↔ Q) ∎ 
-        
-        
+    -- We chain together (P ≡ Q) ≃ (P ≃ Q) ≃ (P ↔ Q).
+    -- The first step is simply univalence.
+    eqv-iff : (P ≃ Q) ≃ (P ↔ Q) 
+    eqv-iff = propositionalEquivalence 
+                (≃-prop prop-P prop-Q) 
+                (≃-is-prop 
+                  (sym-≃ ↔-≃-×) 
+                  (×-is-prop 
+                    (prop-codomain prop-Q P) 
+                    (prop-codomain prop-P Q))) .from 
+                (propositionalEquivalence prop-P prop-Q)
 
-        same : chain .fst ≡ iff-eq 
-        same = fun-ext (chain .fst) iff-eq (λ { refl → refl }) 
+    eq-iff : (P ≡ Q) ≃ (P ↔ Q)
+    eq-iff = 
+      P ≡ Q   ≃⟨ univ P Q ⟩ 
+      (P ≃ Q) ≃⟨ eqv-iff ⟩ 
+      (P ↔ Q) ∎ 
+
+    -- AH> Just asserting that the chain produced by eq-iff has 
+    --     the same computational content as the simpler def'n.
+    δ-iff-eq : ` eq-iff ∼ `eq-iff
+    δ-iff-eq refl = refl 

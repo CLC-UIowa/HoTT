@@ -121,6 +121,10 @@ module _ where
   Irrelevant⇒contractibleIfInhabited : Irrelevant A → (A → is-contr A)
   Irrelevant⇒contractibleIfInhabited isProp a = (a , isProp a)
 
+  -- The other direction, for use elsewhere
+  contractibleIfInhabited⇒is-prop : (A → is-contr A) → is-prop A 
+  contractibleIfInhabited⇒is-prop ifInhab p q = is-contr⇒is-prop _ (ifInhab p) p q 
+
 
   -- This is a simple trick that will "give us" an X in the next proof step.
   lemmer : {X : Set ℓ₁} {Y : Set ℓ₂} → {f : X → Y} → (X → is-emb f) → is-emb f

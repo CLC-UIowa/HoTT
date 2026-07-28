@@ -47,6 +47,16 @@ sym-equiv = (sym , involution) , (sym , involution)
 _≃_ : Set ℓ₁ → Set ℓ₂ → Set (ℓ₁ ⊔ ℓ₂)
 A ≃ B = Σ[ f ∈ (A → B) ] is-equiv f
 
+-- AH> the text will often write e(x)
+--     for e : A ≃ B to mean (e .fst x).
+--     We'll write `_ to mimic that as best we can.
+`_ : A ≃ B → A → B 
+`_ (f , _) = f 
+
+-- AH> Same computational behavior as fst
+`-fst : `_ {A = A} {B = B} ∼ fst 
+`-fst = refl-∼
+
 -- "For any equivalence e : A ≃ B, we define e⁻¹ to be the
 --  section of e."
 `inv : A ≃ B → B → A
