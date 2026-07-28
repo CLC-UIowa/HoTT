@@ -217,7 +217,7 @@ has-inverse-comp {f = f} {g = g}
   ((λ x →  ap f (g∘g̅~id (f̅ x)) ○ f∘f̅~id x) , 
   λ x → ap g̅ (f̅∘f~id (g x)) ○ g̅∘g~id x )
 
-is-equiv-comp : {f : B → C} {g : A → B} → 
+is-equiv-comp _∘ₑ_ : {f : B → C} {g : A → B} → 
                 is-equiv f → 
                 is-equiv g → 
                 is-equiv (f ∘ g)
@@ -229,6 +229,8 @@ is-equiv-comp {f = f} {g = g} equiv-f equiv-g =
 
     has-inverse-g : has-inverse g
     has-inverse-g = is-equiv⇒has-inverse equiv-g
+
+_∘ₑ_ = is-equiv-comp
 
 trans-≃ : A ≃ B → B ≃ C → A ≃ C
 trans-≃ e1 e2 = (fst e2 ∘ fst e1) , (is-equiv-comp (snd e2) (snd e1))

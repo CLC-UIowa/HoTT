@@ -421,8 +421,23 @@ module _ {ℓ} where
   -- the family of maps
   --   equiv-eq : A ≡ B → pr₁ A ≃ pr₁ B 
   -- where A , B : Σ[ X ∈ 𝒰 ] (P X) given by equiv-eq refl = refl-≃ is an equivalence.
+  -- 
 
-  module _ (P : 𝒰 → Set ℓ) (prop-P : ∀ (X : 𝒰) → is-prop (P X)) where
-    equiv-eq′ : ∀ {A B : Σ[ X ∈ 𝒰 ] (P X)} → A ≡ B → fst A ≃ fst B 
-    equiv-eq′ refl = refl-≃   
+  module _ (P : 𝒰 → Set ℓ) 
+           (prop-P : ∀ (X : 𝒰) → is-prop (P X)) where
 
+    equiv-eq′ : {A  B : ⟨ X ∈ 𝒰 ∣ (P X) ⟩}  → A ≡ B → fst A ≃ fst B 
+    equiv-eq′ = equiv-eq ∘ ap fst   
+
+    -- AH> Rijke defines equiv-eq′(refl) := refl-≃.
+    --     Either def'n will do! But defining it as above 
+    --     makes the proof more straightforward.
+    _ : ∀ {A  : ⟨ X ∈ 𝒰 ∣ (P X) ⟩} → 
+          equiv-eq′ {A = A} refl ≡ refl-≃ 
+    _ = refl 
+
+    eq′-equiv : {A  B : ⟨ X ∈ 𝒰 ∣ (P X) ⟩} → fst A ≃ fst B → A ≡ B 
+    eq′-equiv = fst-inj prop-P ∘ eq-equiv 
+    
+    fst-≃ : {A  B : ⟨ X ∈ 𝒰 ∣ (P X) ⟩} → is-equiv (equiv-eq′ {A = A} {B})
+    fst-≃ {A = A} {B} = univalence ∘ₑ (fst-emb prop-P A B)
