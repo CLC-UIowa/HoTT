@@ -519,14 +519,20 @@ module _ {ℓ} where
   DProp : Set _ 
   DProp = ⟨ P ∈ Prop[ ℓ ] ∣ Decidable (P .fst) ⟩ 
 
-  -- A cleaner way to look at it. There is a generalization here
-  -- to be made about (certain forms of) Σ associativity.
-  _ : DProp ≃ ⟨ P ∈ Set ℓ ∣ is-prop P × Decidable P ⟩ 
+  -- AH> Just to be clear about what DProp is
+  DecidableProp : Set _
+  DecidableProp = Σ[ P ∈ 𝒰 ] (is-prop P × Decidable P) 
+
+  _ : DProp ≃ DecidableProp
   _ = (λ { ((P , prop) , dec) → (P , prop , dec) }) , 
     (has-inverse⇒is-equiv 
       ((λ { (P , prop , dec) → ((P , prop) , dec) })  , 
       Refl , 
       Refl)) 
+  
+  -- AH> An observation I made a while ago
+  _ : ((P , _) : DecidableProp) → (is-contr P + is-empty P)
+  _ = λ { (P , is-prop , is-dec) → ⊤-or-⊥ P is-prop is-dec } 
 
   DProp≃Bool : DProp ≃ Bool 
   DProp≃Bool = 
