@@ -89,7 +89,7 @@ module _ (f : A → B) where
   --   f ∘ g ≡ id ≃ f ∘ g ∼ id 
   fib-≃-section : fib (f ∘_) id ≃ section f 
   fib-≃-section = 
-    fib (f ∘_) id                 ≃⟨ refl-≃ ⟩ 
+    fib (f ∘_) id                  ≃⟨ refl-≃ ⟩ 
     Σ[ g ∈ (B → A) ] (f ∘ g ≡ id) ≃⟨ ≃-distrib-Σ refl-≃ (λ g → eq-≃-htpy (f ∘ g) id) ⟩ 
     Σ[ g ∈ (B → A) ] (f ∘ g ∼ id) ≃⟨ refl-≃ ⟩
     section f ∎ 
@@ -132,10 +132,10 @@ module _ (f : A → B) where
       ifInhabited eqv = ×-is-contr (section-is-contr eqv) (retraction-is-contr eqv) 
 
 -- It immediately follows that is-equiv is a subtype of (A → B)
-is-equiv-subtype : ⟨ is-equiv f ∣ f ∈ (A → B) ⟩ ⊆ (A → B) 
+is-equiv-subtype : is-equiv ⊆ (A → B) 
 is-equiv-subtype = is-prop-is-equiv
 
-≃-subtype : ⟨ is-equiv (fst e) ∣ e ∈ (A ≃ B) ⟩ ⊆ (A ≃ B)
+≃-subtype : (is-equiv ∘ fst) ⊆ (A ≃ B)
 ≃-subtype = is-prop-is-equiv ∘ fst 
 
 -- Because (is-equiv f) is a prop, it's sufficient to compare
@@ -486,9 +486,9 @@ module _ {ℓ} where
   -- 
 
   module _ (P : 𝒰 → Set ℓ) 
-           (prop-P : ∀ (X : 𝒰) → is-prop (P X)) where
+           (prop-P : P ⊆ 𝒰) where
 
-    equiv-eq′ : {A  B : ⟨ X ∈ 𝒰 ∣ (P X) ⟩}  → A ≡ B → fst A ≃ fst B 
+    equiv-eq′ : {A B : ⟨ X ∈ 𝒰 ∣ (P X) ⟩}  → A ≡ B → fst A ≃ fst B 
     equiv-eq′ = equiv-eq ∘ ap fst   
 
     -- AH> Rijke defines equiv-eq′(refl) := refl-≃.
@@ -522,7 +522,7 @@ module _ {ℓ} where
     -- We chain together (P ≡ Q) ≃ (P ≃ Q) ≃ (P ↔ Q).
     -- The first step is simply univalence.
     eqv-iff : (P ≃ Q) ≃ (P ↔ Q) 
-    eqv-iff = propositionalEquivalence 
+    eqv-iff =  propositionalEquivalence 
                 (≃-prop prop-P prop-Q) 
                 (≃-is-prop 
                   (sym-≃ ↔-≃-×) 
@@ -547,7 +547,6 @@ module _ {ℓ} where
 
   module _ where 
     open ≃-Reasoning 
-
     DProp : Set _ 
     DProp = ⟨ P ∈ Prop[ ℓ ] ∣ Decidable (P .fst) ⟩ 
 
@@ -570,12 +569,16 @@ module _ {ℓ} where
 
     -- The proof structure is as follows:
     -- 1. Prove that 
-    --      DProp ≃ ⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩
+               
+    --        DProp
+    --        ⟨ P ∈ Prop[ ℓ ] ∣ Decidable (P .fst) ⟩
+    --        ⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) + ¬ (P .fst) ⟩
+    --      ≃ ⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ + ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩
     -- 2. Prove that 
     --      ⟨ P ∈ Prop[ ℓ ] ∣ (P .fst) ⟩ and ⟨ Q ∈ Prop[ ℓ ] ∣ ¬ Q .fst ⟩ 
     --    are contractible. 
     -- 3. Since they're contractible, they're each equivalent to ⊤. 
-    -- 4. Because _≃_ is congruent over _＋_, we have 
+    -- 4. Because _≃_ is congruent over _+_, we have 
     --      DProp ≃ ⊤ + ⊤ 
     -- 5. By Rijke's definition, this is Bool! By ours, we have to also
     --    prove that
@@ -640,7 +643,7 @@ module _ {ℓ} where
 -- Here, we let:
 --   P Y e = is-equiv ((` e) ∘_)
 -- So now we have
---  P X refl≃ = is-equiv (` refl≃) ∘_) 
+--  P X refl-≃ = is-equiv (` refl-≃) ∘_) 
 -- But (` refl≃) = id, so we must prove:
 --  is-equiv (id ∘_)
 -- where
@@ -654,8 +657,8 @@ module _ {ℓ} where
 -- Hence we have proven P x refl≃, and so: 
 --  P y e = is-equiv ((` e) ∘_) 
 -- holds.  
-  post-comp-equivalence : {X Y : 𝒰} → (e : X ≃ Y) → 
-                          (A : Set ι) → is-equiv (_∘_ {A = A} (` e)) 
-  post-comp-equivalence {X = X} {Y} e@(f , ((σ , sec) , (ρ , retr))) A  = 
-    equiv-induction X (λ Y e → is-equiv (_∘_ {A = A} (` e))) .fst is-equiv-id Y e 
+  post-comp-equivalence : {X Y : 𝒰} → (f : X → Y) (e : is-equiv f) → 
+                          (A : Set ι) → is-equiv (_∘_ {A = A} f) 
+  post-comp-equivalence {X = X} {Y} f e A  = 
+    equiv-induction X (λ Y e → is-equiv (_∘_ {A = A} (` e))) .fst is-equiv-id Y (f , e) 
                        

@@ -302,7 +302,7 @@ module _ {A : Set ℓ₁} {B : Set ℓ₂} (f : A → B) where
 
 -- `fst` forms an embedding.
 fst-emb : {P : A → Set ℓ} → 
-          ⟨ P x ∣ x ∈ A ⟩ ⊆ A → 
+          P ⊆ A → 
           is-emb {A = Σ[ x ∈ A ](P x)} {B = A} fst 
 fst-emb {A = A} {P = P} sub =   
   prop-fibers⇒is-emb fst (Irrelevant⇒is-prop ∘ irrelevant-fibers)
