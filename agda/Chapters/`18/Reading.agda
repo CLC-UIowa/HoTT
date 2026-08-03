@@ -160,6 +160,39 @@ module _ {ℓ} where
           (∥—∥-ind′ (λ { (a′ , f) → {!q rel a′  !} }) 
           (λ _ → is-prop⇒is-set (prop-codomain {!!} A) (R x) Q ) eq-Q))
 
+  --------------------------------------------------------------------------------
+  -- AH> If we want, we can show an equivalence (below) of A // R ≅ A / R 
+  --     for R an equivalence relation.
+
+  
+  infixr 5 _//_
+  postulate 
+    _//_ : 𝒰 → (R : A → A → Prop[ ℓ ]) → Set ℓ 
+    q′ : ∀ {A : 𝒰} {R : A → A → Prop[ ℓ ]} → A → (A // R) 
+    β : ∀ {A : 𝒰} {R : A → A → Prop[ ℓ ]} → (a b : A) → R a b .fst → q′ {A} {R} a ≡ q′ b
+    set-trunc : ∀ {A : 𝒰} {R : A → A → Prop[ ℓ ]} → is-set (A // R)
+  
+
+  module _ (A : 𝒰) (rel : Eq-Rel A) where 
+    open Eq-Rel rel 
+    postulate 
+      —∘q : ((A // R) → B) ≃ (Σ[ f ∈ (A → B) ] ((a b : A) → a ≈ b → f a ≡ f b))
+
+    samesies :   (A // R) ≃ (A / rel) 
+    samesies = f , {!   !} 
+      where 
+        help : ∀ (a b c : A) → R a b .fst → R a c .fst ≡ R b c .fst 
+        help a b c r  = `inv (eq-iff (R a c .fst) (R b c .fst) (R a c . snd) (R b c .snd)) help₀ 
+          where 
+            help₀ : (a ≈ c) ↔ (b ≈ c)
+            help₀ ._↔_.to r₂ = τ _ _ _ (σ a b r) r₂
+            help₀ ._↔_.from r₂ = τ _ _ _ r r₂ 
+        f : A // R → A / rel 
+        f = `inv (—∘q {B = A / rel}) ((q {A} rel) , (λ a b r → fst-inj (λ _ → ∥ _ ∥-prop) (fun-ext _ _ λ x → fst-inj (λ _ → is-prop²) (help a b x r))))             
+
+      
+
+
         
 
         
