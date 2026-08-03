@@ -164,7 +164,15 @@ module _ {ℓ} where
   -- AH> If we want, we can show an equivalence (below) of A // R ≅ A / R 
   --     for R an equivalence relation.
 
-  
+
+  -- Contrast with:
+  {- 
+  data _//_ (A : 𝒰) (R : A → A → Prop[ ℓ ]) : Set ℓ where 
+    q′ : A → A // R 
+    β : (a b : A) → a ≈ b → q′ a ≡ q′ b 
+    set-trunc : is-set (A // R)
+  -}   
+
   infixr 5 _//_
   postulate 
     _//_ : 𝒰 → (R : A → A → Prop[ ℓ ]) → Set ℓ 
