@@ -115,9 +115,9 @@ module FunExt {ℓ₁ ℓ₂} {A : Set ℓ₁} {𝐁 : A → Set ℓ₂}
 
 module _ where 
   open is-contr 
-  WeakFunctionExtensionality : Setω
-  WeakFunctionExtensionality = 
-    ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} → 
+  WeakFunctionExtensionality : (ℓ₁ ℓ₂ : Level) → Set (lsuc ℓ₁ ⊔ lsuc ℓ₂)
+  WeakFunctionExtensionality ℓ₁ ℓ₂ = 
+    ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} → 
     ((x : A) → is-contr (B x)) → is-contr ((x : A) → B x)
 
   -- Function extensionality (let's call it "strong") implies weak
@@ -137,7 +137,7 @@ module _ where
   -- as desired. 
   strong⇒weak : (∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} → 
                    FunctionExtensionality {A = A} {𝐁 = B}) → 
-                 WeakFunctionExtensionality
+                 (∀ {ℓ₁} {ℓ₂} → WeakFunctionExtensionality ℓ₁ ℓ₂)
   strong⇒weak ext f = 
     center ∘ f , 
     λ g → fun-ext (center ∘ f) g (λ x → (contraction ∘ f) x (g x))
@@ -148,7 +148,7 @@ module _ where
   -- Prove the second condition of the fund. thm. of identity types:
   -- that the total space, Σ[ g ∈ (((x : A) → B x) → f ∼ g) ], is contractible.
   -- FunctionExtensionality then follows as an eqv. condition.
-  weak⇒strong : WeakFunctionExtensionality → 
+  weak⇒strong : (∀ {ℓ₁} {ℓ₂} → WeakFunctionExtensionality ℓ₁ ℓ₂) → 
                 (∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} → FunctionExtensionality {A = A} {𝐁 = B})
   weak⇒strong wk {A = A} {B} f = id-fund .family-equivalence
     where 

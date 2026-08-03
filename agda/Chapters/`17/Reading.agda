@@ -362,9 +362,7 @@ module _ {ℓ} where
 
                                 
   is-small-prop : ∀ (A : Set ι) → is-prop (is-small A)
-  is-small-prop A = (const⋆-embedding⇒is-prop ∘
-                       contractibleIfInhabited→const⋆-embedding {A = is-small A})
-                      ifInhabited
+  is-small-prop A = contractibleIfInhabited⇒is-prop ifInhabited
     where
       ifInhabited : is-small A → is-contr (is-small A)
       ifInhabited (X , e) = 
@@ -636,29 +634,116 @@ module _ {ℓ} where
   --     to prove it there, we would use function extensionality. So we'll avoid
   --     circularity.
 
--- This proof is very subtle.
--- The idea behind equiv-induction is that, provided a motive:
---   P : (Y : 𝒰) → X ≃ Y → Set ι 
--- if we can prove P X refl≃, then we know P Y e holds. 
--- Here, we let:
---   P Y e = is-equiv ((` e) ∘_)
--- So now we have
---  P X refl-≃ = is-equiv (` refl-≃) ∘_) 
--- But (` refl≃) = id, so we must prove:
---  is-equiv (id ∘_)
--- where
---  (id ∘ _) : (A → X) → (A → X)
--- But we have
---   id : (A → X) → A → X 
--- and 
---   (id ∘ _) ≡ id 
--- so we must prove (is-equiv id), which we have already  done:
---   is-equiv-id : ∀ {A} → is-equiv id
--- Hence we have proven P x refl≃, and so: 
---  P y e = is-equiv ((` e) ∘_) 
--- holds.  
-  post-comp-equivalence : {X Y : 𝒰} → (f : X → Y) (e : is-equiv f) → 
-                          (A : Set ι) → is-equiv (_∘_ {A = A} f) 
-  post-comp-equivalence {X = X} {Y} f e A  = 
+  -- This proof is very subtle.
+  -- The idea behind equiv-induction is that, provided a motive:
+  --   P : (Y : 𝒰) → X ≃ Y → Set ι 
+  -- if we can prove P X refl≃, then we know P Y e holds. 
+  -- Here, we let:
+  --   P Y e = is-equiv ((` e) ∘_)
+  -- So now we have
+  --  P X refl-≃ = is-equiv (` refl-≃) ∘_) 
+  -- But (` refl≃) = id, so we must prove:
+  --  is-equiv (id ∘_)
+  -- where
+  --  (id ∘ _) : (A → X) → (A → X)
+  -- But we have
+  --   id : (A → X) → A → X 
+  -- and 
+  --   (id ∘ _) ≡ id 
+  -- so we must prove (is-equiv id), which we have already  done:
+  --   is-equiv-id : ∀ {A} → is-equiv id
+  -- Hence we have proven P x refl≃, and so: 
+  --  P y e = is-equiv ((` e) ∘_) 
+  -- holds.  
+  f∘—-equivalence : {X Y : 𝒰} → (f : X → Y) (e : is-equiv f) → 
+                          (A : Set ι) → is-equiv (λ (g : A → X) → f ∘ g) 
+  f∘—-equivalence {X = X} {Y} f e A  = 
     equiv-induction X (λ Y e → is-equiv (_∘_ {A = A} (` e))) .fst is-equiv-id Y (f , e) 
-                       
+
+  -- Defining the dual here because it's simple enough
+  —∘f-equivalence : {X Y : 𝒰} → (f : X → Y) (e : is-equiv f) → 
+                    (A : Set ι) → is-equiv (λ (g : Y → A) → g ∘ f) 
+  —∘f-equivalence {X = X} {Y} f e A = equiv-induction X (λ Y e → is-equiv (λ (g : Y → A) → g ∘ (` e))) .fst is-equiv-id Y (f , e)    
+
+  --------------------------------------------------------------------------------
+  -- Thm 17.3.2 For any universe 𝒰, the univalence axiom on 𝒰 implies function 
+  -- extensionality on 𝒰.
+
+  -- We prove that univalence implies weak function extensionality, which implies function
+  -- extensionality. 
+  -- AH> N.b. the statement of weak function extensionality is: 
+  --     ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} → 
+  --     ((x : A) → is-contr (B x)) → is-contr ((x : A) → B x)
+  --   which holds ℓ₁ and A arbitrary. This statement is also true if we fix ℓ₁,
+  --   but we will need to reprove it as such. In other words, weak function / strong function
+  --   extensionality (as proven and postulated) are over f : A → B with A, B 
+  --   from possibly different universes, but univalence is posited over a single universe
+  --   𝒰. This subtlety is not a problem with cumulativity, which we work without.
+  weak⇒strong-𝒰 : WeakFunctionExtensionality ℓ ℓ →
+                (∀ {A : 𝒰} {B : A → 𝒰} → FunctionExtensionality {A = A} {𝐁 = B})
+  weak⇒strong-𝒰 wk {A = A} {B} f = id-fund .family-equivalence
+    where 
+      id-fund    : IdFund f refl-∼ (htpy-eq f)
+      id-fund-pf : IdFundProof f refl-∼ (htpy-eq f)
+
+      id-fund    = fund-thm-id f refl-∼ (htpy-eq f) id-fund-pf
+      id-fund-pf = spaceContractible
+        (contr-codomain⇒contr-domain i 
+        (wk {A = A} 
+            {B = λ x → Σ-syntax (B x) λ b → f x ≡ b} 
+            (λ x → (f x , refl) , λ { (_ , refl) → refl })) eqv-i)
+        where 
+          i : (Σ[ g ∈ ((x : A) → B x) ] (f ∼ g)) → 
+              ((x : A) → Σ[ b ∈ (B x) ] (f x ≡ b))
+          i (g , H) = < g , H > 
+
+          r : ((x : A) → Σ[ b ∈ (B x) ] (f x ≡ b)) → 
+              (Σ[ g ∈ ((x : A) → B x) ] (f ∼ g)) 
+          r p = (fst ∘ p) , (snd ∘ p) 
+
+          eqv-i : is-equiv i 
+          eqv-i = has-inverse⇒is-equiv (r , refl-∼ , refl-∼)  
+  
+  
+  
+  wkExt : WeakFunctionExtensionality ℓ ℓ
+  wkExt {A = A} {B = B} f = retract-is-contractible i (r , H) (pr₁-fibers id)
+    where 
+      open import Chapters.`10.Exercises
+      open 10-7 using (module 10-7b) ; open 10-7b
+      open 10-2
+
+      -- Exercise 10.7b tells us that pr₁ is an equiv
+      -- precisely because ((x : A) → B x) is contractible.
+      pr₁ : Σ[ x ∈ A ] (B x) → A 
+      pr₁ = fst 
+  
+      pr₁-equiv : is-equiv pr₁ 
+      pr₁-equiv = ii⇒i f 
+    
+      pr₁∘—-equiv : is-equiv (pr₁ ∘_)
+      pr₁∘—-equiv = f∘—-equivalence pr₁ pr₁-equiv A   
+      
+      pr₁-fibers : is-contr-map (pr₁ ∘_)
+      pr₁-fibers = is-equiv⇒is-contr-map (pr₁ ∘_) pr₁∘—-equiv 
+
+      -- We'll show that (( x : A) → B x) is a retract of fib (pr₁ ∘_) id
+      -- by exhibiting H : r ∘ i ∼ id.
+      -- Exercise 10.2 tells us that exhibiting a retract of a contractible
+      -- type entails the retract is contractible. Namely,
+      -- as (fib (pr₁ ∘_) id) is contractible, and 
+      --   i : ((x : A) → B x) → fib (pr₁ ∘_) id 
+      -- is a retraction, then ((x : A) → B x) is contractible.
+      i : ((x : A) → B x) → fib (pr₁ ∘_) id 
+      i f = (λ x → (x , f x)) , refl 
+
+      r : fib (pr₁ ∘_) id → ((x : A) → B x)
+      r (h , p) x =  tr B (htpy-eq _ _ p x) (snd (h x)) 
+
+      H : r ∘ i ∼ id 
+      H g = refl 
+      
+    
+    -- Function extensionality now follows for universe 𝒰.
+  Ext : ∀ {A : 𝒰} {B : A → 𝒰} → FunctionExtensionality {A = A} {𝐁 = B} 
+  Ext = weak⇒strong-𝒰 wkExt
