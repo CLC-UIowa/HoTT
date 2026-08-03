@@ -97,7 +97,22 @@ module _ {ℓ} where
   -- In the other direction, if we have an equivalence class P, then
   -- there exists y ∈ P such that [ y ] rel = P.
   ⌊_⌋  : {A : 𝒰} {R : Eq-Rel A} → (P : A / R) → Σ[ x ∈ A ]([ x ] R ≡ P .fst)
-  ⌊ P , eq-P ⌋ = ∥—∥-ind′ (λ { (x , r) → x , {!!} }) {!!} eq-P
+  ⌊_⌋ {A = A} {R = rel} (P , eq-P) = ∥—∥-ind′ 
+    body 
+    -- Need to show that we're eliminating into a proposition
+    (λ _ → {!!}) 
+    eq-P
+    where
+      open Eq-Rel rel
+      body : (Σ[ x ∈ A ] ∀[ y ∈ A ] ((y ∈ P) ⇔ (x ≈ y))) → Σ[ x ∈ A ] ([ x ] rel ≡ P)
+      body (x , r) = x , 
+        fun-ext _ _ (λ y → fst-inj (λ _ → is-prop²) 
+        (prop-ext-eq-class y ⁻¹))
+        where
+          -- propositional extensionality gives us an equality between being 
+          -- in the eqv class P and relating to its canonical element x.
+          prop-ext-eq-class : (y : A) → (y ∈ P) ≡ (x ≈ y)
+          prop-ext-eq-class y = `inv (eq-iff (y ∈ P) (y ∈ R x) (P y .snd) (R x y .snd)) (r y)
       
     
 --------------------------------------------------------------------------------
