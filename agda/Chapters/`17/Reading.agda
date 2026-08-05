@@ -534,6 +534,9 @@ module _ {ℓ} where
       P ≡ Q   ≃⟨ univ P Q ⟩ 
       (P ≃ Q) ≃⟨ eqv-iff ⟩ 
       (P ↔ Q) ∎ 
+    
+    iff→≡ : P ↔ Q → P ≡ Q 
+    iff→≡ = `inv eq-iff
 
     -- AH> Just asserting that the chain produced by eq-iff has 
     --     the same computational content as the simpler def'n.

@@ -857,12 +857,19 @@ module _ where
           𝒞 : C₁ ∼ C₂ 
           𝒞 x = is-prop⇒is-set (is-contr⇒is-prop _ (c₁ , C₁)) c₁ x (C₁ x) (C₂ x) .center  
 
+  is-prop-Irrelevant : Irrelevant (is-prop A)
+  is-prop-Irrelevant p q = fun-ext _ _ (λ x → fun-ext _ _ (λ y → is-prop-is-contr (p x y) (q x y) .center)) 
+
   -- And so witnesses to propositions are propositions.
   is-prop² : is-prop (is-prop A) 
-  is-prop² {A = A} = Irrelevant⇒is-prop irr 
+  is-prop² {A = A} = Irrelevant⇒is-prop is-prop-Irrelevant 
+  
+  -- Likewise, being a subtype is a proposition 
+  is-prop-subtype : (P : A → Set ℓ) → is-prop (P ⊆ A)
+  is-prop-subtype {A = A} P = Irrelevant⇒is-prop irr
     where 
-      irr : Irrelevant (is-prop A)
-      irr p q = fun-ext _ _ (λ x → fun-ext _ _ (λ y → is-prop-is-contr (p x y) (q x y) .center)) 
+      irr : Irrelevant (P ⊆ A)
+      irr sub₁ sub₂ = fun-ext _ _ (λ x → is-prop-Irrelevant (sub₁ x) (sub₂ x))
   
   -- Because (P ↔ Q) ↔ (P ≃ Q) for propositions P and Q, and because 
   -- both retraction η and is-prop A are propositions, it follows

@@ -137,6 +137,9 @@ module Paths where
 
   ap : (f : A → B) → x ≡ y → f x ≡ f y
   ap f refl = refl
+  
+  ap-app : {f g : A → B} → f ≡ g → (x : A) → f x ≡ g x 
+  ap-app e x = ap (λ h → h x) e 
 
   ap₂ : {C : Set ℓ} → (f : A → B → C) → {x y : A} {a b : B} → x ≡ y → a ≡ b → f x a ≡ f y b 
   ap₂ f refl refl = refl 
