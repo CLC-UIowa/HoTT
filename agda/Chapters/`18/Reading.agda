@@ -119,9 +119,29 @@ module _ {ℓ} where
            (eq-P : is-equivalence-class A rel P) where 
     open Eq-Rel rel 
     
-    -- I'll take this to be the canonical map
-    m : ([ x ] rel ≡ P) → x ∈ P 
-    m refl = ρ x
+    -- I'll take this to be the canonical map.
+    -- We're asserting that:
+    --   x ∈ P iff [ x ] ≡ P
+    -- which tells us that e.g. [ x ] ≡ [ y ], and so forth.
+    m : (P : A → 𝒰) → ([ x ] rel ≡ P) → x ∈ P 
+    m P refl = ρ x
+
+    -- Let's see what theorem we're really proving here
+    id-fund    : IdFund {A = A → 𝒰} {x ∈_} ([ x ] rel) (ρ x) m 
+    id-fund-pf : IdFundProof {A = A → 𝒰} {x ∈_} ([ x ] rel) (ρ x) m -- IdFundProof f refl-∼ (htpy-eq f)
+
+    id-fund    = fund-thm-id ([ x ] rel) (ρ x) m id-fund-pf -- fund-thm-id f refl-∼ (htpy-eq f) id-fund-pf
+    id-fund-pf = spaceContractible con -- spaceContractible ? 
+      where 
+        -- The problem is that this is not enough information about Q.
+        -- We must also know that it's a subtype and an equivalence class.
+        -- See below...
+        con : is-contr (Σ[ Q ∈ (A → 𝒰) ] (x ∈ Q))
+        con = ([ x ] rel , ρ x) , λ { (Q , x∈Q) → fst-inj {! subtype-  !} {! ⌊   !} } 
+
+    -- Given the above, we get the desired result, but we need to prove that. 
+    canon-map : is-equiv (m P)
+    canon-map = id-fund .family-equivalence P 
 
     -- We will prove that the total space is contractible
     -- and then use the fundamental thm of identity types for the first property.
@@ -164,6 +184,10 @@ module _ {ℓ} where
                 help₀ : (a ≈ c) ↔ (b ≈ c)
                 help₀ ._↔_.to r₂ = τ _ _ _ (σ a b r) r₂
                 help₀ ._↔_.from r₂ = τ _ _ _ r r₂             
+
+    -- Trying to figure out how to connect the dots, here
+    result : IdFund (q rel x) (ρ x) {!   !} 
+    result = {!   !} -- fund-thm-id (P , subtype-P , eq-P) {! q rel x   !} {!   !} (spaceContractible  tot-contr) 
 
   --------------------------------------------------------------------------------
   -- AH> If we want, we can show an equivalence (below) of A // R ≅ A / R 
