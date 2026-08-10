@@ -26,7 +26,7 @@ induction principles, and that these compute definitionally.
 
 ```agda
 𝕀-ind : ∀ {ℓ} (P : 𝕀 → Set ℓ) (x : P i₀) (y : P i₁) → 
-          (p : P ⟨ seg ⟩▸ x ≡ y) → ((i : 𝕀) → P i)
+          (p : PathP (λ i → P (seg i)) x y) → ((i : 𝕀) → P i)
 𝕀-ind P x y p i₀ = x
 𝕀-ind P x y p i₁ = y
 ```
@@ -61,7 +61,7 @@ a HIT, we are required to ensure that ap f e is well-defined
 and well-typed for each path constructor e.
 
 ```
-𝕀-ind P x y p (seg j) = {!p j  !}
+𝕀-ind P x y p (seg j) = p j  
 ```
 
 
@@ -74,12 +74,11 @@ pattern matching. Note that the cubical library has its own definition of contra
 
 ```agda 
 contr : isContr 𝕀 
-contr = i₀ , {!   !} 
+contr = i₀ ,  f 
   where 
+    -- Left as exercise
     f : (j : 𝕀) → i₀ ≡ j
-    f i₀ = refl
-    f i₁ = seg
-    f (seg i) j = {!   !} 
+    f i = {!!} 
 ``` 
 
 # Propositional truncation
