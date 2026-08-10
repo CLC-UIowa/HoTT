@@ -162,7 +162,7 @@ module _ where
   ap = cong 
 
   tr : (P : A → Set ℓ) → x ≡ y → P x → P y
-  tr P e = {! transp     !} 
+  tr P e = transp (λ i → P (e i)) i0 
   
   -- Star notation for mapping 
   _* : (f : A → B) → x ≡ y → f x ≡ f y
