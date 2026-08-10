@@ -60,36 +60,3 @@ record _↔_ {ℓ₁} {ℓ₂} (A : Set ℓ₁) (B : Set ℓ₂) : Set (ℓ₁ �
 
 sym-↔ : {ℓ₁ : Level} {ℓ₂ : Level} → {A : Set ℓ₁} {B : Set ℓ₂} → (A ↔ B) → (B ↔ A)
 sym-↔ ( to , from ) = from , to
-
------------------------------------------------------------------------------
--- Syntax for groupoids
-
-
-
-record GroupoidSyntax {ℓ₁} {ℓ₂} {A : Set ℓ₁} (_≈_ : A → A → Set ℓ₂)  : Set (ℓ₁ ⊔ lsuc ℓ₂)  where
-  infixl 30 _⁻¹
-  infixl 25 _○_
-  field
-    Refl : {x : A} →  x ≈ x
-    _⁻¹ : {x y : A} → x ≈ y → y ≈ x
-    _○_ : {x y z : A} → x ≈ y → y ≈ z → x ≈ z
-
-    -- The type of paths between paths. This abstraction is
-    -- unfortunately necessary if we want to also
-    -- abstract over groupoid properties.
-    _~_ : ∀ {x y : A} → x ≈ y → x ≈ y → Set ℓ₂
-
-    -- Congruence
-    _⋆_ : ∀ {x y z : A} {p h : x ≈ y} {q k : y ≈ z} →
-          (H : p ~ h) → (K : q ~ k) →
-          p ○ q ~ h ○ k
-
-    -- properties
-    left-inv : ∀ {x y : A} (p : x ≈ y) → p ⁻¹ ○ p ~ Refl
-    right-inv : ∀ {x y : A} (p : x ≈ y) → p ○ p ⁻¹ ~ Refl
-    involution : ∀ {x y : A} (p : x ≈ y) → (p ⁻¹) ⁻¹ ~ p
-    left-identity : {x y : A} (p : x ≈ y) → Refl ○ p ~ p
-    right-identity : {x y : A} (p : x ≈ y) → p ○ Refl ~ p
-    assoc : {x y z w : A} → (p : x ≈ y) → (q : y ≈ z) → (r : z ≈ w) → (p ○ q) ○ r ~ p ○ (q ○ r)
-
-open GroupoidSyntax {{...}} public

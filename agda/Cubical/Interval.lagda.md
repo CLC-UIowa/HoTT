@@ -1,5 +1,5 @@
 ```agda 
-module Interval.Postulate where 
+module Interval where 
 
 open import Prelude.Identity
 
@@ -48,7 +48,7 @@ module Interval where
 
 ### The recursion principle 
 
-The recursion principle states that given an equality b₀ ≡ b₁, we can produce a path 
+The recursion principle states that given an equality x ≡ y, we can produce a path 
 from the interval 𝕀 to B. 
 
 ```agda 
@@ -56,8 +56,8 @@ from the interval 𝕀 to B.
       𝕀-rec : ∀ {x y : A} (p : x ≡ y) → (𝕀 → A)
 ``` 
 
-The recursor is subject to the conditions we expect of a **path**. Recall a path 
-p : 𝕀 → B from x to y is subject to:
+The recursor is subject to the conditions we expect of a **path**, topologically.
+That is, a path p : 𝕀 → B from x to y should begin at x and end at y:
 - p(i₀) = x 
 - p(i₁) = y 
 
@@ -70,23 +70,32 @@ p : 𝕀 → B from x to y is subject to:
 ``` 
 Finally, we also expect that for f = 𝕀-rec p, we have f(seg) = p. That is, 
 the action of f : 𝕀 → A, or (ap f) : (i ≡ j) → f i ≡ f j where i, j : 𝕀,
-should have f(seg) = p. In other words, we map the path from iₒ to i₁ 
-in the Interval category to the path p : f i₀ ≡ f i₁, or p : x ≡ y.
+should have f(seg) = p. 
+
+Recall that the condition we place on (ap f) is simply functorality. We have
+an arrow i₀ ≡ i₁ in 𝕀, and so must have an arrow f i₀ ≡ f i₁ in A. As 
+f i₀ = x and f i₁ = y, this is simply the arrow p : x ≡ y.
 
 ```agda       
       compute-𝕀-rec-seg : ∀ {x y : A}(p : x ≡ y) → 
                             (𝕀-rec p *) seg ≡ p
 ```      
 
+The notation `_*` is pretty-syntax for `ap`---indicating that `ap` is a **map**.
+
 ### The induction principle
 
-We have the induction principle, as expected, the be over a family P : 𝕀 → 𝒰.
+We have the induction principle, as expected, to be over a family P : 𝕀 → 𝒰.
 
 ``` 
   postulate 
     𝕀-ind : ∀ (P : 𝕀 → Set ℓ) (x : P i₀) (y : P i₁) → 
              (p : P ⟨ seg ⟩▸ x ≡ y) → ((x : 𝕀) → P x)
 ``` 
+
+The notation `P ⟨ seg ⟩▸ x` is pretty-syntax for `tr P seg x`;
+it can be read as saying we're transporting `x` along the path `seg` subject
+to the type family `P`.
 
 The induction principle f = 𝕀-ind P x y p computes as expected:
 - f i₀ = x 
