@@ -1,0 +1,12 @@
+name: Cubical
+depend: 
+  standard-library
+  cubical
+include : ./
+
+flags:
+  --allow-unsolved-metas
+  --without-K
+  --rewriting
+  --guardedness
+  --cubical

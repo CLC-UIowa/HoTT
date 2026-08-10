@@ -24,7 +24,7 @@ open import Function hiding (_↔_ ; _↪_ ; Surjective ; _⇔_) public
 
 open import Relation.Binary using (IsEquivalence)
 open import Relation.Binary.PropositionalEquality
-    using (_≡_ ; trans ; sym ; refl ; module ≡-Reasoning ; cong) public
+    using (_≡_ ; trans ; sym ; refl ; module ≡-Reasoning ; cong) public 
 open import Relation.Binary.PropositionalEquality.Properties using (isEquivalence)
 open import Relation.Nullary using (¬_) public
 
@@ -155,6 +155,27 @@ module Paths where
 
   apd : {B : A → Set ℓ} (f : (x : A) → B x) (p : x ≡ y) → tr B p (f x) ≡ f y
   apd f refl = refl
+  
+  -----------------------------------------------------------------------------
+  -- Some helpful syntax
+
+  -- Mapping f 
+  infixr 5 _*
+  _* : (f : A → B) → x ≡ y → f x ≡ f y
+  f * = ap f 
+
+  -- transports 
+  -- syntactic sugar for transports (\tb2)
+  infixr 5 _▸_ 
+  _▸_ : ∀ {P : A → Set ℓ} → x ≡ y → P x → P y
+  p ▸ x = tr _ p x 
+
+  -- With explicit motive 
+  infixr 5 _⟨_⟩▸_
+  _⟨_⟩▸_ :  ∀ (P : A → Set ℓ) → x ≡ y → P x → P y
+  _⟨_⟩▸_ = tr
+
+
 
   -------------------------------------------------------------------------------
   -- The groupoidal structure of types
@@ -175,6 +196,7 @@ module Paths where
         assoc = λ { refl refl refl → refl } }
 
 open Paths public
+
 
 --------------------------------------------------------------------------------
 -- Some laws about transport. (Lemma 2.11.2 in HoTT book).

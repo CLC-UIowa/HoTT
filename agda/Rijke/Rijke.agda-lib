@@ -1,6 +1,7 @@
 name: HOTT
-depend: standard-library
-include : ./agda/
+depend: 
+  standard-library
+include : ./
 
 flags:
   --allow-unsolved-metas
