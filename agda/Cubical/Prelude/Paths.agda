@@ -11,6 +11,9 @@ open GVars
 --   - https://agda.readthedocs.io/en/latest/language/cubical.html
 
 open import Cubical.Foundations.Prelude hiding (module Σ ; Σ-syntax) public
+open import Cubical.Foundations.Univalence public 
+open import Cubical.Foundations.Equiv public 
+open import Cubical.Foundations.Isomorphism public 
 
 {- -----------------------------------------------------------------------------
 # Definitions and notation from Rijke 
@@ -46,13 +49,13 @@ module _ where
   -- transports 
   -- syntactic sugar for transports (\tb2)
   infixr 5 _▸_ 
-  _▸_ : ∀ {P : A → Set ℓ} → x ≡ y → P x → P y
+  _▸_ : A ≡ B → A → B
   p ▸ x = tr _ p x 
 
   coerce : A ≡ B → A → B 
   coerce = _▸_
 
-  -- With explicit motive 
+  -- Transport with explicit motive 
   infixr 5 _⟨_⟩▸_
   _⟨_⟩▸_ :  ∀ (P : A → Set ℓ) → x ≡ y → P x → P y
   _⟨_⟩▸_ = tr

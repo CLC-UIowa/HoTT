@@ -1,7 +1,7 @@
 ```agda 
 module Paths where 
 
-open import Prelude.Base hiding (GroupoidSyntax ; _⁻¹ ; _○_ ; right-inv ; left-inv) public 
+open import Prelude.Base public 
 ``` 
 
 
@@ -158,6 +158,14 @@ As a consequence, we observe the following De Morgan laws:
 - Distributivity (De Morgan's laws):
   - ~ (i ∨ j) = ~ i ∨ ~ j
   - ~ (i ∧ j) = ~ i ∨ ~ j 
+
+Note that the interval type does not form a **Boolean algebra**:
+the following formulae
+- i ∧ ~ i = i0 
+- i ∨ ~ i = i1 
+are only true for i ∈ {i0 , i1}, and *not* valid for arbitrary i ∈ [0, 1]. For example,
+it's not the case that that 0.5 ∨ 0.7 = 1. That is to say, interval variables 
+model "arbitrary points" along the interval [0, 1], despite only being observable at the endpoints. 
 
 ## The Path type
 
@@ -437,20 +445,21 @@ module _ where
 
   tr : (P : A → Set ℓ) → x ≡ y → P x → P y 
   tr P e = transp (λ i → P (e i)) i0   
-  
-  -- Infix notation
-  infixr 5 _▸_ 
-  _▸_ : ∀ {P : A → Set ℓ} → x ≡ y → P x → P y
-  p ▸ x = tr _ p x 
+``` 
 
-  -- With explicit motive 
+The Cubical library uses the term `transport` for when P is a constant family.
+I like the following in-fix notation. 
+
+```   
+  -- syntactic sugar for transports (\tb2)
+  infixr 5 _▸_ 
+  _▸_ : A ≡ B → A → B
+  p ▸ x = transport p x
+
+  -- Transport with explicit motive 
   infixr 5 _⟨_⟩▸_
   _⟨_⟩▸_ :  ∀ (P : A → Set ℓ) → x ≡ y → P x → P y
   _⟨_⟩▸_ = tr
-
-  -- I like to call this coerce
-  coerce : A ≡ B → A → B 
-  coerce = _▸_
 ```
 
 As stated earlier, it is well known that transport
@@ -462,13 +471,11 @@ is sufficient to derive an induction principle J.
       P y p 
 ```
 
-Our definition more specifically uses interval
-variables in a creative fashion. We will simply
-show, given d : P x refl, that we can coerce 
-d to type P y p.
+Our definition more specifically uses interval variables in a creative fashion. 
+We will simply show, given d : P x refl, that we can transport d to type P y p.
 
 ```no
-J x p d y p = coerce e d
+J x p d y p = e ▸ d
 ```
 
 Given y : A and p : x ≡ y, We must produce a path 
@@ -502,13 +509,13 @@ the behavior of p (i ∧ j), as
 and p (i ∧ j) = y iff i = i1 = j.
 
 ```agda
-  J x P d y p = coerce e d
+  J x P d y p = e ▸ d
     where
+      G : (i : I) → x ≡ p i     
+      G i j = p (i ∧ j)   
+         
       e : P x refl ≡ P y p
-      G : (i : I) → x ≡ p i 
-
       e i = P (p i) (G i) 
-      G i j = p (i ∧ j)
 ```
 
 This is as far as I am going to take us today.

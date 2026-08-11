@@ -13,6 +13,55 @@ open import Relation.Nullary using (¬_) public
 
 
 -----------------------------------------------------------------------------
+-- Syntax for groupoids
+
+
+
+record GroupoidSyntax {ℓ₁} {ℓ₂} {A : Set ℓ₁} (_≈_ : A → A → Set ℓ₂)  : Set (ℓ₁ ⊔ lsuc ℓ₂)  where
+  infixl 30 _⁻¹
+  infixl 25 _○_
+  field
+    Refl : {x : A} →  x ≈ x
+    _⁻¹ : {x y : A} → x ≈ y → y ≈ x
+    _○_ : {x y z : A} → x ≈ y → y ≈ z → x ≈ z
+
+    -- The type of paths between paths. This abstraction is
+    -- unfortunately necessary if we want to also
+    -- abstract over groupoid properties.
+    _~_ : ∀ {x y : A} → x ≈ y → x ≈ y → Set ℓ₂
+    eqv : ∀ {x y} → IsEquivalence (_~_ {x} {y})
+
+    -- Congruence
+    _⋆_ : ∀ {x y z : A} {p h : x ≈ y} {q k : y ≈ z} →
+          (H : p ~ h) → (K : q ~ k) →
+          p ○ q ~ h ○ k
+
+    -- properties
+    left-inv : ∀ {x y : A} (p : x ≈ y) → p ⁻¹ ○ p ~ Refl
+    right-inv : ∀ {x y : A} (p : x ≈ y) → p ○ p ⁻¹ ~ Refl
+    involution : ∀ {x y : A} (p : x ≈ y) → (p ⁻¹) ⁻¹ ~ p
+    left-identity : {x y : A} (p : x ≈ y) → Refl ○ p ~ p
+    right-identity : {x y : A} (p : x ≈ y) → p ○ Refl ~ p
+    assoc : {x y z w : A} → (p : x ≈ y) → (q : y ≈ z) → (r : z ≈ w) → (p ○ q) ○ r ~ p ○ (q ○ r)
+
+  -- -- left congruence
+  _⋆ₗ_ : ∀ {x y z : A} {p h : x ≈ y} →
+          (H : p ~ h) (q : y ≈ z) →
+          p ○ q ~ h ○ q
+  H ⋆ₗ q = H ⋆ refl-~
+    where
+      open IsEquivalence eqv renaming (refl to refl-~)
+
+  _⋆ᵣ_ : ∀ {x y z : A} {q h : y ≈ z} →
+          (p : x ≈ y) (H : q ~ h)  →
+          p ○ q ~ p ○ h
+  p ⋆ᵣ H = refl-~ ⋆ H
+    where
+      open IsEquivalence eqv renaming (refl to refl-~)
+
+open GroupoidSyntax {{...}} public
+
+-----------------------------------------------------------------------------
 -- The identity type (ported from Part 1)
 
 module Paths where
@@ -78,6 +127,11 @@ module Paths where
 
   -------------------------------------------------------------------------------
   -- The groupoidal structure of types
+
+  -- _≡_ is an equivalence relation
+  ≡-equiv : IsEquivalence (_≡_ {A = A})
+  ≡-equiv = record { refl = refl ; sym = sym ; trans = trans }
+
   instance
     PathGroupoid : GroupoidSyntax {A = A} (_≡_)
     PathGroupoid = record
@@ -85,6 +139,7 @@ module Paths where
         _⁻¹ = sym ;
         _○_ = trans ;
         _~_ = _≡_ ;
+        eqv = ≡-equiv ;
         _⋆_ = λ { refl refl → refl } ;
         left-inv = λ { refl → refl } ;
         right-inv = λ { refl → refl } ;
@@ -156,6 +211,7 @@ module Homotopies where
       _⁻¹ = sym-∼ ;
       _○_ = trans-∼ ;
       _~_ = _∼_ ;
+      eqv = ∼-equiv ;
       _⋆_ = λ p∼h q∼k x → _⋆_ {{PathGroupoid}} (p∼h x) (q∼k x) ;
       left-inv = λ H → left-inv {{PathGroupoid}} ∘ H ;
       right-inv = λ H → right-inv {{PathGroupoid}} ∘ H ;

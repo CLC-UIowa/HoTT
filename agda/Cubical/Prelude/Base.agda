@@ -2,7 +2,9 @@ module Prelude.Base where
 
 open import Agda.Primitive public
 
-open import Data.Bool using (true ; false ; Bool ; not) public
+open import Data.Bool using 
+  (true ; false ; Bool ; not)
+  renaming (_∧_ to and ; _∨_ to or) public
 open import Data.Product
     renaming (proj₁ to fst ; proj₂ to snd)
     using (_×_ ; Σ ; Σ-syntax ; _,_ ; <_,_> ; curry ; uncurry ; map₂ ; assocˡ ; assocʳ) public
