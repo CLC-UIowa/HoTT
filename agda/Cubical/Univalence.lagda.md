@@ -1,7 +1,7 @@
 ```agda
 module Univalence where
 
-open import Prelude.Paths hiding (or ; tr ; coerce ; _▸_ ; transport ; _*_)
+open import Prelude.Paths hiding (or)
 open GVars 
 ```
 
@@ -10,35 +10,6 @@ open GVars
 Finally, we are going to demonstrate the **computational content** of univalence 
 in cubical Agda. Namely, we will witness that transporting along a univalent path 
 in fact reduces according to the equivalence.
-
-## Notation 
-
-Let us introduce some notation for transports. In Rijke and HoTT, 
-the term `tr` describes the transport of a term `a : P x` to type `P y`: 
-
-```agda 
-tr : (P : A → Set ℓ) → {x y : A} → x ≡ y → P x → P y 
-tr P e = transp (λ i → P (e i)) i0
-``` 
-
-The Cubical library reserves the term `transport` for When the type family `P` is constant.
-I often call this term "coerce", but this is not quite accurate---when the equality 
-`e : A ≡ B` is introduced via univalence, it is not the case that we are simply 
-casting a term from type A to B. Rather, transporting along that path may change 
-the value of x : A. 
-
-```agda  
-coerce transport : A ≡ B → A → B 
-transport = tr _ 
-coerce = transport 
-``` 
-
-We introduce the syntactic sugar `p ▸ x` for transporting `x` along path `p`. 
-
-```agda 
-_▸_ : A ≡ B → A → B 
-p ▸ x = transport p x
-``` 
 
 ## Computational univalence with Booleans 
 
@@ -151,18 +122,18 @@ and→or : PathP (λ i → Not i → Not i → Not i) and or
 and→or i = transp {ℓ = λ _ → lzero} (λ j → Not (i ∧ j) → Not (i ∧ j) → Not (i ∧ j)) (~ i) and 
 ``` 
 
-Because this is a path from `and` to `or`, we have that `and→or i0 = and` and `and→or i1 = or`:
+Because this is a path from `and` to `or`, we have that `and→or i₀ = and` and `and→or i₁ = or`:
 
 ```agda 
-_ :   (and→or i0 ≡ and)
-    × (and→or i1 ≡ or) 
+_ :   (and→or i₀ ≡ and)
+    × (and→or i₁ ≡ or) 
 _ = refl , refl 
 ``` 
 
 We use this to translate `and-comm` from a theorem concerning `and` to a theorem concerning `or`. 
 That is, we transport it from the type `(x y : Bool) → and x y ≡ and y x` to the type 
 `(x y : Bool) → or x y ≡ or y x`. Cubically, we must simply produce a path 
-that has the former type at i0 and the latter type at i1; the dependent path 
+that has the former type at i₀ and the latter type at i₁; the dependent path 
 `and→or` computes as such, yielding:
 
 ```agda
@@ -173,8 +144,8 @@ G i = (x y : Not i) → and→or i x y ≡ and→or i y x
 The interval variable `i` serves as a switch for `and→or`, and so:
 
 ```agda  
-_ :   (G i0 ≡ ∀ (x y : Bool) → and x y ≡ and y x)
-    × (G i1 ≡ ∀ (x y : Bool) → or x y ≡ or y x)
+_ :   (G i₀ ≡ ∀ (x y : Bool) → and x y ≡ and y x)
+    × (G i₁ ≡ ∀ (x y : Bool) → or x y ≡ or y x)
 _ = refl , refl 
 ``` 
 
@@ -185,6 +156,112 @@ proof that `or` is commutative.
 or-comm : ∀ (x y : Bool) → or x y ≡ or y x 
 or-comm =  G ▸ and-comm 
 ``` 
+
+## Univalence with Naturals 
+
+More practical is to observe an equivalence between types of which one is more suited
+for reasoning and the other more suited for performance or implementation. In particular,
+the unary and binary representations of naturals are equivalent, however the former 
+has a nicer inductive structure. Because the two are equivalent, we can define operations 
+and prove properties over the former and transport to the latter. 
+
+We define the binary representation in *little-endian format*, read left to right
+with no trailing zeroes. That is, the number 6 is 011 (rather than 110).
+
+```agda 
+infixr 0 `_ 
+infixr 1 `0_ 
+infixr 1 `1_
+data Pos : Set where 
+  1∎ : Pos 
+  `0_ : Pos → Pos 
+  `1_ : Pos → Pos 
+
+data Bin : Set where 
+  0∎ : Bin 
+  `_ : Pos → Bin 
+
+Zero One Two Three Four Five Six : Bin 
+Zero = 0∎ 
+One = ` 1∎ 
+Two = ` `0 1∎
+Three = ` `1 1∎ 
+Four = ` `0 `0 1∎
+Five = ` `1 `0 1∎
+Six  = ` `0 `1 1∎
+``` 
+
+### Plumbing 
+
+Now we write conversions between the two representations:
+
+```agda 
+open import Data.Nat using (_*_ ; _+_)
+-- Helper for incrementing a Pos
+sucPos : Pos → Pos
+sucPos 1∎     = `0 1∎
+sucPos (`0 p) = `1 p
+sucPos (`1 p) = `0 (sucPos p)
+
+-- Helper for incrementing a Bin
+sucBin : Bin → Bin
+sucBin 0∎     = ` 1∎
+sucBin (` p)  = ` (sucPos p)
+
+ℕ→Bin : ℕ → Bin 
+ℕ→Bin zero     = 0∎
+ℕ→Bin (suc n) = sucBin (ℕ→Bin n) 
+
+BinPos→ℕ : Pos → ℕ
+BinPos→ℕ 1∎     = 1
+BinPos→ℕ (`0 p) = 2 * BinPos→ℕ p
+BinPos→ℕ (`1 p) = 1 + 2 * BinPos→ℕ p
+
+Bin→ℕ : Bin → ℕ 
+Bin→ℕ 0∎    = 0
+Bin→ℕ (` p) = BinPos→ℕ p 
+``` 
+
+And witness an isomorphism:
+
+```agda 
+Bin→ℕ→Bin : ℕ→Bin ∘ Bin→ℕ ∼ id 
+Bin→ℕ→Bin 0∎ = refl
+Bin→ℕ→Bin (` p) = lemmaPos p
+  where
+  lemmaPos : (p : Pos) → ℕ→Bin (BinPos→ℕ p) ≡ (` p)
+  lemmaPos 1∎     = refl
+  lemmaPos (`0 p) with BinPos→ℕ p | lemmaPos p
+  ... | zero | eq = {!   !} -- Need disjoint constructor lemma 
+  ... | suc n | eq = {!   !}
+  lemmaPos (`1 p) = {!   !} 
+
+↻-suc-Bin→ℕ : Bin→ℕ ∘ sucBin ∼ suc ∘ Bin→ℕ 
+↻-suc-Bin→ℕ 0∎ = refl
+↻-suc-Bin→ℕ (` x) = {!  !}
+
+ℕ→Bin→ℕ : Bin→ℕ ∘ ℕ→Bin ∼ id 
+ℕ→Bin→ℕ zero = refl
+ℕ→Bin→ℕ (suc n) = ↻-suc-Bin→ℕ (ℕ→Bin n) ○ ap suc (ℕ→Bin→ℕ n) 
+``` 
+
+This of course gives rise to an equivalence: 
+
+```agda 
+ℕ≃Bin : ℕ ≃ Bin 
+ℕ≃Bin = isoToEquiv (iso ℕ→Bin Bin→ℕ Bin→ℕ→Bin ℕ→Bin→ℕ)
+``` 
+
+which, via univalence, gives rise to an identity:
+
+```agda 
+ℕ≡Bin : ℕ ≡ Bin 
+ℕ≡Bin = ua ℕ≃Bin
+``` 
+
+### Tranporting addition and associativity 
+
+
 
 
 # Works Cited 

@@ -110,9 +110,9 @@ module Paths where
   -- Some helpful syntax
 
   -- Mapping f 
-  infixr 5 _*
-  _* : (f : A → B) → x ≡ y → f x ≡ f y
-  f * = ap f 
+  infixr 5 _·_ 
+  _·_ : (f : A → B) → x ≡ y → f x ≡ f y
+  f · e = ap f e
 
   -- transports 
   -- syntactic sugar for transports (\tb2)

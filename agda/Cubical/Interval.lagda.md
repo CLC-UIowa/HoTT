@@ -78,7 +78,7 @@ f i₀ = x and f i₁ = y, this is simply the arrow p : x ≡ y.
 
 ```agda       
       compute-𝕀-rec-seg : ∀ {x y : A}(p : x ≡ y) → 
-                            (𝕀-rec p *) seg ≡ p
+                            ap (𝕀-rec p) seg ≡ p
 ```      
 
 The notation `_*` is pretty-syntax for `ap`---indicating that `ap` is a **map**.

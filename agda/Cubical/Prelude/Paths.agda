@@ -10,7 +10,9 @@ open GVars
 --   - https://github.com/agda/cubical
 --   - https://agda.readthedocs.io/en/latest/language/cubical.html
 
-open import Cubical.Foundations.Prelude hiding (module Σ ; Σ-syntax) public
+open import Cubical.Foundations.Prelude 
+  renaming (I to 𝕀 ; i0 to i₀ ; i1 to i₁) 
+  hiding (module Σ ; Σ-syntax) public
 open import Cubical.Foundations.Univalence public 
 open import Cubical.Foundations.Equiv public 
 open import Cubical.Foundations.Isomorphism public 
@@ -25,7 +27,7 @@ and so will have to be redefined with respect to path equality.
 -- ap and transport, other notations
 
 module _ where 
-  private
+  private 
     variable
       x y z w : A
 
@@ -40,11 +42,11 @@ module _ where
   ap = cong 
 
   -- Star notation for mapping 
-  _*_ : (f : A → B) → x ≡ y → f x ≡ f y
-  _*_ = ap
+  _·_ : (f : A → B) → x ≡ y → f x ≡ f y
+  _·_ = ap
 
   tr : (P : A → Set ℓ) → x ≡ y → P x → P y
-  tr P e = transp (λ i → P (e i)) i0 
+  tr P e = transp (λ i → P (e i)) i₀ 
  
   -- transports 
   -- syntactic sugar for transports (\tb2)
@@ -63,6 +65,7 @@ module _ where
 --------------------------------------------------------------------------------
 -- Homotopies 
 
+infixr 5 _∼_
 _∼_ : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} → ((x : A) → B x) → ((x : A) → B x) → Set _
 _∼_ {A = A} f g = (x : A) → f x ≡ g x
 
