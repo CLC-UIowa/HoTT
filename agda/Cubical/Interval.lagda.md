@@ -42,7 +42,7 @@ module Interval where
       -- two endpoints
       i₀ : 𝕀 
       i₁ : 𝕀
-      -- a non-trivial path
+      -- a path
       seg : i₀ ≡ i₁  
 ``` 
 

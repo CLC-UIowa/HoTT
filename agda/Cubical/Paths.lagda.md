@@ -38,6 +38,13 @@ Here are some other resources and papers on cubical type theory.
 - Thierry Coquand, Simon Huber, Anders Mörtberg. On Higher Inductive Types in Cubical Type Theory.
   - https://arxiv.org/abs/1802.01170
 
+# The interval type
+
+In Cubical Agda, we have
+- a type 𝕀, such that
+- i₀ : 𝕀 
+- i₁ : 𝕀 
+
 
 # The path type
 
@@ -103,13 +110,14 @@ f : [0, 1] → [0, 1] → X such that
 - f t 0 = x₀ 
 - f t 1 = x₁ 
 
-for all x ∈ X. Now, consider a path between paths in cubical type theory. Perhaps: 
+for all t ∈ [0, 1]. Now, consider a path between paths in cubical type theory. Perhaps: 
 
 ```notAgda 
 uip : {x y : A} → (p q : x ≡ y) → p ≡ q 
 ``` 
 The paths p and q each have type 𝕀 → A, hence (p ≡ q) elaborates to:
 ```notAgda 
+(p ≡ q) i : x ≡ y
 (p ≡ q) = 𝕀 → (𝕀 → A)
 ``` 
 A given path homotopy H : p ≡ q is subject to the condition that:
@@ -176,7 +184,7 @@ the following formulae
 - i ∧ ~ i = i₀ 
 - i ∨ ~ i = i₁ 
 are only true for i ∈ {i₀ , i₁}, and *not* valid for arbitrary i ∈ [0, 1]. For example,
-it's not the case that that 0.5 ∨ 0.7 = 1. That is to say, interval variables 
+it's not the case that that 0.5 ∨ 0.5 = 1. That is to say, interval variables 
 model "arbitrary points" along the interval [0, 1], despite only being observable at the endpoints. 
 
 ## The Path type
@@ -213,8 +221,8 @@ refl : ∀ {ℓ} {A : Set ℓ} {x : A} → x ≡ x
 refl {x = x} i = x 
 ```
 
-**Remark.** Be careful not to *literally* equate the types (I → A)
-and Path A x y. The two are separate types that use the same term syntax.
+**Remark.** Be careful not to *literally* equate the types (𝕀 → A)
+and Path A x y (or, x ≡ y). The two are separate types that use the same term syntax.
 That is, we can write:
 
 ```agda
@@ -264,7 +272,7 @@ In fact we are fully capable of producing a dependent path from a
 heterogeneous equality: 
 ```agda 
     ≅-to-PathP : {A B : Set ℓ} {x : A} {y : B} → x ≅ y → Set ℓ 
-    ≅-to-PathP {x = x} {y = y} e = PathP (λ i → ≅-to-type-≡ e i) x y 
+    ≅-to-PathP {x = x} {y = y} e = PathP (λ i → (≅-to-type-≡ e) i) x y 
 ``` 
 
 And for this reason we'll adopt the following syntax for dependent paths:
@@ -284,7 +292,7 @@ u =^{P}_{e} v
 ``` 
 
 
-to denote the **dependent path** type `tr P e x ≡ y`, given 
+to denote the **dependent path** type `tr P e u ≡ v`, given 
 - x, y : A 
 - P : A → Set 
 - u : P x 
@@ -308,7 +316,7 @@ we must derive other expected properties of equality.
 
 Symmetry follows from negation of the interval variable. Observe
 that 
-- p : Path A x y, or p : 𝕀 → A
+- p : x ≡ y, or p : 𝕀 → A
 - p i₀ = x
 - p i₁ = y
 
@@ -319,13 +327,18 @@ and hence p (~ i) : 𝕀 → A can be assigned type y ≡ x.
 
 ```agda
   _⁻¹ : x ≡ y → y ≡ x
-  (p ⁻¹) i = p (~ i) 
+  (p ⁻¹) i =  p (~ i) -- i = p (~ i) 
 ```
 
 Because equalities behave like functions, certain identities now compute definitionally.
 
 For example, refl is its own inverse:
 
+refl = λ i → x 
+refl ⁻¹ i = (λ i → x) (~ i)
+          = x 
+refl ⁻¹   = λ i → x  
+          = refl
 ```agda 
   refl⁻¹ : refl ⁻¹ ≡ refl {x = x}
   refl⁻¹ = refl 
@@ -355,7 +368,7 @@ Of course, f : A → B is a function type and p : x ≡ y is a path type,
 so the application f ∘ p is ill-typed. Hence I'll define a separate 
 operator _·_ (\cdot) to denote the composition of f and p. That is, intuitively
 (but not literally), 
-- p : 𝕀 → B (as path type), and  
+- p : 𝕀 → A (as path type), and  
 - f : A → B (as function type), 
 so f · p : 𝕀 → B, albeit that of course that f · p : f x ≡ f y.
 
@@ -399,8 +412,8 @@ Composition likewise computes definitionally. Given f : A → B, G : B → C, an
 = (g · (f · p)) i
 
 ```
-  ap-cong : (f : A → B) (g : B → C) (p : x ≡ y) → (g ∘ f) · p ≡ g · (f · p)
-  ap-cong f g p = refl 
+  ap-comp : (f : A → B) (g : B → C) (p : x ≡ y) → (g ∘ f) · p ≡ g · (f · p)
+  ap-comp f g p = refl 
 ``` 
 
 ### Transitivity 
@@ -408,11 +421,11 @@ Composition likewise computes definitionally. Given f : A → B, G : B → C, an
 Defining transitivity dives deeper into the crevices of cubical TT than I'd
 like to go. For now, we may assume an operator
 ```notAgda
-_∙∙_∙∙_ : x ≡ y → y ≡ z → z ≡ w → x ≡ w
+_∙∙_∙∙_ : (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) → x ≡ w
 ```
 
 where (p ∙∙ q ∙∙ r) can be thought of as "filling" the top line 
-of the following cube:
+of the following square:
 
 ```notAgda
 
@@ -470,10 +483,10 @@ and so un-applying the variable x yields
 - fun-ext H i₁ = λ x → g x = g 
 as desired.
 
-```
+```agda
 fun-ext : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} → 
           f ∼ g → f ≡ g 
-fun-ext {f = f} {g} H i x = H x i 
+fun-ext {f = f} {g} H i x = H x i
 ```
 
 
@@ -483,18 +496,18 @@ Whereas vanilla MLTT defines J as the primitive operator
 on equality types, cubical type theory takes transport as primitive.
 (It is effectively folklore that either can be presumed as primitive to derive the other.)
 
-The generalized transport is for families indexed by the the interval I. We will
+The generalized transport is for families indexed by the the interval 𝕀. We will
 show that from it we can recover the usual `tr : (P : A → 𝒰) → x ≡ y → P x → P y`.
 
 
 ```notAgda 
-transp : ∀ {ℓ} (A : 𝕀 → Set ℓ) (r : I) → A i₀ → A i₁ 
+transp : ∀ {ℓ} (A : 𝕀 → Set ℓ) (r : 𝕀) → A i₀ → A i₁ 
 ``` 
 
 That is, given an I-index type family A, we may transport 
 from A i₀ to A i₁.
 
-It is a sensible question why we include the argument (r : I). The answer 
+It is a sensible question why we include the argument (r : 𝕀). The answer 
 dives deeper into the alcoves of cubical Agda than I'd like to take us. 
 We will ignore it for now and likely the remainder of this tutorial.
 
@@ -517,7 +530,7 @@ module _ where
     x y : A 
 
   tr : (P : A → Set ℓ) → x ≡ y → P x → P y 
-  tr P e = transp (P ∙ e) i₀   
+  tr P e = transp (P ∙ e) i₀
 ``` 
 
 The Cubical library reserves the term `transport` for When the type family `P` 
@@ -590,10 +603,10 @@ and p (i ∧ j) = y iff i = i₁ = j.
   J x P d y p = e ▸ d
     where
       G : (i : 𝕀) → x ≡ p i     
-      G i j = p (i ∧ j)   
+      G i j = p (i ∧ j)  
          
       e : P x refl ≡ P y p
-      e i = P (p i) (G i) 
+      e i = P (p i) (G i)
 ```
 
 # In summary
