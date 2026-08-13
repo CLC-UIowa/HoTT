@@ -3,8 +3,6 @@ These are the collected errors we (the Computational Logic Center at the Univers
 
 Unfortunately, we performed exercises during the first semester (Part I: Ch. 1-8) largely on the board, and did not record any errata. Exercises for Part II have been mechanized in Agda, with errata noted.
 
-*to be sent to egbert.rijke@fmf.uni-lj.si or to the homotopy type theory chat at https://hott.zulipchat.com. We may also share read access with Egbert for github.com/CLC-UIowa/HOTT-CLC-Fall-2025.*
-
 
 ## Chapter 9
 
