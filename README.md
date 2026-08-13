@@ -1,5 +1,5 @@
 # An Agda Formalization of *Introduction to Homotopy Type Theory*
-This repo is University of Iowa's [Computational Logic Center's] efforts in formalizing
+This repository is an effort of the University of Iowa's [Computational Logic Center](https://clc.cs.uiowa.edu/site/) to formalize
 the text and selected exercises from Egbert Rijke's [Introduction to Homotopy Type Theory](https://arxiv.org/pdf/2212.11082).
 This formalization accompanied a weekly seminar on Homotopy Type Theory during Fall 2025, Spring 2026, and Summer 2026.
 We also include some introductory exposition on cubical Agda.
