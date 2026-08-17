@@ -191,6 +191,141 @@ Five = ` `1 `0 1∎
 Six  = ` `0 `1 1∎
 ``` 
 
+### Disjoint constructors
+
+We will need some lemmas below that state equalities such as e.g. 
+
+```notAgda
+0∎ ≡ ` 1∎
+```
+
+are absurd. Unlike with Vanilla Agda's propositional equality `_≡_`, we cannot 
+simply pattern match on this absurd equation. In general, Cubical Agda does not 
+presume constructors are disjoint.
+
+In order to disprove the equality of disjoint constructors, we'll
+use the following encode/decode technique. This is also referred to as a "No Confusion" proof.
+
+We first describe a relation on Bin and Pos---a "coding"---that is ⊤ when two constructors are 
+equal and ⊥ otherwise.
+
+```agda
+BinCode : Bin → Bin → Set 
+PosCode : Pos → Pos → Set
+BinCode 0∎ 0∎ = ⊤
+BinCode 0∎ (` x) = ⊥
+BinCode (` x) 0∎ = ⊥
+BinCode (` x) (` y) = PosCode x y 
+
+
+PosCode 1∎ 1∎ = ⊤
+PosCode 1∎ (`0 y) = ⊥
+PosCode 1∎ (`1 y) = ⊥
+PosCode (`0 x) 1∎ = ⊥
+PosCode (`0 x) (`0 y) = PosCode x y
+PosCode (`0 x) (`1 y) = ⊥
+PosCode (`1 x) 1∎ = ⊥
+PosCode (`1 x) (`0 y) = ⊥
+PosCode (`1 x) (`1 y) = PosCode x y
+```
+
+Next, show that these codes are reflexive.
+
+```agda
+BinRefl : ∀ x → BinCode x x
+PosRefl : ∀ x → PosCode x x 
+
+BinRefl 0∎ = tt
+BinRefl (` x) = PosRefl x
+
+PosRefl 1∎ = tt
+PosRefl (`0 x) = PosRefl x
+PosRefl (`1 x) = PosRefl x
+```
+
+We will now exhibit an equivalence between identity
+types and their codes. The *encode* direction converts
+paths to codes, and is easy to prove via based-path induction
+J.
+
+```agda
+encodeBin : ∀ (x y : Bin) → x ≡ y → BinCode x y 
+encodePos : ∀ (x y : Pos) → x ≡ y → PosCode x y 
+
+encodeBin x y e = J (λ y _ → BinCode x y) (BinRefl x) e 
+encodePos x y e = J (λ y _ → PosCode x y) (PosRefl x) e
+```
+
+The decoding---from codes to equalities---is tedious but more or 
+less straightforward.
+
+```agda
+decodeBin : ∀ (x y : Bin) → BinCode x y → x ≡ y
+decodePos : ∀ (x y : Pos) → PosCode x y → x ≡ y
+
+decodeBin 0∎ 0∎ c = refl
+decodeBin 0∎ (` x) ()
+decodeBin (` x) 0∎ ()
+decodeBin (` x) (` y) c = cong `_ (decodePos x y c)
+
+decodePos 1∎ 1∎ c = refl
+decodePos (`0 x) (`0 y) c = cong `0_ (decodePos x y c)
+decodePos (`1 x) (`1 y) c = cong `1_ (decodePos x y c)
+```
+
+We now show that these types are equivalent.
+
+```agda
+
+decodeBinRefl : ∀ x → decodeBin x x (encodeBin x x refl) ≡ refl
+decodePosRefl : ∀ x → decodePos x x (encodePos x x refl) ≡ refl
+
+decodeBinRefl 0∎ = refl
+decodeBinRefl (` x) i = cong `_ (decodePosRefl x i)
+decodePosRefl 1∎ = refl
+decodePosRefl (`0 x) i = cong `0_ (decodePosRefl x i)
+decodePosRefl (`1 x) i = cong `1_ (decodePosRefl x i)
+
+encodeDecodeBin : ∀ x y → retract (decodeBin x y) (encodeBin x y)
+encodeDecodePos : ∀ x y → retract (decodePos x y) (encodePos x y)
+
+encodeDecodeBin 0∎ 0∎ b = refl
+encodeDecodeBin (` x) (` y) b = encodeDecodePos x y b 
+
+encodeDecodePos 1∎ 1∎ b = refl
+encodeDecodePos (`0 x) (`0 y) b = encodeDecodePos x y b
+encodeDecodePos (`1 x) (`1 y) b = encodeDecodePos x y b
+
+BinEqv : ∀ (x y : Bin) → BinCode x y ≃ (x ≡ y)
+PosEqv : ∀ (x y : Pos) → PosCode x y ≃ (x ≡ y)
+BinEqv x y = 
+  isoToEquiv 
+  (iso (decodeBin x y) (encodeBin x y) 
+  (σ x y) 
+  (encodeDecodeBin x y)) 
+  where
+    σ : ∀ (x y : Bin) → section (decodeBin x y) (encodeBin x y)
+    σ x y b = J  (λ y e → decodeBin x y (encodeBin x y e) ≡ e) (decodeBinRefl x) b 
+
+PosEqv x y = isoToEquiv 
+  (iso 
+    (decodePos x y) 
+    (encodePos x y) 
+    (σ x y  ) 
+    (encodeDecodePos x y)) 
+  where
+    σ : ∀ (x y : Pos) → section (decodePos x y) (encodePos x y)
+    σ x y b = J  (λ y e → decodePos x y (encodePos x y e) ≡ e) (decodePosRefl x) b 
+```
+
+Finally, given an equivalence, we can for example translate an equality
+such as 
+```notAgda
+0∎ ≡ `0 p
+```
+to the type `BinCode 0∎ (`0 p) ≡ ⊥`, hence exhibiting a proof that
+the constructors are disjoint.
+
 ### Plumbing 
 
 Now we write conversions between the two representations:
@@ -232,7 +367,7 @@ Bin→ℕ→Bin (` p) = lemmaPos p
   lemmaPos : (p : Pos) → ℕ→Bin (BinPos→ℕ p) ≡ (` p)
   lemmaPos 1∎     = refl
   lemmaPos (`0 p) with BinPos→ℕ p | lemmaPos p
-  ... | zero | eq = {!   !} -- Need disjoint constructor lemma 
+  ... | zero | eq =  ⊥-elim (transport (ua (BinEqv 0∎ (` p)) ⁻¹) eq)
   ... | suc n | eq = {!   !}
   lemmaPos (`1 p) = {!   !} 
 
