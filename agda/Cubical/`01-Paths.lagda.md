@@ -1,5 +1,5 @@
 ```agda 
-module Paths where 
+module `01-Paths where 
 
 open import Prelude.Base public 
 ``` 
@@ -533,6 +533,19 @@ module _ where
   tr P e = transp (P ∙ e) i₀
 ``` 
 
+As described above, PathP is used to described a "dependent path", which is 
+otherwise defined in Book Hott as the type `tr P e u ≡ v` to describe 
+a dependent path from `u : P x` to `v : P y`. As such, we should expect
+to be able to translate from the Book HoTT notion to the cubical notion.
+This behavior is defined in the Cubical library as `toPathP`:
+
+```agda    
+  _ : ∀ {P : A → Set ℓ} (e : x ≡ y) (u : P x) (v : P y) → 
+                  tr P e u ≡ v → 
+                  PathP (λ i → P (e i)) u v
+  _ = λ e u v d →  toPathP d
+```
+
 The Cubical library reserves the term `transport` for When the type family `P` 
 is the identity. I often call this term "coerce", but this is not quite accurate---
 when the equality `e : A ≡ B` is introduced via univalence, it is not the case that 
@@ -551,6 +564,7 @@ We introduce the syntactic sugar `p ▸ x` for transporting `x` along path `p`.
   _▸_ : A ≡ B → A → B 
   p ▸ x = transport p x
 ``` 
+
 
 As stated earlier, it is well known that transport
 is sufficient to derive an induction principle J.

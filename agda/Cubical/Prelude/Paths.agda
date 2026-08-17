@@ -12,7 +12,7 @@ open GVars
 
 open import Cubical.Foundations.Prelude 
   renaming (I to 𝕀 ; i0 to i₀ ; i1 to i₁) 
-  hiding (module Σ ; Σ-syntax) public
+  hiding (module Σ ; Σ-syntax ; Σ) public
 open import Cubical.Foundations.Univalence public 
 open import Cubical.Foundations.Equiv public 
 open import Cubical.Foundations.Isomorphism public 
