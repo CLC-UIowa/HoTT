@@ -20,7 +20,7 @@ open import Data.Fin
   renaming (zero to fzero ; suc to fsuc) public
 open import Data.Nat using (ℕ ; suc ; zero ; _≤_ ; z≤n ; s≤s) public
 open import Data.Nat.Properties using (≤-irrelevant ; ≤-antisym) public
-
+open import Relation.Nullary using (¬_) public
 open import Function hiding (_↔_ ; _↪_ ; Surjective ; _⇔_) public
 
 open import Data.String using (String)

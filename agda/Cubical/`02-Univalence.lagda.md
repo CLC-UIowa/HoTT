@@ -205,9 +205,10 @@ presume constructors are disjoint.
 
 In order to disprove the equality of disjoint constructors, we'll
 use the following encode/decode technique. This is also referred to as a "No Confusion" proof.
+The technique is entirely analogous to giving a decision procedure for equality on `Bin` and `Pos`. 
 
 We first describe a relation on Bin and Pos---a "coding"---that is ⊤ when two constructors are 
-equal and ⊥ otherwise.
+equal and ⊥ otherwise. In other words, we map structurally equal terms to ⊤ and ⊥ otherwise.
 
 ```agda
 BinCode : Bin → Bin → Set 
@@ -229,7 +230,9 @@ PosCode (`1 x) (`0 y) = ⊥
 PosCode (`1 x) (`1 y) = PosCode x y
 ```
 
-Next, show that these codes are reflexive.
+For the purpose of using the J eliminator, we'll show that these
+relations are reflexive. (Observe that the functions `encodeBin` and `encodePos`
+require precisely proofs that `BinCode x x` and `PosCode x x`.)
 
 ```agda
 BinRefl : ∀ x → BinCode x x
@@ -273,7 +276,8 @@ decodePos (`0 x) (`0 y) c = cong `0_ (decodePos x y c)
 decodePos (`1 x) (`1 y) c = cong `1_ (decodePos x y c)
 ```
 
-We now show that these types are equivalent.
+We now show that these types are equivalent. Again,
+mostly tedious boilerplate.
 
 ```agda
 
@@ -321,10 +325,28 @@ PosEqv x y = isoToEquiv
 Finally, given an equivalence, we can for example translate an equality
 such as 
 ```notAgda
-0∎ ≡ `0 p
+0∎ ≡ ` `0 p
 ```
-to the type `BinCode 0∎ (`0 p) ≡ ⊥`, hence exhibiting a proof that
-the constructors are disjoint.
+to the type
+```notAgda 
+BinCode 0∎ (` `0 p) ≡ ⊥
+```
+
+hence exhibiting a proof that the constructors are disjoint.
+For example, we have, by univalence, that the above identity holds:
+
+```agda 
+module _ (p : Pos) where 
+  _ : (0∎ ≡ (` `0 p)) ≡ ⊥ 
+  _ = ua (BinEqv 0∎ (` `0 p)) ⁻¹
+``` 
+
+which means we may transport by this equality to disprove it.
+
+```agda 
+  _ : ¬ (0∎ ≡ (` `0 p))
+  _ = transport (ua (BinEqv 0∎ (` `0 p)) ⁻¹) 
+``` 
 
 ### Plumbing 
 
@@ -349,8 +371,8 @@ sucBin (` p)  = ` (sucPos p)
 
 BinPos→ℕ : Pos → ℕ
 BinPos→ℕ 1∎     = 1
-BinPos→ℕ (`0 p) = 2 * BinPos→ℕ p
-BinPos→ℕ (`1 p) = 1 + 2 * BinPos→ℕ p
+BinPos→ℕ (`0 p) = BinPos→ℕ p + BinPos→ℕ p
+BinPos→ℕ (`1 p) = 1 + (BinPos→ℕ p + BinPos→ℕ p)
 
 Bin→ℕ : Bin → ℕ 
 Bin→ℕ 0∎    = 0
@@ -358,6 +380,8 @@ Bin→ℕ (` p) = BinPos→ℕ p
 ``` 
 
 And witness an isomorphism:
+
+(I left some holes because I'm lazy and this isn't really the point.)
 
 ```agda 
 Bin→ℕ→Bin : ℕ→Bin ∘ Bin→ℕ ∼ id 
@@ -396,8 +420,89 @@ which, via univalence, gives rise to an identity:
 
 ### Tranporting addition and associativity 
 
+As with Bool, we can transport entire functions along this equality.
+For example, addition.
 
+```agda 
+_⊕_ : Bin → Bin → Bin 
+_⊕_ = transport (λ i → ℕ≡Bin i → ℕ≡Bin i → ℕ≡Bin i) _+_ 
 
+-- it works! 
+_ : Two ⊕ Three ≡ Five 
+_ = refl 
+``` 
+
+A peak under the hood shows that Cubical Agda is in fact 
+computing *with respect to* isomorphism. 
+
+```agda 
+module _ (x y : Bin) where 
+
+  -- The following computes definitionally
+  underTheHood : x ⊕ y ≡ ℕ→Bin (Bin→ℕ x + Bin→ℕ y)
+  underTheHood = refl 
+
+  -- Because Bin→ℕ is a retraction of ℕ→Bin,
+  -- we have that Bin→ℕ is effectively a monoid homormophism between
+  --   (Bin, _⊕_) and (ℕ , +)
+  Homomorphism : Bin→ℕ (x ⊕ y) ≡ Bin→ℕ x + Bin→ℕ y 
+  Homomorphism = (ℕ→Bin→ℕ (Bin→ℕ x + Bin→ℕ y))
+``` 
+
+The finale is that, like with the Booleans, we may transport proofs from 
+the unary representation---which is more amenable to reasoning---to 
+the binary representation. For example, commutativity of addition 
+on ℕ. 
+
+The following code I wrote myself quickly---a skill being rapidly 
+replaced by AI. 
+
+```agda 
++-0 : ∀ n → n + 0 ≡ n 
++-0 zero = refl
++-0 (suc n) = cong suc (+-0 n) 
+
+suc-distr : ∀ n m → suc (n + m) ≡ n + suc m 
+suc-distr zero m = refl
+suc-distr (suc n) m = cong suc (suc-distr n m) 
+
++-comm : forall (x y : ℕ) → x + y ≡ y + x 
++-comm zero y = +-0 y ⁻¹
++-comm (suc x) y = cong suc (+-comm x y) ○ suc-distr y x 
+``` 
+
+Now we may transport this proof to the binary representation.
+Note first that we establish a **path** from `_+_` to `_⊕_`---
+which states that the two are equivalent under ℕ≡Bin.
+More specifically, there is a dependent path from `_+_` to `_⊕_`
+under the family `λ i → ℕ≡Bin i → ℕ≡Bin i → ℕ≡Bin i`.
+
+```agda
+addp : PathP (λ i → ℕ≡Bin i → ℕ≡Bin i → ℕ≡Bin i) _+_ _⊕_ 
+addp i = transp (λ j → ℕ≡Bin (i ∧ j) → ℕ≡Bin (i ∧ j) → ℕ≡Bin (i ∧ j)) (~ i) _+_
+``` 
+
+The `addp` path lets us "switch" between `_+_` and `_⊕_`. That is, we have:
+- `addp i₀ = _+_`
+- `addp i₁ = _⊕_`
+
+which lets us define a path from `x + y ≡ y + x` to `x ⊕ y ≡ y ⊕ x`. 
+Note that, in the definition of the path `p`, we have 
+- `addp i₀ x y = x + y`, and 
+- `addp i₁ x y = x ⊕ y`
+
+```agda 
+p : (∀ x y → x + y ≡ y + x) ≡ (∀ x y → x ⊕ y ≡ y ⊕ x)
+p i = (x y : ℕ≡Bin i) → addp i x y ≡ addp i y x 
+``` 
+
+Hence `p` has the correct endpoints. Transporting `+-comm` over `p` yields 
+a proof that `_⊕_` is commutative.
+
+```agda 
+⊕-comm : forall (x y : Bin) → x ⊕ y ≡ y ⊕ x 
+⊕-comm = transport p +-comm
+``` 
 
 # Works Cited 
 - Andrea Vezzosi, Anders Mörtberg, Andreas Abel. Cubical Agda: A dependently typed programming language with univalence and higher inductive types. 

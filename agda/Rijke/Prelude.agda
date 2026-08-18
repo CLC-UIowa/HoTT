@@ -109,7 +109,7 @@ record GroupoidSyntax {ℓ₁} {ℓ₂} {A : Set ℓ₁} (_≈_ : A → A → Se
     where
       open IsEquivalence eqv renaming (refl to refl-~)
 
-open GroupoidSyntax {{...}} public
+open GroupoidSyntax {{...}} public 
 
 -----------------------------------------------------------------------------
 -- The identity type (ported from Part 1)
