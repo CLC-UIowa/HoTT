@@ -40,12 +40,12 @@ This is the basest of expectation we can have of computational univalence:
 that `transport (ua e) x ≡ e .fst x` for `e : A ≃ B`. 
 
 More interesting is to transport functions and proofs along univalence.
-For example, we can transport `and : Bool → Bool → Bool` along the family 
-Not-Fam
+For example, we can transport `and : Bool → Bool → Bool` along the path
+`NotPath`:
 
 ```agda
-Not-Fam : (Bool → Bool → Bool) ≡ (Bool → Bool → Bool)
-Not-Fam i = Not i → Not i → Not i
+NotPath : (Bool → Bool → Bool) ≡ (Bool → Bool → Bool)
+NotPath i = Not i → Not i → Not i
 ```  
 
 to get the negated function `or x y = ¬ (¬ x ∧ ¬ y)`, which, by by De Morgan algebra laws, entails:
@@ -60,7 +60,7 @@ to get the negated function `or x y = ¬ (¬ x ∧ ¬ y)`, which, by by De Morga
 
 ```agda
 or : Bool → Bool → Bool
-or = Not-Fam ▸ and
+or = NotPath ▸ and
 ``` 
 
 Most interesting is, it is not simply that we may show by induction that 
@@ -86,11 +86,11 @@ The fuckery has just begun. We can choose to only transport the
 last argument of `and` along the `Not` identification, to get `nand`.
 
 ```agda 
-Nand-Fam : (Bool → Bool → Bool) ≡ (Bool → Bool → Bool)
-Nand-Fam i = Id i → Id i → Not i 
+NandPath : (Bool → Bool → Bool) ≡ (Bool → Bool → Bool)
+NandPath i = Id i → Id i → Not i 
 
 nand : Bool → Bool → Bool
-nand = Nand-Fam ▸ and
+nand = NandPath ▸ and
 ``` 
 
 Again, we have that `nand` is definitionally equal to `not (and x y)`.
@@ -114,11 +114,11 @@ nand-comm x y = ap not (and-comm x y)
 ``` 
 
 More interesting is to transport a proof of `and` commutativity to `or` commutativity. 
-We first show that there is a (dependent) path from `and` to `or` along the 
-family `Not-Fam i = Not i → Not i → Not i`.
+We first show that there is a (dependent) path from `and` to `or` along path 
+`NotPath`.
 
 ```agda
-and→or : PathP (λ i → Not i → Not i → Not i) and or 
+and→or : PathP (λ i → NotPath i) and or 
 and→or i = transp {ℓ = λ _ → lzero} (λ j → Not (i ∧ j) → Not (i ∧ j) → Not (i ∧ j)) (~ i) and 
 ``` 
 
@@ -345,7 +345,7 @@ which means we may transport by this equality to disprove it.
 
 ```agda 
   _ : ¬ (0∎ ≡ (` `0 p))
-  _ = transport (ua (BinEqv 0∎ (` `0 p)) ⁻¹) 
+  _ = transport (ua (BinEqv 0∎ (` `0 p)) ⁻¹)
 ``` 
 
 ### Plumbing 
@@ -391,7 +391,7 @@ Bin→ℕ→Bin (` p) = lemmaPos p
   lemmaPos : (p : Pos) → ℕ→Bin (BinPos→ℕ p) ≡ (` p)
   lemmaPos 1∎     = refl
   lemmaPos (`0 p) with BinPos→ℕ p | lemmaPos p
-  ... | zero | eq =  ⊥-elim (transport (ua (BinEqv 0∎ (` p)) ⁻¹) eq)
+  ... | zero | eq =  ⊥-elim ((ua (BinEqv 0∎ (` p)) ⁻¹) ▸ eq)
   ... | suc n | eq = {!   !}
   lemmaPos (`1 p) = {!   !} 
 
@@ -424,8 +424,11 @@ As with Bool, we can transport entire functions along this equality.
 For example, addition.
 
 ```agda 
+AddPath : (ℕ → ℕ → ℕ) ≡ (Bin → Bin → Bin)
+AddPath i = ℕ≡Bin i → ℕ≡Bin i → ℕ≡Bin i
+
 _⊕_ : Bin → Bin → Bin 
-_⊕_ = transport (λ i → ℕ≡Bin i → ℕ≡Bin i → ℕ≡Bin i) _+_ 
+_⊕_ = AddPath ▸ _+_ 
 
 -- it works! 
 _ : Two ⊕ Three ≡ Five 
@@ -502,7 +505,7 @@ a proof that `_⊕_` is commutative.
 
 ```agda 
   ⊕-comm : forall (x y : Bin) → x ⊕ y ≡ y ⊕ x 
-  ⊕-comm = transport p +-comm
+  ⊕-comm = p ▸ +-comm
 ``` 
 
 ## Some final thoughts
@@ -526,7 +529,7 @@ module Proofs where
   p i = (x y : ℕ≡Bin i) → addp i x y ≡ addp i y x 
 
   ⊕-comm₁ :  forall (x y : Bin) → x ⊕ y ≡ y ⊕ x  
-  ⊕-comm₁ = transport p +-comm 
+  ⊕-comm₁ = p ▸ +-comm 
 ``` 
 
 Or the straightforward argument:
