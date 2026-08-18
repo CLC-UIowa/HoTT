@@ -478,8 +478,9 @@ More specifically, there is a dependent path from `_+_` to `_⊕_`
 under the family `λ i → ℕ≡Bin i → ℕ≡Bin i → ℕ≡Bin i`.
 
 ```agda
-addp : PathP (λ i → ℕ≡Bin i → ℕ≡Bin i → ℕ≡Bin i) _+_ _⊕_ 
-addp i = transp (λ j → ℕ≡Bin (i ∧ j) → ℕ≡Bin (i ∧ j) → ℕ≡Bin (i ∧ j)) (~ i) _+_
+module TransportComm where 
+  addp : PathP (λ i → ℕ≡Bin i → ℕ≡Bin i → ℕ≡Bin i) _+_ _⊕_ 
+  addp i = transp (λ j → ℕ≡Bin (i ∧ j) → ℕ≡Bin (i ∧ j) → ℕ≡Bin (i ∧ j)) (~ i) _+_
 ``` 
 
 The `addp` path lets us "switch" between `_+_` and `_⊕_`. That is, we have:
@@ -492,17 +493,60 @@ Note that, in the definition of the path `p`, we have
 - `addp i₁ x y = x ⊕ y`
 
 ```agda 
-p : (∀ x y → x + y ≡ y + x) ≡ (∀ x y → x ⊕ y ≡ y ⊕ x)
-p i = (x y : ℕ≡Bin i) → addp i x y ≡ addp i y x 
+  p : (∀ x y → x + y ≡ y + x) ≡ (∀ x y → x ⊕ y ≡ y ⊕ x)
+  p i = (x y : ℕ≡Bin i) → addp i x y ≡ addp i y x 
 ``` 
 
 Hence `p` has the correct endpoints. Transporting `+-comm` over `p` yields 
 a proof that `_⊕_` is commutative.
 
 ```agda 
-⊕-comm : forall (x y : Bin) → x ⊕ y ≡ y ⊕ x 
-⊕-comm = transport p +-comm
+  ⊕-comm : forall (x y : Bin) → x ⊕ y ≡ y ⊕ x 
+  ⊕-comm = transport p +-comm
 ``` 
+
+## Some final thoughts
+
+Throughout this note, I have invisibly transitioned between two contradictory assertions:
+- Wow, transporting along an equality has *computational content*! 
+- Which means So `x ⊕ y` definitionally equals `ℕ→Bin (Bin→ℕ x + Bin→ℕ y)`...
+  which means that all of the complicated machinery we've used to transport
+  along univalently-induced equalities could equally have been done traditionally.
+
+The second argument is true, as well, for "transporting proofs". Which of these two "proofs" is simpler?
+
+We have the univalent argument:
+
+```agda 
+module Proofs where 
+  addp : PathP (λ i → ℕ≡Bin i → ℕ≡Bin i → ℕ≡Bin i) _+_ _⊕_ 
+  addp i = transp (λ j → ℕ≡Bin (i ∧ j) → ℕ≡Bin (i ∧ j) → ℕ≡Bin (i ∧ j)) (~ i) _+_
+
+  p : (∀ x y → x + y ≡ y + x) ≡ (∀ x y → x ⊕ y ≡ y ⊕ x)
+  p i = (x y : ℕ≡Bin i) → addp i x y ≡ addp i y x 
+
+  ⊕-comm₁ :  forall (x y : Bin) → x ⊕ y ≡ y ⊕ x  
+  ⊕-comm₁ = transport p +-comm 
+``` 
+
+Or the straightforward argument:
+
+```agda 
+  ⊕-comm₂ :  forall (x y : Bin) → x ⊕ y ≡ y ⊕ x   
+  ⊕-comm₂ x y = cong ℕ→Bin (+-comm (Bin→ℕ x) (Bin→ℕ y)) 
+```   
+
+These proofs do not appear to be definitionally equivalent; 
+trying to normalize `⊕-comm₁ x y` causes my Agda to run indefinitely.
+Certainly, viewing proofs as objects, we have that `⊕-comm₂` is much clearer,
+and easier to reason about. (As an aside, both ℕ and Bin are **Sets**, so they observe 
+the UIP---hence both proofs are *propositionally* equal.) 
+
+That said, it's certainly valid to be skeptical. A logical counter-point is that 
+the data types and proofs we've provided are quite simple; perhaps transporting
+a more involved theorem is more convenient (or feasible) than its straightforward
+counterpart. I haven't read all of Vezzosi et al, but I imagine they provide 
+other examples that may not have more straightforward constructions.
 
 # Works Cited 
 - Andrea Vezzosi, Anders Mörtberg, Andreas Abel. Cubical Agda: A dependently typed programming language with univalence and higher inductive types. 
