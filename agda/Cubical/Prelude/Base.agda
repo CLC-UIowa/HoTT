@@ -10,7 +10,7 @@ open import Data.Product
     using (_×_ ; Σ ; Σ-syntax ; _,_ ; <_,_> ; curry ; uncurry ; map₂ ; assocˡ ; assocʳ) public
 open import Data.Product.Properties using (Σ-≡,≡→≡) public
 open import Data.Sum
-    using (inj₁ ; inj₂ ; [_,_]) public
+    using (inj₁ ; inj₂ ; [_,_] ; _⊎_) public
 open import Data.Unit using (⊤ ; tt) public
 open import Data.Unit.Polymorphic renaming (⊤ to ⊤ₚ ; tt to ttₚ) public
 open import Data.Empty using (⊥ ; ⊥-elim) public

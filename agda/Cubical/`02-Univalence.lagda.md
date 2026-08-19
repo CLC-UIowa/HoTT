@@ -169,7 +169,7 @@ We define the binary representation in *little-endian format*, read left to righ
 with no trailing zeroes. That is, the number 6 is 011 (rather than 110).
 
 ```agda 
-infixr 0 `_ 
+infixr 0 ∎_
 infixr 1 `0_ 
 infixr 1 `1_
 data Pos : Set where 
@@ -179,16 +179,16 @@ data Pos : Set where
 
 data Bin : Set where 
   0∎ : Bin 
-  `_ : Pos → Bin 
+  ∎_ : Pos → Bin 
 
 Zero One Two Three Four Five Six : Bin 
 Zero = 0∎ 
-One = ` 1∎ 
-Two = ` `0 1∎
-Three = ` `1 1∎ 
-Four = ` `0 `0 1∎
-Five = ` `1 `0 1∎
-Six  = ` `0 `1 1∎
+One = ∎ 1∎ 
+Two = ∎ `0 1∎
+Three = ∎ `1 1∎ 
+Four = ∎ `0 `0 1∎
+Five = ∎ `1 `0 1∎
+Six  = ∎ `0 `1 1∎
 ``` 
 
 ### Disjoint constructors
@@ -205,148 +205,111 @@ presume constructors are disjoint.
 
 In order to disprove the equality of disjoint constructors, we'll
 use the following encode/decode technique. This is also referred to as a "No Confusion" proof.
-The technique is entirely analogous to giving a decision procedure for equality on `Bin` and `Pos`. 
+The technique is similar giving a decision procedure for equality on `Bin` and `Pos`. 
+A full treatment involves establishing an equivalence between a *coding* of Bin and Pos
+and their identity types:
+```notAgda
+BinCode x y ≃ (x ≡ y)
+```
+
+We define `BinCode` such that e.g. `BinCode 0∎ (∎ x) = ⊥`, and hence given a proof that
+`0∎ ≡ ∎ x`, we may coerce to a proof of ⊥. That much machinery is unnecessary for our purposes.
+
 
 We first describe a relation on Bin and Pos---a "coding"---that is ⊤ when two constructors are 
 equal and ⊥ otherwise. In other words, we map structurally equal terms to ⊤ and ⊥ otherwise.
+To emphasize that this "coding" is effectively an implementation of boolean equality,
+we'll begin with such.
 
 ```agda
-BinCode : Bin → Bin → Set 
-PosCode : Pos → Pos → Set
-BinCode 0∎ 0∎ = ⊤
-BinCode 0∎ (` x) = ⊥
-BinCode (` x) 0∎ = ⊥
-BinCode (` x) (` y) = PosCode x y 
+_==b_ : Bin → Bin → Bool
+_==p_ : Pos → Pos → Bool
 
+0∎ ==b 0∎ = true
+0∎ ==b (∎ x) = false
+(∎ x) ==b 0∎ = false
+(∎ x) ==b (∎ y) = x ==p y
 
-PosCode 1∎ 1∎ = ⊤
-PosCode 1∎ (`0 y) = ⊥
-PosCode 1∎ (`1 y) = ⊥
-PosCode (`0 x) 1∎ = ⊥
-PosCode (`0 x) (`0 y) = PosCode x y
-PosCode (`0 x) (`1 y) = ⊥
-PosCode (`1 x) 1∎ = ⊥
-PosCode (`1 x) (`0 y) = ⊥
-PosCode (`1 x) (`1 y) = PosCode x y
+1∎ ==p 1∎ = true
+1∎ ==p (`0 y) = false
+1∎ ==p (`1 y) = false
+(`0 x) ==p 1∎ = false
+(`0 x) ==p (`0 y) = x ==p y
+(`0 x) ==p (`1 y) = false
+(`1 x) ==p 1∎ = false
+(`1 x) ==p (`0 y) = false
+(`1 x) ==p (`1 y) = x ==p y
 ```
 
-For the purpose of using the J eliminator, we'll show that these
-relations are reflexive. (Observe that the functions `encodeBin` and `encodePos`
-require precisely proofs that `BinCode x x` and `PosCode x x`.)
+Let's go ahead and make a typeclass while we're at it.
 
 ```agda
-BinRefl : ∀ x → BinCode x x
-PosRefl : ∀ x → PosCode x x 
+record Eq (A : Set ℓ) : Set ℓ where
+  infixr 5 _==_
+  field
+    _==_ : A → A → Bool
+open Eq {{...}} public 
 
-BinRefl 0∎ = tt
-BinRefl (` x) = PosRefl x
-
-PosRefl 1∎ = tt
-PosRefl (`0 x) = PosRefl x
-PosRefl (`1 x) = PosRefl x
+instance 
+  EqBin : Eq Bin
+  EqBin ._==_ = _==b_ 
+  EqPos : Eq Pos
+  EqPos ._==_ = _==p_ 
 ```
 
-We will now exhibit an equivalence between identity
-types and their codes. The *encode* direction converts
-paths to codes, and is easy to prove via based-path induction
-J.
+Now we use `T` to map true to ⊤ and false to ⊥---and hence
+`T (x == y)` is an encoding which is inhabitable iff x == y
+is true.
 
 ```agda
-encodeBin : ∀ (x y : Bin) → x ≡ y → BinCode x y 
-encodePos : ∀ (x y : Pos) → x ≡ y → PosCode x y 
-
-encodeBin x y e = J (λ y _ → BinCode x y) (BinRefl x) e 
-encodePos x y e = J (λ y _ → PosCode x y) (PosRefl x) e
+T : Bool → Set 
+T true = ⊤  
+T false = ⊥
 ```
 
-The decoding---from codes to equalities---is tedious but more or 
-less straightforward.
+To get what we want, we simply have to show that `x ≡ y` implies `T (x == y)`. 
+This is easy to prove if we can pattern match on `x ≡ y`!... Which we cannot,
+as `_≡_` is no longer an inductive type. Hence we'll use the J eliminator.
+
+In order to use J, we need to provide the base case---that is, that boolean
+equality is reflexive for Bin and Pos.
+```agda 
+reflBin : ∀ (x : Bin) → T (x == x)
+reflPos : ∀ (x : Pos) → T (x == x)
+reflBin 0∎ = tt
+reflBin (∎ x) = reflPos x
+reflPos 1∎ = tt
+reflPos (`0 x) = reflPos x
+reflPos (`1 x) = reflPos x
+
+
+encodeBin : ∀ {x y : Bin} → x ≡ y → T (x == y)
+encodePos : ∀ {x y : Pos} → x ≡ y → T (x == y)
+
+encodeBin {x = x} {y} eq = J (λ y e → T (x == y)) (reflBin x) eq 
+encodePos {x = x} {y} eq = J (λ y e → T (x == y)) (reflPos x) eq 
+```
+
+Finally, we may now show easily that disjoint constructors imply ⊥!
+It follows definitionally. Consider:
 
 ```agda
-decodeBin : ∀ (x y : Bin) → BinCode x y → x ≡ y
-decodePos : ∀ (x y : Pos) → PosCode x y → x ≡ y
-
-decodeBin 0∎ 0∎ c = refl
-decodeBin 0∎ (` x) ()
-decodeBin (` x) 0∎ ()
-decodeBin (` x) (` y) c = cong `_ (decodePos x y c)
-
-decodePos 1∎ 1∎ c = refl
-decodePos (`0 x) (`0 y) c = cong `0_ (decodePos x y c)
-decodePos (`1 x) (`1 y) c = cong `1_ (decodePos x y c)
+_ : ∀ p → ¬ (0∎ ≡ (∎ `0 p))
+_ = λ p e → encodeBin e  
 ```
 
-We now show that these types are equivalent. Again,
-mostly tedious boilerplate.
-
-```agda
-
-decodeBinRefl : ∀ x → decodeBin x x (encodeBin x x refl) ≡ refl
-decodePosRefl : ∀ x → decodePos x x (encodePos x x refl) ≡ refl
-
-decodeBinRefl 0∎ = refl
-decodeBinRefl (` x) i = cong `_ (decodePosRefl x i)
-decodePosRefl 1∎ = refl
-decodePosRefl (`0 x) i = cong `0_ (decodePosRefl x i)
-decodePosRefl (`1 x) i = cong `1_ (decodePosRefl x i)
-
-encodeDecodeBin : ∀ x y → retract (decodeBin x y) (encodeBin x y)
-encodeDecodePos : ∀ x y → retract (decodePos x y) (encodePos x y)
-
-encodeDecodeBin 0∎ 0∎ b = refl
-encodeDecodeBin (` x) (` y) b = encodeDecodePos x y b 
-
-encodeDecodePos 1∎ 1∎ b = refl
-encodeDecodePos (`0 x) (`0 y) b = encodeDecodePos x y b
-encodeDecodePos (`1 x) (`1 y) b = encodeDecodePos x y b
-
-BinEqv : ∀ (x y : Bin) → BinCode x y ≃ (x ≡ y)
-PosEqv : ∀ (x y : Pos) → PosCode x y ≃ (x ≡ y)
-BinEqv x y = 
-  isoToEquiv 
-  (iso (decodeBin x y) (encodeBin x y) 
-  (σ x y) 
-  (encodeDecodeBin x y)) 
-  where
-    σ : ∀ (x y : Bin) → section (decodeBin x y) (encodeBin x y)
-    σ x y b = J  (λ y e → decodeBin x y (encodeBin x y e) ≡ e) (decodeBinRefl x) b 
-
-PosEqv x y = isoToEquiv 
-  (iso 
-    (decodePos x y) 
-    (encodePos x y) 
-    (σ x y  ) 
-    (encodeDecodePos x y)) 
-  where
-    σ : ∀ (x y : Pos) → section (decodePos x y) (encodePos x y)
-    σ x y b = J  (λ y e → decodePos x y (encodePos x y e) ≡ e) (decodePosRefl x) b 
-```
-
-Finally, given an equivalence, we can for example translate an equality
-such as 
+That is, we have for e : (0∎ ≡ (∎ `0 p)) that:
 ```notAgda
-0∎ ≡ ` `0 p
+    encodeBin e 
+  : T (0∎ == (∎ `0 p))
+  = T false
+  = ⊥
 ```
-to the type
-```notAgda 
-BinCode 0∎ (` `0 p) ≡ ⊥
-```
 
-hence exhibiting a proof that the constructors are disjoint.
-For example, we have, by univalence, that the above identity holds:
-
-```agda 
-module _ (p : Pos) where 
-  _ : (0∎ ≡ (` `0 p)) ≡ ⊥ 
-  _ = ua (BinEqv 0∎ (` `0 p)) ⁻¹
-``` 
-
-which means we may transport by this equality to disprove it.
-
-```agda 
-  _ : ¬ (0∎ ≡ (` `0 p))
-  _ = transport (ua (BinEqv 0∎ (` `0 p)) ⁻¹)
-``` 
+As I stated earlier, we may actually show something strong:
+an equivalence between (x ≡ y) and T (x == y). But for now
+we only need one direction of this equivalence, and we don't
+need any stronger result.
 
 ### Plumbing 
 
@@ -362,42 +325,51 @@ sucPos (`1 p) = `0 (sucPos p)
 
 -- Helper for incrementing a Bin
 sucBin : Bin → Bin
-sucBin 0∎     = ` 1∎
-sucBin (` p)  = ` (sucPos p)
+sucBin 0∎     = ∎ 1∎
+sucBin (∎ p)  = ∎ (sucPos p)
 
 ℕ→Bin : ℕ → Bin 
 ℕ→Bin zero     = 0∎
 ℕ→Bin (suc n) = sucBin (ℕ→Bin n) 
 
-BinPos→ℕ : Pos → ℕ
-BinPos→ℕ 1∎     = 1
-BinPos→ℕ (`0 p) = BinPos→ℕ p + BinPos→ℕ p
-BinPos→ℕ (`1 p) = 1 + (BinPos→ℕ p + BinPos→ℕ p)
+Pos→ℕ : Pos → ℕ
+Pos→ℕ 1∎     = 1
+Pos→ℕ (`0 p) = Pos→ℕ p + Pos→ℕ p
+Pos→ℕ (`1 p) = 1 + (Pos→ℕ p + Pos→ℕ p)
 
 Bin→ℕ : Bin → ℕ 
 Bin→ℕ 0∎    = 0
-Bin→ℕ (` p) = BinPos→ℕ p 
+Bin→ℕ (∎ p) = Pos→ℕ p 
 ``` 
 
-And witness an isomorphism:
+And we witness an isomorphism. 
 
-(I left some holes because I'm lazy and this isn't really the point.)
+(I leave some holes because this isn't the point.)
 
 ```agda 
+postulate
+  pfft : ∀ {A : Set ℓ} → A 
+
 Bin→ℕ→Bin : ℕ→Bin ∘ Bin→ℕ ∼ id 
+Pos→ℕ→Bin : ℕ→Bin ∘ Pos→ℕ ∼ ∎_ 
+
+Pos→ℕ→Bin 1∎ = refl
+Pos→ℕ→Bin (`0 x) with Pos→ℕ x | Pos→ℕ→Bin x 
+... | zero | ih = ⊥-elim (encodeBin ih)
+... | suc n | ih = pfft
+Pos→ℕ→Bin (`1 x) = pfft
+
 Bin→ℕ→Bin 0∎ = refl
-Bin→ℕ→Bin (` p) = lemmaPos p
-  where
-  lemmaPos : (p : Pos) → ℕ→Bin (BinPos→ℕ p) ≡ (` p)
-  lemmaPos 1∎     = refl
-  lemmaPos (`0 p) with BinPos→ℕ p | lemmaPos p
-  ... | zero | eq =  ⊥-elim ((ua (BinEqv 0∎ (` p)) ⁻¹) ▸ eq)
-  ... | suc n | eq = {!   !}
-  lemmaPos (`1 p) = {!   !} 
+Bin→ℕ→Bin (∎ p) = Pos→ℕ→Bin p
 
 ↻-suc-Bin→ℕ : Bin→ℕ ∘ sucBin ∼ suc ∘ Bin→ℕ 
+↻-suc-Pos→ℕ : Pos→ℕ ∘ sucPos ∼ suc ∘ Pos→ℕ 
 ↻-suc-Bin→ℕ 0∎ = refl
-↻-suc-Bin→ℕ (` x) = {!  !}
+↻-suc-Bin→ℕ (∎ x) = ↻-suc-Pos→ℕ x  
+
+↻-suc-Pos→ℕ 1∎ = refl
+↻-suc-Pos→ℕ (`0 x) = refl
+↻-suc-Pos→ℕ (`1 x) = pfft
 
 ℕ→Bin→ℕ : Bin→ℕ ∘ ℕ→Bin ∼ id 
 ℕ→Bin→ℕ zero = refl
@@ -435,7 +407,7 @@ _ : Two ⊕ Three ≡ Five
 _ = refl 
 ``` 
 
-A peak under the hood shows that Cubical Agda is in fact 
+A peek under the hood shows that Cubical Agda is in fact 
 computing *with respect to* isomorphism. 
 
 ```agda 
