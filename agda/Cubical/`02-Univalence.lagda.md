@@ -7,14 +7,14 @@ open GVars
 
 # Univalence 
 
-Finally, we are going to demonstrate the **computational content** of univalence 
+We are going to demonstrate the **computational content** of univalence 
 in cubical Agda. Namely, we will witness that transporting along a univalent path 
 in fact reduces according to the equivalence.
 
 ## Computational univalence with Booleans 
 
 Let's first witness the two identities of Bool. 
-
+ 
 ```agda 
 
 Id Not : Bool ≡ Bool 
@@ -25,13 +25,16 @@ not-involution true = refl
 not-involution false = refl 
 
 
-Not = (ua ∘ isoToEquiv) (iso not not not-involution not-involution)
+Not-≃ : Bool ≃ Bool
+Not-≃ = isoToEquiv (iso not not not-involution not-involution) 
+
+Not = ua Not-≃
 ``` 
 
 Now transporting along `Not` definitionally negates the term:  
 
 ```agda
-_ :   Not ▸ true ≡ false
+_ :   transport Not true  ≡ false
     × Not ▸ false ≡ true 
 _ = refl , refl 
 ``` 
@@ -60,7 +63,7 @@ to get the negated function `or x y = ¬ (¬ x ∧ ¬ y)`, which, by by De Morga
 
 ```agda
 or : Bool → Bool → Bool
-or = NotPath ▸ and
+or = transport NotPath and -- NotPath ▸ and
 ``` 
 
 Most interesting is, it is not simply that we may show by induction that 
@@ -79,7 +82,7 @@ to `λ x y → not (and (not x) (not y))`:
 
 ```agda 
 or≡¬[¬x∧¬y] : or ≡ (λ x y → not (and (not x) (not y)))
-or≡¬[¬x∧¬y] = refl 
+or≡¬[¬x∧¬y] = refl
 ``` 
 
 The fuckery has just begun. We can choose to only transport the
@@ -110,7 +113,6 @@ and-comm true true = refl
 
 nand-comm : ∀ (x y : Bool) → nand x y ≡ nand y x 
 nand-comm x y = ap not (and-comm x y) 
-
 ``` 
 
 More interesting is to transport a proof of `and` commutativity to `or` commutativity. 
@@ -154,7 +156,7 @@ proof that `or` is commutative.
 
 ```agda 
 or-comm : ∀ (x y : Bool) → or x y ≡ or y x 
-or-comm =  G ▸ and-comm 
+or-comm =  G ▸ and-comm  
 ``` 
 
 ## Univalence with Naturals 
@@ -172,6 +174,7 @@ with no trailing zeroes. That is, the number 6 is 011 (rather than 110).
 infixr 0 ∎_
 infixr 1 `0_ 
 infixr 1 `1_
+
 data Pos : Set where 
   1∎ : Pos 
   `0_ : Pos → Pos 
@@ -208,6 +211,7 @@ use the following encode/decode technique. This is also referred to as a "No Con
 The technique is similar giving a decision procedure for equality on `Bin` and `Pos`. 
 A full treatment involves establishing an equivalence between a *coding* of Bin and Pos
 and their identity types:
+
 ```notAgda
 BinCode x y ≃ (x ≡ y)
 ```
@@ -441,7 +445,7 @@ suc-distr : ∀ n m → suc (n + m) ≡ n + suc m
 suc-distr zero m = refl
 suc-distr (suc n) m = cong suc (suc-distr n m) 
 
-+-comm : forall (x y : ℕ) → x + y ≡ y + x 
++-comm : (x y : ℕ) → x + y ≡ y + x 
 +-comm zero y = +-0 y ⁻¹
 +-comm (suc x) y = cong suc (+-comm x y) ○ suc-distr y x 
 ``` 
