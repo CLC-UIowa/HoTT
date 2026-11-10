@@ -399,5 +399,10 @@ Hence set-truncation forces that the homotopy groups of A are proper groups (gro
 Our principle interest is in showing that π₁ (S¹ , base) ≡ ℤ. Specifically, we show that the loop space Ω¹ (S¹ , base) = (base ≡ base , refl) is equivalent to ℤ. That is, we are ignoring the set-truncation induced by π and working over the more straightforward definition given by Ω¹.
 
 ### Getting started
-
 Boop dee boop.
+
+The question is not even: How do mathematicians make progress in mathematics? Rather, as a more explicit (and leading) form of the question, I prefer How do mathematicians advance human understanding of mathematics?
+
+This question brings to the fore something that is fundamental and pervasive: that what we are doing is finding ways for people to understand and think about mathematics.
+
+The rapid advance of computers has helped dramatize this point, because com- puters and people are very different. For instance, when Appel and Haken com- pleted a proof of the 4-color map theorem using a massive automatic computation, it evoked much controversy. I interpret the controversy as having little to do with doubt people had as to the veracity of the theorem or the correctness of the proof. Rather, it reflected a continuing desire for human understanding of a proof, in addition to knowledge that the theorem is true.
