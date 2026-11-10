@@ -10,6 +10,126 @@ open import Relation.Binary.PropositionalEquality
     renaming (_≡_ to _≣_) 
     using ()
 ```
+# Cubical Type Theory (a review)
+
+*AH> Because I am presenting these notes to the CLC, let's review some of the content discussed in `01-Paths.lagda.md` to refresh (or familiarize) the reader with some cubical TT basics.*
+
+## What is homotopy type theory
+
+Homotopy type theory, or HoTT, is principally a branch of dependent type theory concerned with:
+1. A homotopical / topological interpretation of 
+  - types as spaces;
+  - terms as points; and
+  - equalities as paths
+2. exploring **univalent foundations** of mathematics
+
+The first point requires no additional tooling beyond a standard dependent type theory (DTT), e.g., Martin-Löf Type Theory (MLTT) or the Calculus of Inductive Constructions (CIC). This point is almost aesthetic in nature: we are describing a new *vocabulary* for DTT, rather than building a new type theory. For example, an important definition in HoTT is **contractibility**:
+
+```notAgda
+is-contr : (A : Set) → Set 
+is-contr A = Σ[ x ∈ A ] (∀ (y : A) → x ≡ y)
+```
+
+As a dependent type theorist, we might read this as "a type A is contractible if all of its elements are equal." As HoTT theorists, we read this as "a space A is contractible if all of its points contract to a center: that is, if every point y in the space has a path to a **center** x." In my opinion, this framework of vocabulary is quite elegant and helpful, even if you are not working with univalence (described below). For example, my own work in Agda does not invoke univalence, but nevertheless borrows definitions of contractions, propositions, sections/retractions, homotopies, and so forth. In addition, HoTT stems from an intuition that the identity type (x ≡ y) forms a **groupoid**, with refl the identity, transitivity the binary operator, and symmetry the unary operator. Accordingly, we write transitivity as _○_ and symmetry as _⁻¹. The following laws hold for all p, q, r : x ≡ y:
+- p ○ refl = refl = refl ○ p
+- p ○ (p ⁻¹) = p ⁻¹ ○ p = refl
+- p ○ (q ○ r) = (p ○ q) ○ r 
+
+This intuition about identity types as groupoids brings us to our secoind point---exploring **univalent foundations** of mathematics---requires the postulation of the **univalence axiom**, which states that, for types A and B in universe 𝒰, we have:
+
+```
+(A ≡ B) ≃ (A ≃ B)
+```
+
+Here _≃_ refers to an "equivalence" of types. There are a handful of equivalent definitions of equivalence, all roughly describing an isomorphism. In practice, you can assume A ≡ B means there exists f : A → B such that f has a **quasi-inverse**. A quasi-inverse is your normal definition of an inverse. Namely, f is a quasi-inverse if we have g : B → A such that 
+  - f ∘ g ∼ id, and
+  - g ∘ f ∼ id
+
+where _∼_ denotes pointwise equality (or, (a homotopy*):
+  - f ∼ g = ∀ (x : A) → f x ≡ g x 
+
+What does univalence tell us? That we have functions 
+- eq-eqv : (A ≡ B) → A ≃ B, and
+- eqv-eq : A ≃ B → A ≡ B
+and that these functions are inverse. The first definition is trivially definable by pattern matching / induction on the equality. The second requires postulation.
+
+The intuition is that HoTT permits us to reason about types modulo isomorphism. For example, we can establish an isomorphism between the unary (ℕ) and binary (Bin) natural numbers. Under HoTT, we have that ℕ ≡ Bin, meaning a term at type ℕ can freely be cast to a Bin and vice versa. 
+
+The groupoid interpretation of types was first established to refute the Uniqeness of Identity Principle:
+
+```notAgda
+UIP : ∀ (p q : x ≡ y) → p ≡ q
+```
+
+This principle is inherently assumed in Agda (without enabling the flag `--without-k`, but is not in-fact entailed by MLTT. What does this type mean, in practice? that `refl` need not be the only constructor of the identity type. So, types can be equal to one another in nontrivial ways. 
+
+Consider the type Bool. With the UIP, there is one constructor of Bool ≡ Bool (that is, refl). With univalence, which is incongruent with the UIP, we also have that the isomorphism induced by `not` also induces an equality:
+
+```notAgda
+Not : Bool ≃ Bool
+Not = (not , ... , ...) 
+
+Not-≡ : Bool ≡ Bool
+Not-≡ = eqv-eq Not
+```
+
+In particular, we do not have that `Not-≡ refl`. Moreover, this equality computes differently. 
+
+```notAgda
+tr : (A ≡ B) → A → B 
+tr refl = id 
+
+-- Below, we have x = true and y = false.
+x y : Not-≡ 
+x = tr refl true
+y = tr Not-≡ true
+
+``` 
+
+## What does univalence give us?
+
+On the whole, univalence has two exotic features:
+- the univalence axiom
+- higher inductive types
+
+The former we just discussed; the latter we describe in this chapter.
+
+
+## What is cubical type theory
+
+HoTT has one problem: it does not compute. That is, univalence is an *axiom*, and axioms do not generally compute. Cubical type theory (or, Cubical TT) gives a *computable* and *constructive* interpretation of HoTT. This means that univalence is a **theorem**, not an axiom, and that the univalently-constructed identities compute when transporting terms.
+
+Cubical TT achieves this firstly by reinterpreting the identity type.
+
+## The interval type
+
+In Cubical Agda, we have
+- a type 𝕀, such that
+- i₀ : 𝕀 
+- i₁ : 𝕀 
+
+
+## The path type
+
+A path (x ≡ y) in cubical type theory is *not* the standard MLTT identity type. 
+Rather, for x , y : A, it is a type
+
+```notAgda 
+  (x ≡ y) sort of equals (i : 𝕀) → A 
+``` 
+
+such that, given p : x ≡ y, we have 
+- p i₀ = x 
+- p i₁ = y 
+
+The difference is that, while (x ≡ y) is constructed and eliminated using the syntax for functions, it is not actually a function. So we do not have that 
+
+```notAgda
+(x ≡ y) ≡ (i : 𝕀) → A
+```
+
+although one can convert between the two.
+
 
 # Higher inductive types
 
