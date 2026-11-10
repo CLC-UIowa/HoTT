@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-} 
 module Prelude.Paths where 
 
 open import Prelude.Base public 
@@ -31,9 +32,11 @@ module _ where
     variable
       x y z w : A
 
+  infixr 30 _⁻¹
   _⁻¹ : x ≡ y → y ≡ x
   _⁻¹ = sym 
 
+  infixr 29 _○_
   _○_ : x ≡ y → y ≡ z → x ≡ z 
   (p ○ q) = refl ∙∙ p ∙∙ q
 
@@ -69,3 +72,50 @@ infixr 5 _∼_
 _∼_ : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} → ((x : A) → B x) → ((x : A) → B x) → Set _
 _∼_ {A = A} f g = (x : A) → f x ≡ g x
 
+--------------------------------------------------------------------------------
+-- Decidability 
+
+data Dec (A : Set ℓ) : Set ℓ where 
+  yes : (p : A)   → Dec A 
+  no  : (q : ¬ A) → Dec A 
+
+-- squashing 
+∣_∣  : Dec A → Set
+∣ yes _ ∣ = ⊤ 
+∣ no  _ ∣ = ⊥
+
+Discrete : Set ℓ → Set ℓ 
+Discrete A = (x y : A) → Dec (x ≡ y) 
+
+module _ {A : Set ℓ} (D : Discrete A)  where
+
+  -- Collapse every path to that produced by D 
+  collapse : (x y : A) → x ≡ y → x ≡ y 
+  collapse x y p with D x y
+  ... | yes p = p 
+  ... | no  q = ⊥-elim (q p)
+
+  collapse-const : {x y : A} (p q : x ≡ y) → 
+                  collapse x y p ≡ collapse x y q 
+  collapse-const {x = x} {y} p q with D x y 
+  ... | yes p = refl                   
+  ... | no q = refl 
+
+
+  -- The proof is:
+  -- Start with 
+  --   r ≡ refl ⁻¹ ○ r?
+  Hedberg : {x y : A} → (r : x ≡ y) → 
+            r ≡ collapse x x refl ⁻¹ ○ collapse x y r
+  Hedberg {x = x} {y} r = {! _⋆_  !} 
+
+  Discrete⇒isSet : isSet A 
+  Discrete⇒isSet x y p q = 
+    p 
+      ≡⟨ Hedberg p ⟩ 
+    collapse x x refl ⁻¹ ○ collapse x y p 
+      ≡⟨ ap (λ e → collapse x x refl ⁻¹ ○ e) (collapse-const p q) ⟩ 
+    collapse x x refl ⁻¹ ○ collapse x y q 
+      ≡⟨ Hedberg q ⁻¹ ⟩ 
+    q ∎ 
+      
